@@ -25,6 +25,26 @@
     "email": "nexovtech@myyahoo.com"
   },
   {
+    "id": "gundasaranya2006@gmail.com",
+    "createdAt": {
+      "_seconds": 1778147510,
+      "_nanoseconds": 952000000
+    },
+    "role": "Employee",
+    "performance": {
+      "tasksCompleted": 0,
+      "rating": 5,
+      "onTimeRate": 100
+    },
+    "name": "GUNDA SARANYA",
+    "bankName": "",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=GUNDA SARANYA1778147510952",
+    "accountNumber": "",
+    "upiId": "",
+    "ifscCode": "",
+    "email": "gundasaranya2006@gmail.com"
+  },
+  {
     "id": "manicharanteja1234@gmail.com",
     "role": "Employee",
     "performance": {
