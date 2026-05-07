@@ -111,8 +111,12 @@ const Team = () => {
       if (teamRes.ok) {
         const data = await teamRes.json();
         const unique = (data || []).reduce((acc, curr) => {
-          if (curr.email && !acc.find(item => item.email === curr.email)) acc.push(curr);
-          else if (!curr.email && !acc.find(item => (item.id === curr.id || item._id === curr._id))) acc.push(curr);
+          const email = curr.email?.toLowerCase();
+          if (email && !acc.find(item => item.email?.toLowerCase() === email)) {
+            acc.push({ ...curr, email });
+          } else if (!email && !acc.find(item => (item.id === curr.id || item._id === curr._id))) {
+            acc.push(curr);
+          }
           return acc;
         }, []);
         setMembers(unique);
