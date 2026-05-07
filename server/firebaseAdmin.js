@@ -28,6 +28,10 @@ try {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
     });
+  }
+
+  // Ensure db is always connected if an app exists
+  if (admin.apps.length) {
     db = admin.firestore();
   } else {
     db = null;
