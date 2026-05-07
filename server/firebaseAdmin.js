@@ -4,21 +4,24 @@ try {
   admin = require('firebase-admin');
   let serviceAccount;
 
-  // 1. Try Environment Variable (Production)
+  // Production: read from environment variable
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     try {
       serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
     } catch (e) {
       console.error('❌ FIREBASE_ENV_PARSE_ERROR:', e.message);
     }
-  } 
+  }
 
-  // 2. Try Local File (Development Only)
+  // Local development: read from file using fs (invisible to esbuild bundler)
   if (!serviceAccount && !process.env.NETLIFY && !process.env.VERCEL) {
     try {
-      // We use a dynamic require string to prevent bundlers like esbuild from failing during build
-      const keyPath = './serviceAccountKey.json';
-      serviceAccount = require(keyPath);
+      const fs = require('fs');
+      const path = require('path');
+      const keyFile = path.join(__dirname, 'serviceAccountKey.json');
+      if (fs.existsSync(keyFile)) {
+        serviceAccount = JSON.parse(fs.readFileSync(keyFile, 'utf8'));
+      }
     } catch (e) {
       console.warn('⚠️ No local serviceAccountKey.json found.');
     }
@@ -30,14 +33,10 @@ try {
     });
   }
 
-  // Ensure db is always connected if an app exists
-  if (admin.apps.length) {
-    db = admin.firestore();
-  } else {
-    db = null;
-  }
+  db = admin.apps.length ? admin.firestore() : null;
 } catch (err) {
   console.error('🔥 FIREBASE_FATAL_ERROR:', err.message);
+  admin = null;
   db = null;
 }
 

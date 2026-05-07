@@ -1,27 +1,19 @@
 const express = require('express');
 const fs = require('fs');
-const mongoose = require('mongoose');
 const path = require('path');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const http = require('http');
-const { Server } = require('socket.io');
+
+const IS_SERVERLESS = !!(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 
 try { dotenv.config(); } catch (e) { /* no .env in serverless */ }
 
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
-try { if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true }); } catch (e) { /* read-only FS in serverless */ }
+try { if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true }); } catch (e) { /* read-only FS */ }
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST'],
-  },
-});
 
-app.use(cors());
+app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -39,39 +31,48 @@ app.use('/api/attendance', require('./routes/attendanceRoutes'));
 app.use('/api/idcard', require('./routes/idCardRoutes'));
 app.use('/api/leave', require('./routes/leaveRoutes'));
 
-// Basic Route
+// Health check
 app.get('/', (req, res) => {
   res.send('NexovTech Management API is running...');
 });
 
-// Socket.io connection
-io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
-
-  socket.on('join-project', (projectId) => {
-    socket.join(projectId);
-    console.log(`User ${socket.id} joined project ${projectId}`);
-  });
-
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
-  });
+// Global error handler — prevents unhandled errors from crashing the function
+app.use((err, req, res, next) => {
+  console.error('UNHANDLED_API_ERROR:', err.stack || err.message || err);
+  res.status(500).json({ message: 'Internal server error' });
 });
 
-const PORT = process.env.PORT || 5005;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/nexovtech';
+// === TRADITIONAL SERVER MODE (local dev only) ===
+if (!IS_SERVERLESS) {
+  const http = require('http');
+  const { Server } = require('socket.io');
 
-const seedAdmin = require('./seedAdmin');
+  const server = http.createServer(app);
+  const io = new Server(server, {
+    cors: { origin: '*', methods: ['GET', 'POST'] },
+  });
 
-// Cloud Firestore Initialization
-console.log('🛡️ CLOUD_DATABASE: Activating Firestore Synchronization...');
-seedAdmin().then(() => {
-  console.log('✅ SYSTEM READY: Cloud-Hybrid Bridge Online');
-}).catch(err => {
-  console.error('❌ INITIALIZATION FAILED:', err.message);
-});
+  io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id);
+    socket.on('join-project', (projectId) => {
+      socket.join(projectId);
+      console.log(`User ${socket.id} joined project ${projectId}`);
+    });
+    socket.on('disconnect', () => {
+      console.log('User disconnected');
+    });
+  });
 
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  const PORT = process.env.PORT || 5005;
+
+  const seedAdmin = require('./seedAdmin');
+  console.log('🛡️ CLOUD_DATABASE: Activating Firestore Synchronization...');
+  seedAdmin().then(() => {
+    console.log('✅ SYSTEM READY: Cloud-Hybrid Bridge Online');
+  }).catch(err => {
+    console.error('❌ INITIALIZATION FAILED:', err.message);
+  });
+
   server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
