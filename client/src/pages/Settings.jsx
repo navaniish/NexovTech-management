@@ -378,7 +378,6 @@ const Settings = () => {
               {/* Team Tab */}
               {activeTab === 'team' && (
                 <div className="space-y-8">
-                <div className="space-y-8">
                   <div className="p-10 rounded-[40px] bg-brand-600/5 border border-brand-500/10 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-8 opacity-10">
                       <UserPlus size={120} className="text-brand-500" />
