@@ -36,11 +36,15 @@ app.get('/', (req, res) => {
   res.send('NexovTech Management API is running...');
 });
 
-// Global error handler — prevents unhandled errors from crashing the function
+// Global error handler
 app.use((err, req, res, next) => {
   console.error('UNHANDLED_API_ERROR:', err.stack || err.message || err);
   res.status(500).json({ message: 'Internal server error' });
 });
+
+// === INITIALIZATION ===
+const seedAdmin = require('./seedAdmin');
+seedAdmin().catch(err => console.error('❌ SEEDING FAILED:', err.message));
 
 // === TRADITIONAL SERVER MODE (local dev only) ===
 if (!IS_SERVERLESS) {
@@ -64,15 +68,6 @@ if (!IS_SERVERLESS) {
   });
 
   const PORT = process.env.PORT || 5005;
-
-  const seedAdmin = require('./seedAdmin');
-  console.log('🛡️ CLOUD_DATABASE: Activating Firestore Synchronization...');
-  seedAdmin().then(() => {
-    console.log('✅ SYSTEM READY: Cloud-Hybrid Bridge Online');
-  }).catch(err => {
-    console.error('❌ INITIALIZATION FAILED:', err.message);
-  });
-
   server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
