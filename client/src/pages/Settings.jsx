@@ -145,7 +145,20 @@ const Settings = () => {
       if (res.ok) {
         showToast(data.message || 'Access granted!', 'success');
         setAccessForm({ email: '', name: '', role: 'Employee', tempPassword: '', bankName: '', accountNumber: '', ifscCode: '', upiId: '' });
-        fetchTeam();
+        
+        // Atomic update: Use the fresh list from the server immediately
+        if (data.updatedRoster) {
+          const unique = data.updatedRoster.reduce((acc, curr) => {
+            const email = curr.email?.toLowerCase();
+            if (email && !acc.find(item => item.email?.toLowerCase() === email)) {
+              acc.push({ ...curr, email, avatar: curr.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}` });
+            }
+            return acc;
+          }, []);
+          setTeamMembers(unique);
+        } else {
+          fetchTeam();
+        }
       } else {
         showToast(data.message || 'Error granting access', 'error');
       }

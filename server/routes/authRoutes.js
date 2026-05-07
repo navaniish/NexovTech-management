@@ -80,8 +80,18 @@ router.post('/grant-access', async (req, res) => {
     createdAt: new Date()
   };
 
+  console.log(`📝 ACCESS_SYNC: Registering specialist [${email}]...`);
   const saved = await fallbackDb.save('users', userData);
-  res.json({ message: `Access granted to ${email}`, user: saved });
+  
+  // Immediately fetch updated roster to ensure absolute synchronization
+  const allUsers = (await fallbackDb.find('users', {})) || [];
+  console.log(`✅ ACCESS_SYNC: Specialist registered. Returning ${allUsers.length} members.`);
+
+  res.json({ 
+    message: `Access granted to ${email}`, 
+    user: saved,
+    updatedRoster: allUsers
+  });
 });
 
 // Update Financials
