@@ -93,11 +93,12 @@ const fallbackDb = {
       const id = item.firebaseUid || item.id || item.email || (db ? db.collection(collection).doc().id : Date.now().toString());
       if (!item.id && !item.firebaseUid && !item.email) item.id = id;
       
-      if (!db) throw new Error('Firestore DB handle is missing');
+      if (!db) throw new Error('DATABASE_OFFLINE: No Firestore handle found. Please check Netlify Environment Variables.');
       await db.collection(collection).doc(id).set(item, { merge: true });
-      console.log(`Cloud Sync: [${collection}] document updated.`);
+      console.log(`Cloud Sync Success: [${collection}] document updated.`);
     } catch (err) {
-      console.error(`Cloud Sync Failed: ${err.message}`);
+      console.error(`🔥 DATABASE_CRITICAL_FAILURE: ${err.message}`);
+      throw err; // Re-throw to inform the API
     }
 
     // Always update local cache

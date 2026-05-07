@@ -397,7 +397,15 @@ const Settings = () => {
                     </div>
                     
                     <div className="relative z-10">
-                      <h4 className="text-2xl font-black theme-text-primary tracking-tight mb-2">Register New Specialist</h4>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-2xl font-black theme-text-primary tracking-tight">Register New Specialist</h4>
+                        {teamMembers.length === 0 && !loadingTeam && (
+                          <div className="px-3 py-1 bg-rose-500/10 border border-rose-500/20 rounded-full flex items-center gap-2 animate-pulse">
+                            <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                            <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest">Database Offline</span>
+                          </div>
+                        )}
+                      </div>
                       <p className="text-sm theme-text-secondary mb-10">Initialize secure workspace credentials and financial synchronization.</p>
                       
                       <form onSubmit={handleGrantAccess} className="space-y-8">
