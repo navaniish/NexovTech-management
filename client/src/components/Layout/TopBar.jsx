@@ -1,18 +1,25 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Search, Bell, HelpCircle, Sparkles, Command, ChevronDown, Moon, Sun } from 'lucide-react';
+import { Search, Bell, HelpCircle, Sparkles, Command, ChevronDown, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const TopBar = () => {
+const TopBar = ({ onMenuToggle }) => {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   return (
-    <header className="theme-topbar h-20 flex items-center justify-between px-10 sticky top-0 z-40">
-      {/* Search */}
-      <div className="flex-1 max-w-2xl group">
+    <header className="theme-topbar h-20 flex items-center justify-between px-4 md:px-10 sticky top-0 z-40">
+      <div className="flex items-center gap-2 md:gap-4 flex-1">
+        <button 
+          className="md:hidden p-2 rounded-lg text-brand-500 hover:bg-brand-500/10 transition-colors"
+          onClick={onMenuToggle}
+        >
+          <Menu size={24} />
+        </button>
+        {/* Search */}
+        <div className="flex-1 max-w-2xl group hidden sm:block">
         <div className="relative">
           <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 theme-text-secondary group-focus-within:text-brand-400 transition-colors pointer-events-none">
             <Search size={20} />
@@ -33,9 +40,10 @@ const TopBar = () => {
             <span className="text-[10px] font-black tracking-widest uppercase">K</span>
           </div>
         </div>
+        </div>
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-2 md:gap-6">
         <div className="flex items-center gap-2">
           {/* Theme Toggle */}
           {/* Theme Toggle removed */}

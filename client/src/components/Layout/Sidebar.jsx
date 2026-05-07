@@ -41,7 +41,7 @@ const employeeItems = [
   { path: '/settings',           icon: Settings,        label: 'Settings',       badge: null },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -54,27 +54,48 @@ const Sidebar = () => {
   const displayItems = user?.role === 'Admin' ? adminItems : employeeItems;
 
   return (
-    <motion.aside
-      animate={{ width: isCollapsed ? '96px' : '280px' }}
-      className="h-screen theme-sidebar flex flex-col relative z-[50]"
-      style={{ flexShrink: 0 }}
-    >
-      {/* Logo */}
-      <div className="p-8 mb-4 flex items-center justify-between">
-        <AnimatePresence mode="wait">
-          {!isCollapsed && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              className="flex items-center gap-3"
-            >
-              <div className="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center shadow-lg shadow-brand-600/20">
-                <Sparkles className="text-white" size={24} />
-              </div>
-              <span className="font-black text-xl tracking-tighter theme-text-primary">NEXOVTECH</span>
-            </motion.div>
-          )}
+    <>
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 z-[50] md:hidden backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+      
+      <motion.aside
+        animate={{ width: isCollapsed ? '96px' : '280px' }}
+        className={`h-screen theme-sidebar flex flex-col fixed md:relative z-[60] top-0 bottom-0 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+        style={{ flexShrink: 0 }}
+      >
+        {/* Logo */}
+        <div className="p-8 mb-4 flex items-center justify-between">
+          <AnimatePresence mode="wait">
+            {!isCollapsed && (
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="flex items-center gap-3 w-full justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center shadow-lg shadow-brand-600/20">
+                    <Sparkles className="text-white" size={24} />
+                  </div>
+                  <span className="font-black text-xl tracking-tighter theme-text-primary">NEXOVTECH</span>
+                </div>
+                {/* Mobile Close Button */}
+                <button 
+                  className="md:hidden p-2 text-surface-500 hover:text-brand-500"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <ChevronLeft size={24} />
+                </button>
+              </motion.div>
+            )}
         </AnimatePresence>
         {isCollapsed && (
           <div className="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center shadow-lg shadow-brand-600/20 mx-auto">
@@ -159,7 +180,8 @@ const Sidebar = () => {
       >
         {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
       </button>
-    </motion.aside>
+      </motion.aside>
+    </>
   );
 };
 
