@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005/api';
+const API_URL = import.meta.env.VITE_API_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5005/api' : '/api');
 
 const VerifyID = () => {
   const { qrToken } = useParams();
