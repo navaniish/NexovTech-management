@@ -118,10 +118,14 @@ router.put('/update-profile/:id', async (req, res) => {
   }
 });
 
-// List all granted users (non-admin)
+// List all granted users
 router.get('/team-access', async (req, res) => {
-  const users = ((await fallbackDb.find('users', {})) || []).filter(u => u.role !== 'Admin');
-  res.json(users);
+  try {
+    const users = (await fallbackDb.find('users', {})) || [];
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to retrieve access registry' });
+  }
 });
 
 // Revoke access
