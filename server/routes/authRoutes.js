@@ -15,7 +15,7 @@ router.post('/upload-avatar/:id', upload.single('avatar'), async (req, res) => {
     if (userId === 'admin_bypass') userId = 'nexovtech@myyahoo.com';
     // Construct the URL for the avatar
     // We assume the server is running on localhost:5005 as per other routes
-    const avatarUrl = `http://localhost:5005/uploads/avatars/${req.file.filename}`;
+    const avatarUrl = `/api/uploads/avatars/${req.file.filename}`;
 
     const updatedUser = await fallbackDb.update('users', userId, { avatar: avatarUrl });
     

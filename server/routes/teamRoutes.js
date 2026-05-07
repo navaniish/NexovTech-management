@@ -9,8 +9,12 @@ router.get('/', async (req, res) => {
     const users = await fallbackDb.find('users', {});
     // Deduplicate by email
     const unique = (users || []).reduce((acc, curr) => {
-      if (curr.email && !acc.find(item => item.email === curr.email)) acc.push(curr);
-      else if (!curr.email) acc.push(curr); // Don't hide users without email for now
+      const email = curr.email?.toLowerCase();
+      if (email && !acc.find(item => item.email?.toLowerCase() === email)) {
+        acc.push({ ...curr, email });
+      } else if (!email) {
+        acc.push(curr);
+      }
       return acc;
     }, []);
     console.log(`✅ TEAM_SYNC: ${unique.length} specialists synchronized from cloud.`);

@@ -98,7 +98,10 @@ const Settings = () => {
       if (res.ok) {
         // Deduplicate by email before setting state
         const unique = data.reduce((acc, curr) => {
-          if (!acc.find(item => item.email === curr.email)) acc.push(curr);
+          const email = curr.email?.toLowerCase();
+          if (email && !acc.find(item => item.email?.toLowerCase() === email)) {
+            acc.push({ ...curr, email });
+          }
           return acc;
         }, []);
         setTeamMembers(unique);

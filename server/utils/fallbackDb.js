@@ -102,14 +102,18 @@ const fallbackDb = {
 
     // Always update local cache
     const data = readLocalData(collection);
-    const index = data.findIndex(i => i.id === item.id || i.email === item.email || i.firebaseUid === item.firebaseUid);
+    const idToUse = item.id || item.firebaseUid || item.email;
+    const index = data.findIndex(i => i.id === idToUse || i.email === item.email || i.firebaseUid === item.firebaseUid);
+    
+    const finalizedItem = { ...item, id: idToUse };
+    
     if (index > -1) {
-      data[index] = { ...data[index], ...item };
+      data[index] = { ...data[index], ...finalizedItem };
     } else {
-      data.push(item);
+      data.push(finalizedItem);
     }
     writeLocalData(collection, data);
-    return item;
+    return finalizedItem;
   },
 
   // DELETE
