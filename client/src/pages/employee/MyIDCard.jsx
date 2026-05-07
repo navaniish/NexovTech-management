@@ -3,8 +3,7 @@ import { motion } from 'framer-motion';
 import { Shield, Loader2, Sparkles, AlertTriangle, DownloadCloud } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import DigitalIDCard from '../../components/IDCard/DigitalIDCard';
-
-const API_URL = 'http://localhost:5005/api';
+import API_URL from '../../config';
 
 const MyIDCard = () => {
   const { user } = useAuth();

@@ -7,8 +7,7 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005/api';
-
+import API_URL from '../config';
 const AdminHR = () => {
   const [tab, setTab] = useState('attendance');
   const [team, setTeam] = useState([]);

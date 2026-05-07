@@ -7,6 +7,7 @@ import {
   CreditCard, Building2, Hash, Smartphone,
   Search, Filter, Contact, Zap
 } from 'lucide-react';
+import API_URL from '../config';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -92,7 +93,7 @@ const Settings = () => {
   const fetchTeam = async () => {
     setLoadingTeam(true);
     try {
-      const res = await fetch('http://localhost:5005/api/auth/team-access');
+      const res = await fetch(`${API_URL}/auth/team-access`);
       const data = await res.json();
       if (res.ok) {
         // Deduplicate by email before setting state
@@ -132,7 +133,7 @@ const Settings = () => {
     }
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5005/api/auth/grant-access', {
+      const res = await fetch(`${API_URL}/auth/grant-access`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(accessForm),
@@ -156,7 +157,7 @@ const Settings = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5005/api/auth/update-financials/${selectedMember._id}`, {
+      const res = await fetch(`${API_URL}/auth/update-financials/${selectedMember._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editFinancialsForm),
@@ -177,7 +178,7 @@ const Settings = () => {
   const handleRevoke = async (member) => {
     setRevokingId(member._id);
     try {
-      const res = await fetch(`http://localhost:5005/api/auth/revoke-access/${member._id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/auth/revoke-access/${member._id}`, { method: 'DELETE' });
       if (res.ok) {
         setTeamMembers(prev => prev.filter(m => m._id !== member._id));
         showToast('Access revoked', 'success');
@@ -204,7 +205,7 @@ const Settings = () => {
 
     setUploading(true);
     try {
-      const res = await fetch(`http://localhost:5005/api/auth/upload-avatar/${user._id || user.id || user.firebaseUid}`, {
+      const res = await fetch(`${API_URL}/auth/upload-avatar/${user._id || user.id || user.firebaseUid}`, {
         method: 'POST',
         body: formData,
       });

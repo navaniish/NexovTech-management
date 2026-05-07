@@ -30,8 +30,7 @@ import {
 } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005/api';
+import API_URL from '../config';
 
 const DonutWidget = ({ data, centerLabel }) => (
   <div className="relative w-[88px] h-[88px] flex-shrink-0">

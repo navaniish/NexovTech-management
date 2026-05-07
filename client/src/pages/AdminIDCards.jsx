@@ -7,8 +7,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import DigitalIDCard from '../components/IDCard/DigitalIDCard';
 
-const API_URL = 'http://localhost:5005/api';
-
+import API_URL from '../config';
 const AdminIDCards = () => {
   const [employees, setEmployees] = useState([]);
   const [cards, setCards] = useState([]);

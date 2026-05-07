@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Clock, Briefcase, TrendingUp, Target, Calendar, CheckCircle2, AlertCircle, Sparkles, Loader2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005/api';
+import API_URL from '../../config';
 
 const EmployeeDashboard = () => {
   const { user } = useAuth();

@@ -15,8 +15,7 @@ import {
   Loader2,
   RefreshCw
 } from 'lucide-react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005/api';
+import API_URL from '../config';
 
 const MemberCard = ({ member, index, onRemove, onAssign }) => (
   <motion.div 
