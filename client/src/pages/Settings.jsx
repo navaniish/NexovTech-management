@@ -412,21 +412,33 @@ const Settings = () => {
                                 style={{ borderColor: 'var(--border-default)' }}
                               />
                             </div>
-                            <div className="md:col-span-2 flex p-1.5 bg-black/40 rounded-[20px] border" style={{ borderColor: 'var(--border-default)' }}>
-                              <button
-                                type="button"
-                                onClick={() => setAccessForm({ ...accessForm, role: 'Employee' })}
-                                className={`flex-1 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${accessForm.role === 'Employee' ? 'bg-brand-600 text-white shadow-xl shadow-brand-600/20' : 'theme-text-secondary hover:theme-text-primary'}`}
-                              >
-                                <Zap size={14} /> Specialist
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setAccessForm({ ...accessForm, role: 'Admin' })}
-                                className={`flex-1 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${accessForm.role === 'Admin' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/20' : 'theme-text-secondary hover:theme-text-primary'}`}
-                              >
-                                <ShieldCheck size={14} /> Admin
-                              </button>
+                            <div className="md:col-span-2 space-y-4">
+                              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500 ml-1">Assign Operational Role</p>
+                              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                                {ROLES.map((r) => (
+                                  <button
+                                    key={r.value}
+                                    type="button"
+                                    onClick={() => setAccessForm({ ...accessForm, role: r.value })}
+                                    className={`py-3 px-2 rounded-2xl border transition-all flex flex-col items-center gap-2 group ${accessForm.role === r.value ? 'bg-brand-600 border-brand-500 shadow-xl shadow-brand-600/20' : 'theme-bg border-white/5 hover:border-brand-500/30'}`}
+                                  >
+                                    <div className={`p-2 rounded-xl ${accessForm.role === r.value ? 'bg-white/10' : 'bg-surface-800 group-hover:bg-brand-500/10'}`}>
+                                      <Zap size={14} style={{ color: accessForm.role === r.value ? '#fff' : r.color }} />
+                                    </div>
+                                    <span className={`text-[9px] font-black uppercase tracking-tighter ${accessForm.role === r.value ? 'text-white' : 'theme-text-secondary'}`}>{r.label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                              
+                              <div className="pt-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setAccessForm({ ...accessForm, role: 'Admin' })}
+                                  className={`w-full py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-2 border ${accessForm.role === 'Admin' ? 'bg-indigo-600 border-indigo-500 text-white shadow-xl shadow-indigo-600/20' : 'theme-bg border-white/5 theme-text-secondary hover:theme-text-primary'}`}
+                                >
+                                  <ShieldCheck size={16} /> Administrative Access
+                                </button>
+                              </div>
                             </div>
                             <div className="md:col-span-2 relative group">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-500 group-focus-within:text-brand-500 transition-colors" size={18} />
