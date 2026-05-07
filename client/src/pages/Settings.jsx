@@ -93,14 +93,14 @@ const Settings = () => {
   const fetchTeam = async () => {
     setLoadingTeam(true);
     try {
-      const res = await fetch(`${API_URL}/auth/team-access`);
-      const data = await res.json();
+      const res = await fetch(`${API_URL}/auth/team-access?t=${Date.now()}`);
       if (res.ok) {
-        // Deduplicate by email before setting state
-        const unique = data.reduce((acc, curr) => {
+        const data = await res.json();
+        // Force refresh by ensuring a new array reference
+        const unique = [...data].reduce((acc, curr) => {
           const email = curr.email?.toLowerCase();
           if (email && !acc.find(item => item.email?.toLowerCase() === email)) {
-            acc.push({ ...curr, email });
+            acc.push({ ...curr, email, avatar: curr.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}` });
           }
           return acc;
         }, []);
