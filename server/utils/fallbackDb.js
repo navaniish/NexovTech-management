@@ -2,12 +2,15 @@ const fs = require('fs');
 const path = require('path');
 const { db } = require('../firebaseAdmin');
 
+const IS_SERVERLESS = !!(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+
 const DATA_DIR = path.join(__dirname, '..', 'data');
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
+try { if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) { /* read-only FS */ }
 
 const getFilePath = (collection) => path.join(DATA_DIR, `${collection}.json`);
 
 const readLocalData = (collection) => {
+  if (IS_SERVERLESS) return []; // No local filesystem in serverless
   const filePath = getFilePath(collection);
   if (!fs.existsSync(filePath)) return [];
   try {
@@ -18,7 +21,12 @@ const readLocalData = (collection) => {
 };
 
 const writeLocalData = (collection, data) => {
-  fs.writeFileSync(getFilePath(collection), JSON.stringify(data, null, 2));
+  if (IS_SERVERLESS) return; // Cannot write in serverless
+  try {
+    fs.writeFileSync(getFilePath(collection), JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.warn(`Local cache write failed for [${collection}]: ${e.message}`);
+  }
 };
 
 const fallbackDb = {
