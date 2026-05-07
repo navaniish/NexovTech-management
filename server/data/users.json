@@ -1,0 +1,59 @@
+[
+  {
+    "id": "3Nrcp0hlh1e04bQwjAnrwzQvodD2",
+    "createdAt": {
+      "_seconds": 1777755419,
+      "_nanoseconds": 860000000
+    },
+    "firebaseUid": "3Nrcp0hlh1e04bQwjAnrwzQvodD2",
+    "name": "MANI CHARAN TEJA",
+    "email": "manicharanteja1234@gmail.com",
+    "avatar": "http://localhost:5005/uploads/avatars/avatar-1778133235713-784264021.jpeg",
+    "role": "EDITOR",
+    "phone": "7780662246"
+  },
+  {
+    "id": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "createdAt": {
+      "_seconds": 1777753023,
+      "_nanoseconds": 866000000
+    },
+    "firebaseUid": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "role": "Admin",
+    "name": "NexovTech Adminstration",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=NexovTech Adminstration1777753023866",
+    "email": "nexovtech@myyahoo.com"
+  },
+  {
+    "id": "manicharanteja1234@gmail.com",
+    "role": "Employee",
+    "performance": {
+      "tasksCompleted": 0,
+      "rating": 5,
+      "onTimeRate": 100
+    },
+    "email": "manicharanteja1234@gmail.com",
+    "createdAt": {
+      "_seconds": 1777755355,
+      "_nanoseconds": 627000000
+    },
+    "name": "MANI CHARAN",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=MANI CHARAN1777755355627"
+  },
+  {
+    "id": "nexovtech@myyahoo.com",
+    "role": "Admin",
+    "performance": {
+      "tasksCompleted": 99,
+      "rating": 5,
+      "onTimeRate": 100
+    },
+    "name": "NexovTech Administrator",
+    "email": "nexovtech@myyahoo.com",
+    "createdAt": {
+      "_seconds": 1778134330,
+      "_nanoseconds": 841000000
+    },
+    "avatar": "http://localhost:5005/uploads/avatars/avatar-1778134644941-120034560.jpeg"
+  }
+]

@@ -1,0 +1,25 @@
+[
+  {
+    "id": "hCvJUaYyz6ErckgkN0o4",
+    "createdAt": {
+      "_seconds": 1778097810,
+      "_nanoseconds": 786000000
+    },
+    "progress": 0,
+    "client": {
+      "name": ""
+    },
+    "team": [
+      {
+        "name": "MANI CHARAN TEJA",
+        "email": "manicharanteja1234@gmail.com",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=MANI CHARAN TEJA1777755419860"
+      }
+    ],
+    "deadline": "2026-05-08",
+    "priority": "Medium",
+    "title": "hii",
+    "budget": 4000,
+    "status": "Planning"
+  }
+]

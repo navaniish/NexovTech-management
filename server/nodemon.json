@@ -1,0 +1,5 @@
+{
+  "ignore": ["data/*", "node_modules/*", "*.json", "uploads/*"],
+  "watch": ["routes/*", "utils/*", "index.js", "seedAdmin.js", "firebaseAdmin.js"],
+  "ext": "js,mjs,json"
+}

@@ -1,0 +1,115 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import DashboardLayout from './components/Layout/DashboardLayout';
+import EmployeeLayout from './components/Layout/EmployeeLayout';
+
+// Admin Pages
+import Dashboard from './pages/Dashboard';
+import Clients from './pages/Clients';
+import Projects from './pages/Projects';
+import VideoModule from './pages/VideoModule';
+import WebModule from './pages/WebModule';
+import AIModule from './pages/AIModule';
+import CyberModule from './pages/CyberModule';
+import Team from './pages/Team';
+import Finance from './pages/Finance';
+import InvoiceGenerator from './pages/InvoiceGenerator';
+import Settings from './pages/Settings';
+import Login from './pages/Login';
+import AdminPayroll from './pages/AdminPayroll';
+import AdminHR from './pages/AdminHR';
+
+// Employee Pages
+import EmployeeDashboard from './pages/employee/Dashboard';
+import MyTasks from './pages/employee/MyTasks';
+import MyProjects from './pages/employee/MyProjects';
+import Timesheet from './pages/employee/Timesheet';
+import Earnings from './pages/employee/Earnings';
+import MySalary from './pages/employee/MySalary';
+import MyAttendance from './pages/employee/MyAttendance';
+import MyLeaves from './pages/employee/MyLeaves';
+import AdminIDCards from './pages/AdminIDCards';
+import MyIDCard from './pages/employee/MyIDCard';
+import VerifyID from './pages/VerifyID';
+
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to={user.role === 'Admin' ? '/' : '/employee/dashboard'} />;
+  }
+
+  return children;
+};
+
+function AppRoutes() {
+  const { user } = useAuth();
+
+  return (
+    <Routes>
+      <Route path="/login" element={!user ? <Login /> : <Navigate to={user.role === 'Admin' ? '/' : '/employee/dashboard'} />} />
+      
+      {/* Admin/Manager Routes */}
+      <Route element={
+        <ProtectedRoute allowedRoles={['Admin', 'Manager']}>
+          <DashboardLayout />
+        </ProtectedRoute>
+      }>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/clients" element={<Clients />} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/video" element={<VideoModule />} />
+        <Route path="/web" element={<WebModule />} />
+        <Route path="/ai" element={<AIModule />} />
+        <Route path="/cyber" element={<CyberModule />} />
+        <Route path="/team" element={<Team />} />
+        <Route path="/finance" element={<Finance />} />
+        <Route path="/invoice-forge" element={<InvoiceGenerator />} />
+        <Route path="/payroll" element={<AdminPayroll />} />
+        <Route path="/hr" element={<AdminHR />} />
+        <Route path="/id-cards" element={<AdminIDCards />} />
+        <Route path="/settings" element={<Settings />} />
+      </Route>
+
+      {/* Employee Routes */}
+      <Route element={
+        <ProtectedRoute allowedRoles={['Employee', 'Developer', 'Editor', 'AI Specialist', 'Security Analyst']}>
+          <EmployeeLayout />
+        </ProtectedRoute>
+      }>
+        <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
+        <Route path="/employee/tasks" element={<MyTasks />} />
+        <Route path="/employee/projects" element={<MyProjects />} />
+        <Route path="/employee/timesheet" element={<Timesheet />} />
+        <Route path="/employee/earnings" element={<Earnings />} />
+        <Route path="/employee/salary" element={<MySalary />} />
+        <Route path="/employee/attendance" element={<MyAttendance />} />
+        <Route path="/employee/leaves" element={<MyLeaves />} />
+        <Route path="/employee/id-card" element={<MyIDCard />} />
+        <Route path="/employee/settings" element={<Settings />} />
+      </Route>
+
+      <Route path="/verify/:qrToken" element={<VerifyID />} />
+
+      <Route path="*" element={<Navigate to={user ? (user.role === 'Admin' || user.role === 'Manager' ? '/' : '/employee/dashboard') : '/login'} />} />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
+  );
+}
+
+export default App;

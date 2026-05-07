@@ -1,0 +1,13 @@
+[
+  {
+    "id": "att_1778103271363",
+    "date": "2026-05-06",
+    "createdAt": "2026-05-06T21:34:31.363Z",
+    "checkIn": "2026-05-06T21:34:31.363Z",
+    "totalHours": 0,
+    "employeeId": "3Nrcp0hlh1e04bQwjAnrwzQvodD2",
+    "checkOut": null,
+    "attendanceStatus": "Present",
+    "remarks": "Marked by Admin as Present"
+  }
+]

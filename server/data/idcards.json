@@ -1,0 +1,68 @@
+[
+  {
+    "id": "2JHD2lYou0VrfGUhh0C6",
+    "qrToken": "3d5b33ff3d50f7a492ac1c9fa479efc6",
+    "employeeId": "NXG-WZQVODD2",
+    "userId": "3Nrcp0hlh1e04bQwjAnrwzQvodD2",
+    "status": "Active",
+    "expiryDate": "2028-05-07T00:00:00.000Z",
+    "issueDate": "2026-05-07T00:00:00.000Z"
+  },
+  {
+    "id": "Bywb8Lf16anm2H4x3BJl",
+    "expiryDate": {
+      "_seconds": 1841289100,
+      "_nanoseconds": 122000000
+    },
+    "qrToken": "6b100b63528c1886561fd1a8f63e2372",
+    "employeeId": "NXG-MLRQ6YH2",
+    "issueDate": {
+      "_seconds": 1778130700,
+      "_nanoseconds": 122000000
+    },
+    "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "status": "Active"
+  },
+  {
+    "id": "DhOCqQOpMCMC1uJX6NuM",
+    "expiryDate": "2028-05-07T06:07:42.061Z",
+    "qrToken": "c217898874f74866349d4a1c8d45fdfa",
+    "employeeId": "NXG-WZQVODD2",
+    "issueDate": "2026-05-07T06:07:42.061Z",
+    "userId": "3Nrcp0hlh1e04bQwjAnrwzQvodD2",
+    "status": "Active"
+  },
+  {
+    "id": "JdNa4xCqKEP4gKK1maRN",
+    "expiryDate": "2028-05-07T06:07:52.493Z",
+    "qrToken": "f2370d0c0050370aee19d91e4469c5a0",
+    "employeeId": "NXG-MLRQ6YH2",
+    "issueDate": "2026-05-07T06:07:52.493Z",
+    "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "status": "Active"
+  },
+  {
+    "id": "Jo8z3HjL72iBttZ4GSDi",
+    "expiryDate": {
+      "_seconds": 1841288463,
+      "_nanoseconds": 521000000
+    },
+    "qrToken": "88f57f7e6f4342c909fd475cf9dbb08b",
+    "employeeId": "NXG-WZQVODD2",
+    "issueDate": {
+      "_seconds": 1778130063,
+      "_nanoseconds": 521000000
+    },
+    "userId": "3Nrcp0hlh1e04bQwjAnrwzQvodD2",
+    "status": "Active"
+  },
+  {
+    "id": "QlKXq8uTwWqXr0STL97P",
+    "expiryDate": "2028-05-07T06:01:49.168Z",
+    "qrToken": "7bd9f784a7b7764aa2d5b76e0d1a7cca",
+    "employeeId": "NXG-WZQVODD2",
+    "issueDate": "2026-05-07T06:01:49.168Z",
+    "userId": "3Nrcp0hlh1e04bQwjAnrwzQvodD2",
+    "status": "Active"
+  }
+]
