@@ -378,81 +378,122 @@ const Settings = () => {
               {/* Team Tab */}
               {activeTab === 'team' && (
                 <div className="space-y-8">
-                  <div className="p-8 rounded-[28px] bg-brand-600/10 border border-brand-500/20">
-                    <h4 className="font-black theme-text-primary flex items-center gap-2 mb-4">
-                      <UserPlus size={18} className="text-brand-400" />
-                      Grant Workspace Access
-                    </h4>
-                    <form onSubmit={handleGrantAccess} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <input
-                        placeholder="Full Name"
-                        value={accessForm.name}
-                        onChange={e => setAccessForm({ ...accessForm, name: e.target.value })}
-                        className="px-5 py-3 rounded-xl theme-bg border theme-text-primary outline-none focus:ring-2 focus:ring-brand-500/20"
-                        style={{ borderColor: 'var(--border-default)' }}
-                      />
-                      <input
-                        placeholder="gmail@gmail.com"
-                        value={accessForm.email}
-                        onChange={e => setAccessForm({ ...accessForm, email: e.target.value })}
-                        className="px-5 py-3 rounded-xl theme-bg border theme-text-primary outline-none focus:ring-2 focus:ring-brand-500/20"
-                        style={{ borderColor: 'var(--border-default)' }}
-                      />
-                      <div className="md:col-span-2 flex p-1 bg-black/20 rounded-2xl border" style={{ borderColor: 'var(--border-default)' }}>
-                        <button
-                          type="button"
-                          onClick={() => setAccessForm({ ...accessForm, role: 'Employee' })}
-                          className={`flex-1 py-3.5 rounded-[13px] text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${accessForm.role === 'Employee' ? 'bg-brand-600 text-white shadow-lg shadow-brand-600/20' : 'theme-text-secondary hover:theme-text-primary'}`}
+                <div className="space-y-8">
+                  <div className="p-10 rounded-[40px] bg-brand-600/5 border border-brand-500/10 shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 opacity-10">
+                      <UserPlus size={120} className="text-brand-500" />
+                    </div>
+                    
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-black theme-text-primary tracking-tight mb-2">Register New Specialist</h4>
+                      <p className="text-sm theme-text-secondary mb-10">Initialize secure workspace credentials and financial synchronization.</p>
+                      
+                      <form onSubmit={handleGrantAccess} className="space-y-8">
+                        {/* Section 1: Identity */}
+                        <div className="space-y-4">
+                          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500 ml-1">Identity & Credentials</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="relative group">
+                              <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-500 group-focus-within:text-brand-500 transition-colors" size={18} />
+                              <input
+                                placeholder="Full Name"
+                                value={accessForm.name}
+                                onChange={e => setAccessForm({ ...accessForm, name: e.target.value })}
+                                className="w-full pl-12 pr-5 py-4 rounded-2xl theme-bg border theme-text-primary outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+                                style={{ borderColor: 'var(--border-default)' }}
+                              />
+                            </div>
+                            <div className="relative group">
+                              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-500 group-focus-within:text-brand-500 transition-colors" size={18} />
+                              <input
+                                placeholder="gmail@gmail.com"
+                                value={accessForm.email}
+                                onChange={e => setAccessForm({ ...accessForm, email: e.target.value })}
+                                className="w-full pl-12 pr-5 py-4 rounded-2xl theme-bg border theme-text-primary outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+                                style={{ borderColor: 'var(--border-default)' }}
+                              />
+                            </div>
+                            <div className="md:col-span-2 flex p-1.5 bg-black/40 rounded-[20px] border" style={{ borderColor: 'var(--border-default)' }}>
+                              <button
+                                type="button"
+                                onClick={() => setAccessForm({ ...accessForm, role: 'Employee' })}
+                                className={`flex-1 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${accessForm.role === 'Employee' ? 'bg-brand-600 text-white shadow-xl shadow-brand-600/20' : 'theme-text-secondary hover:theme-text-primary'}`}
+                              >
+                                <Zap size={14} /> Specialist
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setAccessForm({ ...accessForm, role: 'Admin' })}
+                                className={`flex-1 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${accessForm.role === 'Admin' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/20' : 'theme-text-secondary hover:theme-text-primary'}`}
+                              >
+                                <ShieldCheck size={14} /> Admin
+                              </button>
+                            </div>
+                            <div className="md:col-span-2 relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-500 group-focus-within:text-brand-500 transition-colors" size={18} />
+                                <input
+                                  type="password"
+                                  placeholder="Initial Workspace Password"
+                                  value={accessForm.tempPassword}
+                                  onChange={e => setAccessForm({ ...accessForm, tempPassword: e.target.value })}
+                                  className="w-full pl-12 pr-5 py-4 rounded-2xl theme-bg border theme-text-primary outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+                                  style={{ borderColor: 'var(--border-default)' }}
+                                />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Section 2: Financials */}
+                        <div className="space-y-4">
+                          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 ml-1">Financial Roster Details</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="relative group">
+                              <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-500 group-focus-within:text-emerald-500 transition-colors" size={18} />
+                              <input
+                                placeholder="Bank Name"
+                                value={accessForm.bankName}
+                                onChange={e => setAccessForm({ ...accessForm, bankName: e.target.value })}
+                                className="w-full pl-12 pr-5 py-4 rounded-2xl theme-bg border theme-text-primary outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                                style={{ borderColor: 'var(--border-default)' }}
+                              />
+                            </div>
+                            <div className="relative group">
+                              <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-500 group-focus-within:text-emerald-500 transition-colors" size={18} />
+                              <input
+                                placeholder="Account Number"
+                                value={accessForm.accountNumber}
+                                onChange={e => setAccessForm({ ...accessForm, accountNumber: e.target.value })}
+                                className="w-full pl-12 pr-5 py-4 rounded-2xl theme-bg border theme-text-primary outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                                style={{ borderColor: 'var(--border-default)' }}
+                              />
+                            </div>
+                            <input
+                              placeholder="IFSC Code"
+                              value={accessForm.ifscCode}
+                              onChange={e => setAccessForm({ ...accessForm, ifscCode: e.target.value })}
+                              className="px-5 py-4 rounded-2xl theme-bg border theme-text-primary outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                              style={{ borderColor: 'var(--border-default)' }}
+                            />
+                            <input
+                              placeholder="UPI ID (e.g. name@bank)"
+                              value={accessForm.upiId}
+                              onChange={e => setAccessForm({ ...accessForm, upiId: e.target.value })}
+                              className="px-5 py-4 rounded-2xl theme-bg border theme-text-primary outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                              style={{ borderColor: 'var(--border-default)' }}
+                            />
+                          </div>
+                        </div>
+
+                        <button 
+                          type="submit" 
+                          disabled={loading} 
+                          className="w-full py-5 bg-brand-600 hover:bg-brand-500 text-white rounded-[24px] font-black text-xs uppercase tracking-[0.3em] shadow-2xl shadow-brand-600/30 flex items-center justify-center gap-3 transition-all hover:-translate-y-1 active:translate-y-0"
                         >
-                          <Users size={16} /> Employee
+                          {loading ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle2 size={20} />} 
+                          Complete Registration
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => setAccessForm({ ...accessForm, role: 'Admin' })}
-                          className={`flex-1 py-3.5 rounded-[13px] text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${accessForm.role === 'Admin' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'theme-text-secondary hover:theme-text-primary'}`}
-                        >
-                          <ShieldCheck size={16} /> Admin
-                        </button>
-                      </div>
-                      <input
-                        placeholder="Temporary Password"
-                        value={accessForm.tempPassword}
-                        onChange={e => setAccessForm({ ...accessForm, tempPassword: e.target.value })}
-                        className="px-5 py-3 rounded-xl theme-bg border theme-text-primary outline-none focus:ring-2 focus:ring-brand-500/20"
-                        style={{ borderColor: 'var(--border-default)' }}
-                      />
-                      <input
-                        placeholder="Bank Name"
-                        value={accessForm.bankName}
-                        onChange={e => setAccessForm({ ...accessForm, bankName: e.target.value })}
-                        className="px-5 py-3 rounded-xl theme-bg border theme-text-primary outline-none focus:ring-2 focus:ring-brand-500/20"
-                        style={{ borderColor: 'var(--border-default)' }}
-                      />
-                      <input
-                        placeholder="Account Number"
-                        value={accessForm.accountNumber}
-                        onChange={e => setAccessForm({ ...accessForm, accountNumber: e.target.value })}
-                        className="px-5 py-3 rounded-xl theme-bg border theme-text-primary outline-none focus:ring-2 focus:ring-brand-500/20"
-                        style={{ borderColor: 'var(--border-default)' }}
-                      />
-                      <input
-                        placeholder="IFSC Code"
-                        value={accessForm.ifscCode}
-                        onChange={e => setAccessForm({ ...accessForm, ifscCode: e.target.value })}
-                        className="px-5 py-3 rounded-xl theme-bg border theme-text-primary outline-none focus:ring-2 focus:ring-brand-500/20"
-                        style={{ borderColor: 'var(--border-default)' }}
-                      />
-                      <input
-                        placeholder="UPI ID (e.g. name@bank)"
-                        value={accessForm.upiId}
-                        onChange={e => setAccessForm({ ...accessForm, upiId: e.target.value })}
-                        className="px-5 py-3 rounded-xl theme-bg border theme-text-primary outline-none focus:ring-2 focus:ring-brand-500/20"
-                        style={{ borderColor: 'var(--border-default)' }}
-                      />
-                      <button type="submit" disabled={loading} className="md:col-span-2 py-3 bg-brand-600 text-white rounded-xl font-black text-sm flex items-center justify-center gap-2">
-                        {loading ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />} Grant Access
-                      </button>
-                    </form>
+                      </form>
+                    </div>
                   </div>
 
                   <div className="space-y-4">
