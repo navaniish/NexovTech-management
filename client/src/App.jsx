@@ -39,8 +39,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   if (loading) return null;
   if (!user) return <Navigate to="/login" />;
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to={user.role === 'Admin' ? '/' : '/employee/dashboard'} />;
+  if (allowedRoles && !allowedRoles.some(r => r.toLowerCase() === (user.role || '').toLowerCase())) {
+    return <Navigate to={user?.role?.toLowerCase() === 'admin' ? '/' : '/employee/dashboard'} />;
   }
 
   return children;

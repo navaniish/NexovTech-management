@@ -48,14 +48,12 @@ router.get('/invoices/:id/pdf', async (req, res) => {
 
 // Get All Transactions
 router.get('/transactions', async (req, res) => {
-  let transactions = await fallbackDb.find('transactions', {});
-  if (transactions.length === 0) {
-    transactions = [
-      { id: '1', client: 'Apex Corp', amount: 150000, type: 'Revenue', status: 'Delivered', date: new Date(), description: 'Apex Corp - Platform Licensing' },
-      { id: '2', client: 'Nebula AI', amount: 45000, type: 'Revenue', status: 'Pending', date: new Date(), description: 'Nebula AI - Security Audit' }
-    ];
+  try {
+    const transactions = await fallbackDb.find('transactions', {});
+    res.json(transactions || []);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch transactions' });
   }
-  res.json(transactions);
 });
 
 // Get Employee Earnings

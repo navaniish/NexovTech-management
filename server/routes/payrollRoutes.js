@@ -62,10 +62,17 @@ router.post('/generate', async (req, res) => {
     const users = await fallbackDb.find('users', { role: { $ne: 'Admin' } });
     const salaries = await fallbackDb.find('salaries', {});
     const timesheets = await fallbackDb.find('timesheets', {});
+    const existingPayrolls = await fallbackDb.find('payrolls', {}); // Fetch all to filter
 
     const results = [];
     for (const user of users) {
-      const salaryConfig = salaries.find(s => s.employeeId === (user.id || user._id));
+      const employeeId = user.id || user._id;
+
+      // Prevent duplicate payrolls for the same month and year
+      const alreadyGenerated = existingPayrolls.find(p => p.employeeId === employeeId && p.month === Number(month) && p.year === Number(year));
+      if (alreadyGenerated) continue;
+
+      const salaryConfig = salaries.find(s => s.employeeId === employeeId);
       if (!salaryConfig) continue;
 
       const employeeLogs = timesheets.filter(t => {
@@ -111,6 +118,20 @@ router.put('/:id', async (req, res) => {
     const existing = await fallbackDb.findById('payrolls', req.params.id);
     if (!existing) return res.status(404).json({ message: 'Record not found' });
     const updated = await fallbackDb.save('payrolls', { ...existing, ...req.body });
+
+    // Integrate with Finance Architecture: Generate Expense Ledger Entry
+    if (req.body.paymentStatus === 'Paid' && existing.paymentStatus !== 'Paid') {
+      await fallbackDb.save('transactions', {
+        id: `txn_pr_${Date.now()}`,
+        type: 'Expense',
+        amount: existing.calculatedSalary.total,
+        description: `Payroll Settlement - ${existing.employeeName} (${existing.month}/${existing.year})`,
+        date: new Date(),
+        status: 'Paid',
+        createdAt: new Date()
+      });
+    }
+
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: 'Failed to update payment status' });
@@ -164,6 +185,18 @@ router.get('/:id/pdf', async (req, res) => {
     doc.end();
   } catch (err) {
     res.status(500).json({ message: 'Payslip generation failed' });
+  }
+});
+
+// Delete Payroll Record
+router.delete('/:id', async (req, res) => {
+  try {
+    const existing = await fallbackDb.findById('payrolls', req.params.id);
+    if (!existing) return res.status(404).json({ message: 'Record not found' });
+    await fallbackDb.deleteOne('payrolls', existing.id || existing._id);
+    res.json({ message: 'Payroll record deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete payroll record' });
   }
 });
 

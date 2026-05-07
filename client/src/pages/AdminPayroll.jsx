@@ -16,7 +16,8 @@ import {
   Plus,
   X,
   Loader2,
-  FileText
+  FileText,
+  Trash2
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -90,10 +91,24 @@ const AdminPayroll = () => {
         body: JSON.stringify({ paymentStatus: 'Paid', paymentDate: new Date() })
       });
       if (response.ok) {
-        setPayrolls(prev => prev.map(p => p._id === payrollId ? { ...p, paymentStatus: 'Paid', paymentDate: new Date() } : p));
+        fetchData(); // Refresh all data to ensure charts update
       }
     } catch (err) {
       console.error('Update failed');
+    }
+  };
+
+  const handleDelete = async (payrollId) => {
+    if (!window.confirm('Are you sure you want to delete this payroll record?')) return;
+    try {
+      const response = await fetch(`${API_URL}/payroll/${payrollId}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        fetchData(); // Refresh UI
+      }
+    } catch (err) {
+      console.error('Delete failed');
     }
   };
 
@@ -147,14 +162,14 @@ const AdminPayroll = () => {
     <div className="space-y-8 pb-20 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter">Payroll Architecture</h1>
-          <p className="text-surface-500 mt-2 font-medium">Automated salary calculation and settlement ledger.</p>
+          <h1 className="text-4xl font-black text-black tracking-tighter">Payroll Architecture</h1>
+          <p className="text-black mt-2 font-medium">Automated salary calculation and settlement ledger.</p>
         </div>
         <div className="flex items-center gap-3">
           <select 
             value={selectedMonth} 
             onChange={e => setSelectedMonth(e.target.value)}
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs font-black text-white outline-none focus:border-brand-500"
+            className="bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-xs font-black text-black outline-none focus:border-brand-500"
           >
             {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
               <option key={m} value={i + 1}>{m}</option>
@@ -178,16 +193,16 @@ const AdminPayroll = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 glass-light rounded-[40px] border border-white/5 p-8 flex flex-col">
+        <div className="lg:col-span-2 glass-light rounded-[40px] border border-slate-100 p-8 flex flex-col shadow-2xl">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-black text-white tracking-tight">Settlement Grid</h2>
+            <h2 className="text-2xl font-black text-black tracking-tight">Settlement Grid</h2>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-600" size={14} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
               <input 
                 placeholder="Find specialist..." 
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="bg-white/5 border border-white/5 rounded-xl py-2 pl-9 pr-4 text-xs text-white outline-none focus:border-brand-500"
+                className="bg-slate-100 border border-slate-200 rounded-xl py-2 pl-9 pr-4 text-xs text-black outline-none focus:border-brand-500"
               />
             </div>
           </div>
@@ -195,7 +210,7 @@ const AdminPayroll = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-[10px] font-black text-surface-500 uppercase tracking-widest border-b border-white/5">
+                <tr className="text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-200">
                   <th className="pb-4 px-2">Identity</th>
                   <th className="pb-4 px-2">Base</th>
                   <th className="pb-4 px-2">Bonus</th>
@@ -204,45 +219,53 @@ const AdminPayroll = () => {
                   <th className="pb-4 px-2 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-slate-100">
                 {currentRecords.filter(p => p.employeeName?.toLowerCase().includes(search.toLowerCase())).map((p) => (
-                  <tr key={p._id} className="group hover:bg-white/[0.02] transition-colors">
+                  <tr key={p.id || p._id} className="group hover:bg-slate-50 transition-colors">
                     <td className="py-4 px-2">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center text-brand-400 font-bold text-xs">{p.employeeName?.charAt(0)}</div>
-                        <span className="text-sm font-bold text-white">{p.employeeName}</span>
+                        <span className="text-sm font-bold text-black">{p.employeeName}</span>
                       </div>
                     </td>
-                    <td className="py-4 px-2 text-sm text-surface-300">₹{p.calculatedSalary.base.toLocaleString()}</td>
+                    <td className="py-4 px-2 text-sm text-slate-600">₹{p.calculatedSalary.base.toLocaleString()}</td>
                     <td className="py-4 px-2 text-sm text-emerald-500">+₹{p.calculatedSalary.bonus}</td>
-                    <td className="py-4 px-2 text-sm font-black text-white">₹{p.calculatedSalary.total.toLocaleString()}</td>
+                    <td className="py-4 px-2 text-sm font-black text-black">₹{p.calculatedSalary.total.toLocaleString()}</td>
                     <td className="py-4 px-2">
                       <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${p.paymentStatus === 'Paid' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
                         {p.paymentStatus}
                       </span>
                     </td>
                     <td className="py-4 px-2 text-right">
-                      {p.paymentStatus === 'Pending' ? (
+                      <div className="flex items-center justify-end gap-2">
+                        {p.paymentStatus === 'Pending' ? (
+                          <button 
+                            onClick={() => handleMarkPaid(p.id || p._id)}
+                            className="px-3 py-1.5 bg-brand-600/10 text-brand-400 rounded-lg text-[10px] font-black uppercase hover:bg-brand-600 hover:text-white transition-all"
+                          >
+                            Settle
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={() => handleDownloadPayslip(p.id || p._id)}
+                            className="p-2 text-slate-400 hover:text-black transition-colors"
+                          >
+                            <Download size={14} />
+                          </button>
+                        )}
                         <button 
-                          onClick={() => handleMarkPaid(p._id)}
-                          className="px-3 py-1.5 bg-brand-600/10 text-brand-400 rounded-lg text-[10px] font-black uppercase hover:bg-brand-600 hover:text-white transition-all"
+                          onClick={() => handleDelete(p.id || p._id)}
+                          className="p-2 text-rose-400/50 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors"
                         >
-                          Settle
+                          <Trash2 size={14} />
                         </button>
-                      ) : (
-                        <button 
-                          onClick={() => handleDownloadPayslip(p._id)}
-                          className="p-2 text-surface-600 hover:text-white transition-colors"
-                        >
-                          <Download size={14} />
-                        </button>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 ))}
                 {currentRecords.length === 0 && (
                   <tr>
-                    <td colSpan="6" className="py-10 text-center text-surface-700 font-black uppercase tracking-widest text-xs">No records for this cycle. Generate payroll to begin.</td>
+                    <td colSpan="6" className="py-10 text-center text-slate-500 font-black uppercase tracking-widest text-xs">No records for this cycle. Generate payroll to begin.</td>
                   </tr>
                 )}
               </tbody>
@@ -251,8 +274,8 @@ const AdminPayroll = () => {
         </div>
 
         <div className="space-y-6">
-          <div className="glass-light rounded-[40px] border border-white/5 p-8">
-            <h3 className="text-lg font-black text-white mb-6 flex items-center gap-2">
+          <div className="glass-light rounded-[40px] border border-slate-100 shadow-2xl p-8">
+            <h3 className="text-lg font-black text-black mb-6 flex items-center gap-2">
               <TrendingUp size={18} className="text-brand-400" /> Flux Analysis
             </h3>
             <div className="h-[200px]">
@@ -269,21 +292,26 @@ const AdminPayroll = () => {
             </div>
           </div>
 
-          <div className="glass-light rounded-[40px] border border-white/5 p-8">
-            <h3 className="text-lg font-black text-white mb-6">Salary Configuration</h3>
+          <div className="glass-light rounded-[40px] border border-slate-100 shadow-2xl p-8">
+            <h3 className="text-lg font-black text-black mb-6">Salary Configuration</h3>
             <div className="space-y-3">
               {team.map(member => (
-                <div key={member.id || member._id} className="flex items-center justify-between p-3 bg-white/5 rounded-2xl border border-white/5 hover:border-brand-500/30 transition-all group">
+                <div key={member.id || member._id} className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-2xl hover:border-brand-500/30 transition-all group shadow-sm">
                    <div className="flex items-center gap-3">
-                      <img src={member.avatar} className="w-8 h-8 rounded-lg" alt="" />
+                      <img 
+                        src={member.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`} 
+                        className="w-8 h-8 rounded-lg object-cover" 
+                        alt="" 
+                        onError={(e) => { e.target.onerror = null; e.target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`; }}
+                      />
                       <div className="max-w-[100px]">
-                         <p className="text-xs font-bold text-white truncate">{member.name}</p>
-                         <p className="text-[8px] text-surface-500 uppercase tracking-widest">{member.role}</p>
+                         <p className="text-xs font-bold text-black truncate">{member.name}</p>
+                         <p className="text-[8px] text-slate-500 uppercase tracking-widest">{member.role}</p>
                       </div>
                    </div>
                    <button 
                     onClick={() => openConfig(member)}
-                    className="p-2 bg-white/5 rounded-xl text-surface-500 hover:text-brand-400 transition-colors"
+                    className="p-2 bg-slate-50 rounded-xl text-slate-400 hover:text-brand-400 transition-colors"
                    >
                      <Settings2 size={16} />
                    </button>
@@ -300,18 +328,18 @@ const AdminPayroll = () => {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setShowConfig(null)} className="absolute inset-0 bg-[#020617]/80 backdrop-blur-md" />
             <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-md glass border border-white/10 rounded-[40px] p-10 shadow-2xl"
+              className="relative w-full max-w-md glass border border-slate-100 rounded-[40px] p-10 shadow-2xl bg-white"
             >
-              <h2 className="text-3xl font-black text-white tracking-tighter mb-2">Config: {showConfig.name}</h2>
+              <h2 className="text-3xl font-black text-black tracking-tighter mb-2">Config: {showConfig.name}</h2>
               <p className="text-xs text-brand-500 font-black uppercase tracking-widest mb-8">Set Base Compensation</p>
               
               <form onSubmit={saveConfig} className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-surface-500 uppercase tracking-widest ml-1">Salary Type</label>
+                  <label className="text-[10px] font-black text-black uppercase tracking-widest ml-1">Salary Type</label>
                   <select 
                     value={configData.salaryType} 
                     onChange={e => setConfigData({...configData, salaryType: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-brand-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-black outline-none focus:border-brand-500"
                   >
                     <option>Monthly</option>
                     <option>Hourly</option>
@@ -319,22 +347,22 @@ const AdminPayroll = () => {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-surface-500 uppercase tracking-widest ml-1">Base Salary (INR)</label>
+                  <label className="text-[10px] font-black text-black uppercase tracking-widest ml-1">Base Salary (INR)</label>
                   <input 
                     type="number"
                     value={configData.baseSalary}
                     onChange={e => setConfigData({...configData, baseSalary: Number(e.target.value)})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-brand-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-black outline-none focus:border-brand-500"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-surface-500 uppercase tracking-widest ml-1">Bonus</label>
-                    <input type="number" value={configData.bonus} onChange={e => setConfigData({...configData, bonus: Number(e.target.value)})} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-brand-500" />
+                    <label className="text-[10px] font-black text-black uppercase tracking-widest ml-1">Bonus</label>
+                    <input type="number" value={configData.bonus} onChange={e => setConfigData({...configData, bonus: Number(e.target.value)})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-black outline-none focus:border-brand-500" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-surface-500 uppercase tracking-widest ml-1">Deductions</label>
-                    <input type="number" value={configData.deductions} onChange={e => setConfigData({...configData, deductions: Number(e.target.value)})} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-brand-500" />
+                    <label className="text-[10px] font-black text-black uppercase tracking-widest ml-1">Deductions</label>
+                    <input type="number" value={configData.deductions} onChange={e => setConfigData({...configData, deductions: Number(e.target.value)})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-black outline-none focus:border-brand-500" />
                   </div>
                 </div>
                 <button type="submit" className="w-full py-5 bg-brand-600 rounded-2xl text-xs font-black uppercase tracking-widest text-white hover:bg-brand-500 transition-all">Store Configuration</button>
@@ -348,18 +376,18 @@ const AdminPayroll = () => {
 };
 
 const StatCard = ({ title, value, icon: Icon, color }) => (
-  <div className="glass-light rounded-[32px] border border-white/5 p-8 relative overflow-hidden group">
+  <div className="glass-light rounded-[32px] border border-slate-100 shadow-xl p-8 relative overflow-hidden group bg-white">
     <div className="flex items-center justify-between mb-4">
-       <span className="text-[10px] font-black text-surface-500 uppercase tracking-widest">{title}</span>
-       <div className={`p-3 bg-white/5 rounded-xl ${color}`}><Icon size={18} /></div>
+       <span className="text-[10px] font-black text-black uppercase tracking-widest">{title}</span>
+       <div className={`p-3 bg-slate-50 rounded-xl ${color}`}><Icon size={18} /></div>
     </div>
     <div className="flex items-baseline gap-1">
-      <span className="text-xs font-black text-surface-600">₹</span>
-      <span className="text-4xl font-black text-white tracking-tighter">{value.toLocaleString()}</span>
+      <span className="text-xs font-black text-slate-800">₹</span>
+      <span className="text-4xl font-black text-black tracking-tighter">{value.toLocaleString()}</span>
     </div>
     <div className="mt-4 flex items-center gap-2">
       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-      <span className="text-[9px] font-black text-surface-600 uppercase tracking-widest">Real-time Synchronization</span>
+      <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Real-time Synchronization</span>
     </div>
   </div>
 );

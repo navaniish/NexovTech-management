@@ -1,10 +1,10 @@
 [
   {
-    "baseSalary": 4000,
-    "bonus": 0,
-    "deductions": 0,
+    "id": "xvukOiKPGZw6Pd605qHX",
     "salaryType": "Per Project",
+    "bonus": 0,
+    "baseSalary": 4000,
     "employeeId": "3Nrcp0hlh1e04bQwjAnrwzQvodD2",
-    "id": "xvukOiKPGZw6Pd605qHX"
+    "deductions": 0
   }
 ]

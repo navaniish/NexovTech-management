@@ -34,7 +34,12 @@ const MemberCard = ({ member, index, onRemove, onAssign }) => (
     <div className="flex flex-col items-center text-center">
       <div className="w-24 h-24 rounded-[32px] bg-gradient-to-tr from-brand-600 to-neon-blue p-[3px] mb-6 shadow-2xl shadow-brand-600/20 group-hover:rotate-3 transition-transform duration-500 relative">
          <div className="w-full h-full rounded-[29px] bg-[#020617] overflow-hidden">
-            <img src={member.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`} alt={member.name} className="w-full h-full object-cover" />
+            <img 
+              src={member.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`} 
+              alt={member.name} 
+              className="w-full h-full object-cover"
+              onError={(e) => { e.target.onerror = null; e.target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`; }}
+            />
          </div>
       </div>
       
