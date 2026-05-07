@@ -49,8 +49,7 @@ seedAdmin().catch(err => console.error('❌ SEEDING FAILED:', err.message));
 // === TRADITIONAL SERVER MODE (local dev only) ===
 if (!IS_SERVERLESS) {
   const http = require('http');
-  const socketPackage = 'socket.io';
-  const { Server } = require(socketPackage);
+  const { Server } = require('socket.io');
 
   const server = http.createServer(app);
   const io = new Server(server, {
