@@ -64,34 +64,62 @@ router.post('/register', async (req, res) => {
 
 // Grant Access (Admin)
 router.post('/grant-access', async (req, res) => {
-  const { email, role, name, bankName, accountNumber, ifscCode, upiId } = req.body;
-  if (!email) return res.status(400).json({ message: 'Email is required for secure delegation' });
-
-  const userData = {
-    name,
-    email: email.trim().toLowerCase(),
-    role,
-    bankName,
-    accountNumber,
-    ifscCode,
-    upiId,
-    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name + Date.now()}`,
-    performance: { tasksCompleted: 0, onTimeRate: 100, rating: 5 },
-    createdAt: new Date()
-  };
-
-  console.log(`📝 ACCESS_SYNC: Registering specialist [${email}]...`);
-  const saved = await fallbackDb.save('users', userData);
+  const { email, role, name, tempPassword, bankName, accountNumber, ifscCode, upiId } = req.body;
+  const { admin } = require('../firebaseAdmin');
   
-  // Immediately fetch updated roster to ensure absolute synchronization
-  const allUsers = (await fallbackDb.find('users', {})) || [];
-  console.log(`✅ ACCESS_SYNC: Specialist registered. Returning ${allUsers.length} members.`);
+  if (!email) return res.status(400).json({ message: 'Email is required for secure delegation' });
+  if (!tempPassword) return res.status(400).json({ message: 'Initial password is required' });
 
-  res.json({ 
-    message: `Access granted to ${email}`, 
-    user: saved,
-    updatedRoster: allUsers
-  });
+  try {
+    console.log(`🛡️ SECURITY_BRIDGE: Creating cloud credentials for [${email}]...`);
+    
+    // 1. Create User in Firebase Auth
+    let firebaseUser;
+    try {
+      firebaseUser = await admin.auth().createUser({
+        email: email.trim().toLowerCase(),
+        password: tempPassword,
+        displayName: name,
+      });
+      console.log('✅ SECURITY_BRIDGE: Firebase account created:', firebaseUser.uid);
+    } catch (authErr) {
+      // If user already exists in Firebase, just find them
+      if (authErr.code === 'auth/email-already-exists') {
+        firebaseUser = await admin.auth().getUserByEmail(email.trim().toLowerCase());
+        console.log('ℹ️ SECURITY_BRIDGE: Firebase account already exists, syncing ID...');
+      } else {
+        throw authErr;
+      }
+    }
+
+    const userData = {
+      name,
+      email: email.trim().toLowerCase(),
+      firebaseUid: firebaseUser.uid,
+      role: role || 'Employee',
+      bankName,
+      accountNumber,
+      ifscCode,
+      upiId,
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name + Date.now()}`,
+      performance: { tasksCompleted: 0, onTimeRate: 100, rating: 5 },
+      createdAt: new Date()
+    };
+
+    console.log(`📝 ACCESS_SYNC: Registering specialist [${email}] in database...`);
+    const saved = await fallbackDb.save('users', userData);
+    
+    const allUsers = (await fallbackDb.find('users', {})) || [];
+    
+    res.json({ 
+      message: `Access granted to ${email}. Cloud identity activated.`, 
+      user: saved,
+      updatedRoster: allUsers
+    });
+  } catch (err) {
+    console.error('🔥 SECURITY_BRIDGE_FAILURE:', err.message);
+    res.status(500).json({ message: `Security Bridge Failure: ${err.message}` });
+  }
 });
 
 // Update Financials
