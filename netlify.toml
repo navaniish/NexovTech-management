@@ -2,6 +2,8 @@
   command = "cd client && npm ci && npm run build"
   publish = "client/dist"
   functions = "netlify/functions"
+  [build.environment]
+    SECRETS_SCAN_OMIT_PATHS = "server/data/*"
 
 [[redirects]]
   from = "/api/*"

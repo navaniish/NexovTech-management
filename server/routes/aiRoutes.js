@@ -6,7 +6,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const client = new OpenAI({
-  baseURL: process.env.AI_BASE_URL || "https://integrate.api.nvidia.com/v1",
+  baseURL: process.env.AI_BASE_URL || "https://api.nexovtech.ai/v1",
   apiKey: process.env.AI_API_KEY
 });
 
@@ -31,7 +31,7 @@ router.post('/chat', async (req, res) => {
   
   try {
     const completion = await client.chat.completions.create({
-      model: process.env.AI_MODEL || "stepfun-ai/step-3.5-flash",
+      model: process.env.AI_MODEL || "nexov-intelligence-v1",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         ...messages
