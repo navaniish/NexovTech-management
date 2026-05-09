@@ -32,6 +32,8 @@
     "speakeasy": "^2.0.0",
     "useragent": "^2.3.0",
     "openai": "^6.37.0",
-    "otplib": "^13.4.0"
+    "otplib": "^13.4.0",
+    "puppeteer": "^24.43.0",
+    "multer": "^2.1.1"
   }
 }
