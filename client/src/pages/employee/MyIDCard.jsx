@@ -15,7 +15,8 @@ const MyIDCard = () => {
     const fetchMyCard = async () => {
       if (!user) return;
       try {
-        const res = await fetch(`${API_URL}/idcard/${user._id || user.id || user.firebaseUid}`);
+        const identifier = user.email || user._id || user.id || user.firebaseUid;
+        const res = await fetch(`${API_URL}/idcard/${identifier}`);
         if (res.ok) {
           const data = await res.json();
           setCardData(data);
@@ -62,7 +63,7 @@ const MyIDCard = () => {
           className="flex justify-center"
         >
           <DigitalIDCard 
-            employee={user} 
+            employee={{ ...user, avatar: cardData.userAvatar || user.avatar }} 
             cardData={cardData} 
           />
         </motion.div>

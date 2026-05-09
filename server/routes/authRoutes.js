@@ -14,8 +14,7 @@ router.post('/upload-avatar/:id', upload.single('avatar'), async (req, res) => {
     let userId = req.params.id;
     if (userId === 'admin_bypass') userId = 'nexovtech@myyahoo.com';
     // Construct the URL for the avatar
-    // We assume the server is running on localhost:5005 as per other routes
-    const avatarUrl = `/api/uploads/avatars/${req.file.filename}`;
+    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
 
     const updatedUser = await fallbackDb.update('users', userId, { avatar: avatarUrl });
     
@@ -141,12 +140,13 @@ router.put('/update-financials/:id', async (req, res) => {
 
 // Update Profile (Admin)
 router.put('/update-profile/:id', async (req, res) => {
-  const { name, role, email, phone } = req.body;
+  const { name, role, email, phone, avatar } = req.body;
   const updates = {};
   if (name !== undefined) updates.name = name;
   if (role !== undefined) updates.role = role;
   if (email !== undefined) updates.email = email;
   if (phone !== undefined) updates.phone = phone;
+  if (avatar !== undefined) updates.avatar = avatar;
 
   try {
     const updated = await fallbackDb.update('users', req.params.id, updates);

@@ -17,13 +17,13 @@
   --color-surface-100: #f1f5f9;
   --color-surface-200: #e2e8f0;
   --color-surface-300: #cbd5e1;
-  --color-surface-400: #000000;
-  --color-surface-500: #000000;
-  --color-surface-600: #000000;
-  --color-surface-700: #000000;
-  --color-surface-800: #000000;
-  --color-surface-900: #000000;
-  --color-surface-950: #000000;
+  --color-surface-400: #94a3b8;
+  --color-surface-500: #64748b;
+  --color-surface-600: #475569;
+  --color-surface-700: #334155;
+  --color-surface-800: #1e293b;
+  --color-surface-900: #0f172a;
+  --color-surface-950: #020617;
 
   --color-neon-blue: #00d2ff;
   --color-neon-purple: #9d50bb;
@@ -33,22 +33,40 @@
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color-scheme: light;
+  color-scheme: dark;
 
-  --bg-base:        #f1f5f9;
-  --bg-surface:     #ffffff;
-  --bg-elevated:    #f8fafc;
-  --bg-card:        rgba(255,255,255,0.80);
-  --border-default: rgba(0,0,0,0.08);
-  --border-hover:   rgba(0,0,0,0.18);
-  --text-primary:   #000000;
-  --text-secondary: #000000;
-  --text-muted:     #000000;
-  --sidebar-bg:     #ffffff;
-  --topbar-bg:      rgba(255,255,255,0.80);
-  --input-bg:       rgba(0,0,0,0.03);
-  --scrollbar-thumb:rgba(0,0,0,0.12);
-  --card-hover-bg:  rgba(0,0,0,0.03);
+  --bg-base:        #020617;
+  --bg-surface:     rgba(15, 23, 42, 0.6);
+  --bg-elevated:    rgba(30, 41, 59, 0.4);
+  --bg-card:        rgba(15, 23, 42, 0.7);
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-hover:   rgba(0, 243, 255, 0.3);
+  --text-primary:   #ffffff;
+  --text-secondary: #cbd5e1;
+  --text-muted:     #94a3b8;
+  --sidebar-bg:     rgba(2, 6, 23, 0.8);
+  --topbar-bg:      rgba(2, 6, 23, 0.7);
+  --input-bg:       rgba(255, 255, 255, 0.05);
+  --scrollbar-thumb:rgba(0, 243, 255, 0.2);
+  --card-hover-bg:  rgba(0, 243, 255, 0.05);
+  --accent-glow:    rgba(0, 243, 255, 0.4);
+}
+
+.dark {
+  --bg-base:        #020617;
+  --bg-surface:     rgba(15, 23, 42, 0.6);
+  --bg-elevated:    rgba(30, 41, 59, 0.4);
+  --bg-card:        rgba(15, 23, 42, 0.7);
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-hover:   rgba(0, 243, 255, 0.3);
+  --text-primary:   #ffffff;
+  --text-secondary: #cbd5e1;
+  --text-muted:     #94a3b8;
+  --sidebar-bg:     rgba(2, 6, 23, 0.8);
+  --topbar-bg:      rgba(2, 6, 23, 0.7);
+  --input-bg:       rgba(255, 255, 255, 0.05);
+  --scrollbar-thumb:rgba(0, 243, 255, 0.2);
+  --card-hover-bg:  rgba(0, 243, 255, 0.05);
 }
 
 body {
@@ -60,9 +78,9 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Global Heading Font Color (Everywhere except Invoice) */
+/* Global Heading Font Color */
 :is(h1, h2, h3, h4, h5, h6):not(.invoice-generator-container *) {
-  color: #000000 !important;
+  color: #ffffff !important;
 }
 
 /* Custom Scrollbar */
@@ -110,7 +128,7 @@ body {
 }
 
 .theme-bg {
-  background: var(--bg-base);
+  background: transparent;
   transition: background 0.3s ease;
 }
 

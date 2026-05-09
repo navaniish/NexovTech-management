@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import FuturisticBackground from './components/Common/FuturisticBackground';
 import DashboardLayout from './components/Layout/DashboardLayout';
 import EmployeeLayout from './components/Layout/EmployeeLayout';
 
@@ -105,6 +106,7 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
+          <FuturisticBackground />
           <AppRoutes />
         </Router>
       </AuthProvider>

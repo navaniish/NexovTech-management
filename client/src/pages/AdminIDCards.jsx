@@ -8,7 +8,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DigitalIDCard from '../components/IDCard/DigitalIDCard';
 
 import API_URL from '../config';
+import { useAuth } from '../context/AuthContext';
+
 const AdminIDCards = () => {
+  const { user: currentUser } = useAuth();
   const [employees, setEmployees] = useState([]);
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +19,7 @@ const AdminIDCards = () => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [generatingId, setGeneratingId] = useState(null);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', role: '', phone: '', issueDate: '', expiryDate: '' });
+  const [editForm, setEditForm] = useState({ name: '', role: '', phone: '', avatar: '', issueDate: '', expiryDate: '' });
   const [savingDetails, setSavingDetails] = useState(false);
 
   const fetchData = async () => {
@@ -88,7 +91,7 @@ const AdminIDCards = () => {
       await fetch(`${API_URL}/auth/update-profile/${selectedEmployee._id || selectedEmployee.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editForm.name, role: editForm.role, phone: editForm.phone })
+        body: JSON.stringify({ name: editForm.name, role: editForm.role, phone: editForm.phone, avatar: editForm.avatar })
       });
       // Update card dates
       if (selectedEmployee.card) {
@@ -102,7 +105,24 @@ const AdminIDCards = () => {
         });
       }
       setIsEditingDetails(false);
-      fetchData(); // Refresh UI
+      
+      // Update local state immediately for instant feedback
+      const updatedEmployee = { ...selectedEmployee, ...editForm };
+      setSelectedEmployee(updatedEmployee);
+      
+      // Also update the global employees list locally so the useEffect doesn't overwrite it with stale data
+      setEmployees(prev => prev.map(emp => 
+        (emp._id || emp.id) === (selectedEmployee._id || selectedEmployee.id) 
+        ? { ...emp, ...editForm } 
+        : emp
+      ));
+
+      // NEW: Bulletproof local storage cache to survive server sync issues
+      if (editForm.avatar) {
+        localStorage.setItem(`nexov_portrait_${selectedEmployee._id || selectedEmployee.id}`, editForm.avatar);
+      }
+      
+      await fetchData(); // Refresh global data from server
     } catch (err) {
       console.error(err);
     } finally {
@@ -110,7 +130,22 @@ const AdminIDCards = () => {
     }
   };
 
-  const getCardForEmployee = (userId) => cards.find(c => c.userId === userId);
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditForm({ ...editForm, avatar: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const getCardForEmployee = (userId) => cards.find(c => 
+    c.userId === userId || 
+    c.id === userId || 
+    (c.userId && c.userId.toString() === userId?.toString())
+  );
 
   const filteredEmployees = employees.filter(e => 
     e.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -234,7 +269,7 @@ const AdminIDCards = () => {
                   exit={{ opacity: 0, scale: 0.95 }}
                 >
                   <DigitalIDCard 
-                    employee={selectedEmployee} 
+                    employee={isEditingDetails ? { ...selectedEmployee, ...editForm } : selectedEmployee} 
                     cardData={selectedEmployee.card} 
                     isAdmin={true}
                   />
@@ -252,24 +287,35 @@ const AdminIDCards = () => {
                       >
                         {selectedEmployee.card.status === 'Active' ? 'Deactivate Card' : 'Activate Card'}
                       </button>
+                      <button 
+                        onClick={() => handleGenerate(selectedEmployee._id || selectedEmployee.id)}
+                        disabled={generatingId === (selectedEmployee._id || selectedEmployee.id)}
+                        className="py-3 rounded-xl bg-brand-500/10 text-brand-500 text-[10px] font-black uppercase tracking-widest hover:bg-brand-500/20 transition-all flex items-center justify-center gap-2"
+                      >
+                        {generatingId === (selectedEmployee._id || selectedEmployee.id) ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                        Reissue ID
+                      </button>
                       <button className="py-3 rounded-xl bg-white/5 theme-text-secondary text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
                         Audit Logs
                       </button>
-                      <button 
-                        onClick={() => {
-                          setEditForm({
-                            name: selectedEmployee.name,
-                            role: selectedEmployee.role,
-                            phone: selectedEmployee.phone || '',
-                            issueDate: selectedEmployee.card.issueDate ? selectedEmployee.card.issueDate.split('T')[0] : '',
-                            expiryDate: selectedEmployee.card.expiryDate ? selectedEmployee.card.expiryDate.split('T')[0] : ''
-                          });
-                          setIsEditingDetails(true);
-                        }}
-                        className="col-span-2 py-3 rounded-xl bg-brand-500/10 text-brand-500 text-[10px] font-black uppercase tracking-widest hover:bg-brand-500/20 transition-all"
-                      >
-                        Edit Details
-                      </button>
+                      {currentUser?.role === 'Admin' && (
+                        <button 
+                          onClick={() => {
+                            setEditForm({
+                              name: selectedEmployee.name,
+                              role: selectedEmployee.role,
+                              phone: selectedEmployee.phone || '',
+                              avatar: selectedEmployee.avatar || '',
+                              issueDate: selectedEmployee.card.issueDate ? selectedEmployee.card.issueDate.split('T')[0] : '',
+                              expiryDate: selectedEmployee.card.expiryDate ? selectedEmployee.card.expiryDate.split('T')[0] : ''
+                            });
+                            setIsEditingDetails(true);
+                          }}
+                          className="col-span-2 py-3 rounded-xl bg-brand-500/10 text-brand-500 text-[10px] font-black uppercase tracking-widest hover:bg-brand-500/20 transition-all"
+                        >
+                          Edit Details
+                        </button>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -318,6 +364,33 @@ const AdminIDCards = () => {
                 <div>
                   <label className="text-[10px] font-black uppercase tracking-widest theme-text-secondary ml-1">Phone Number</label>
                   <input value={editForm.phone} onChange={e => setEditForm({...editForm, phone: e.target.value})} className="w-full px-4 py-3 rounded-xl theme-bg border theme-text-primary outline-none focus:ring-1 focus:ring-brand-500/50" style={{ borderColor: 'var(--border-default)' }} />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-widest theme-text-secondary ml-1">Profile Portrait</label>
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="flex-1 px-4 py-3 rounded-xl theme-bg border theme-text-primary text-[10px] outline-none focus:ring-1 focus:ring-brand-500/50 file:mr-4 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-brand-500/10 file:text-brand-500 hover:file:bg-brand-500/20" 
+                        style={{ borderColor: 'var(--border-default)' }} 
+                      />
+                      <button 
+                        type="button"
+                        onClick={() => setEditForm({...editForm, avatar: '/assets/admin_dp.jpg'})}
+                        className="px-4 bg-brand-500/10 text-brand-500 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-brand-500/20 transition-all border border-brand-500/20"
+                      >
+                        Set Admin Portrait
+                      </button>
+                    </div>
+                    {editForm.avatar && (
+                      <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5 border border-white/10">
+                        <img src={editForm.avatar} className="w-10 h-10 rounded-lg object-cover" alt="Preview" />
+                        <span className="text-[8px] font-black uppercase theme-text-secondary">Image Ready for Upload</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

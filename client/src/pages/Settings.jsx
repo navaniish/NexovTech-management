@@ -290,7 +290,14 @@ const Settings = () => {
                   <div className="flex items-center gap-6 pb-8 border-b" style={{ borderColor: 'var(--border-default)' }}>
                     <div className="w-24 h-24 rounded-3xl bg-brand-600 p-[3px]">
                       <div className="w-full h-full rounded-[21px] overflow-hidden theme-bg">
-                        <img src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`} alt="Avatar" />
+                        <img 
+                          src={user?.avatar?.startsWith('http') || user?.avatar?.startsWith('data:') ? user.avatar : `${API_URL}${user?.avatar}`} 
+                          alt="Avatar" 
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`;
+                          }}
+                        />
                       </div>
                     </div>
                     <div>

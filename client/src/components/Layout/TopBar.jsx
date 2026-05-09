@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import API_URL from '../../config';
 import { Search, Bell, HelpCircle, Sparkles, Command, ChevronDown, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,7 +11,7 @@ const TopBar = ({ onMenuToggle }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   return (
-    <header className="theme-topbar h-20 flex items-center justify-between px-4 md:px-10 sticky top-0 z-40">
+    <header className="backdrop-blur-md bg-[#020617]/30 h-20 flex items-center justify-between px-4 md:px-10 sticky top-0 z-40 border-b border-white/5">
       <div className="flex items-center gap-2 md:gap-4 flex-1">
         <button 
           className="md:hidden p-2 rounded-lg text-brand-500 hover:bg-brand-500/10 transition-colors"
@@ -83,9 +84,15 @@ const TopBar = ({ onMenuToggle }) => {
               <div className="w-full h-full rounded-[14px] flex items-center justify-center overflow-hidden"
                 style={{ background: 'var(--bg-base)' }}>
                 <img
-                  src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`}
+                  src={user?.role === 'Admin' ? '/assets/admin_dp.jpg' : 
+                    (user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL}${user.avatar}`) : 
+                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`)}
                   alt="Avatar"
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`;
+                  }}
                 />
               </div>
             </div>

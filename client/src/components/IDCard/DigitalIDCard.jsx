@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { toPng } from 'html-to-image';
 import { RefreshCcw, DownloadCloud } from 'lucide-react';
 import { motion } from 'framer-motion';
+import API_URL from '../../config';
 
 const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -37,6 +38,12 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
   const expiryDate = parseDate(cardData.expiryDate);
   const fmtDate = (d) => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
   const fmtDateSlash = (d) => `${String(d.getDate()).padStart(2,'0')} / ${String(d.getMonth()+1).padStart(2,'0')} / ${String(d.getFullYear()).slice(-2)}`;
+  
+  // NEW: Get portrait with local cache fallback for rock-solid permanence
+  const userId = employee._id || employee.id;
+  const localPortrait = userId ? localStorage.getItem(`nexov_portrait_${userId}`) : null;
+  const rawPortrait = localPortrait || employee.avatar;
+  const displayPortrait = rawPortrait ? (rawPortrait.startsWith('http') || rawPortrait.startsWith('data:') ? rawPortrait : `${API_URL}${rawPortrait}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${employee.name}`;
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -78,7 +85,15 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
               {/* ── Logo + Company Name ── */}
               <div className="relative z-10 flex items-center gap-2.5 p-4 pt-5 pl-5">
                 <div className="w-10 h-10 rounded-full border-[1.5px] border-[#D41920] flex items-center justify-center bg-[#0d0d0d] p-1 shadow-lg">
-                  <img src="/assets/logo.jpeg" alt="" className="w-full h-full object-contain rounded-full" />
+                  <img 
+                    src="/assets/logo.jpeg" 
+                    alt="" 
+                    className="w-full h-full object-contain rounded-full" 
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://ui-avatars.com/api/?name=NexovTech&background=0D8ABC&color=fff';
+                    }}
+                  />
                 </div>
                 <div>
                   <p className="text-white font-extrabold text-[15px] leading-none tracking-tight italic">NexovTech</p>
@@ -91,9 +106,13 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
                 {/* Photo Rounded Rectangle */}
                 <div className="w-[120px] h-[126px] rounded-[16px] bg-[#1a1a2e] border-[3px] shadow-[0_15px_30px_rgba(0,0,0,0.6)] relative overflow-hidden" style={{ borderColor: '#888888' }}>
                   <img
-                    src={employee.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${employee.name}`}
+                    src={displayPortrait}
                     className="w-full h-full object-cover"
                     alt=""
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${employee.name}`;
+                    }}
                   />
                   <div className="absolute inset-0 pointer-events-none" style={{
                     boxShadow: 'inset 0 0 15px rgba(255,255,255,0.2), inset 0 0 5px rgba(0,0,0,0.5)'
@@ -141,7 +160,15 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
             {/* Logo centered at top */}
             <div className="flex flex-col items-center pt-7 pb-4">
               <div className="w-14 h-14 rounded-full border-[2.5px] border-[#C9A84C] flex items-center justify-center bg-[#0a0a0a] p-2.5">
-                <img src="/assets/logo.jpeg" alt="" className="w-full h-full object-contain rounded-full" />
+                 <img 
+                  src="/assets/logo.jpeg" 
+                  alt="" 
+                  className="w-full h-full object-contain rounded-full" 
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://ui-avatars.com/api/?name=NexovTech&background=0D8ABC&color=fff';
+                  }}
+                />
               </div>
               <p className="font-extrabold text-[15px] text-slate-900 tracking-tight italic leading-none mt-2.5">NexovTech</p>
               <p className="text-[#D41920] text-[7.5px] font-semibold tracking-wider mt-[3px]">Management Systems</p>

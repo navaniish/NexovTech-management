@@ -41,11 +41,19 @@ const VerifyID = () => {
   );
 
   return (
-    <div className="min-h-screen theme-bg p-6 flex items-center justify-center">
+    <div className="min-h-screen bg-transparent p-6 flex items-center justify-center">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-10">
-          <div className="w-16 h-16 bg-white rounded-[24px] flex items-center justify-center p-3 shadow-2xl shadow-brand-600/20 mb-4 border border-black/5">
-            <img src="/assets/logo.jpeg" alt="Logo" className="w-full h-full object-contain" />
+          <div className="w-16 h-16 bg-white/10 backdrop-blur-xl rounded-[24px] flex items-center justify-center p-3 shadow-2xl shadow-brand-600/20 mb-4 border border-white/10">
+            <img 
+              src="/assets/logo.jpeg" 
+              alt="Logo" 
+              className="w-full h-full object-contain" 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = 'https://ui-avatars.com/api/?name=NexovTech&background=0D8ABC&color=fff';
+              }}
+            />
           </div>
           <h1 className="text-2xl font-black theme-text-primary tracking-tighter">NEXOVTECH IDENTITY</h1>
           <p className="text-[10px] font-black theme-text-secondary uppercase tracking-[0.3em] mt-1">Verification Gateway</p>
@@ -80,8 +88,16 @@ const VerifyID = () => {
                   Identity Verified: {data.status}
                </div>
 
-               <div className="w-32 h-32 rounded-[32px] bg-white p-1 shadow-2xl mb-6 border-4 border-slate-900 overflow-hidden">
-                  <img src={data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`} className="w-full h-full object-cover rounded-[26px]" alt="" />
+               <div className="w-32 h-32 rounded-[32px] bg-white/5 p-1 shadow-2xl mb-6 border-4 border-white/10 overflow-hidden backdrop-blur-xl">
+                  <img 
+                    src={data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`} 
+                    className="w-full h-full object-cover rounded-[26px]" 
+                    alt="" 
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`;
+                    }}
+                  />
                </div>
 
                <h3 className="text-2xl font-black theme-text-primary tracking-tight">{data.name}</h3>
@@ -105,7 +121,7 @@ const VerifyID = () => {
           </motion.div>
         )}
 
-        <p className="text-center mt-12 text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">
+        <p className="text-center mt-12 text-[10px] font-black theme-text-secondary/40 uppercase tracking-[0.2em]">
           &copy; 2026 NexovTech Security Operations
         </p>
       </div>
@@ -119,7 +135,7 @@ const InfoRow = ({ icon: Icon, label, value }) => (
       <Icon size={14} />
       <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
     </div>
-    <span className="text-xs font-bold text-white">{value}</span>
+    <span className="text-xs font-bold theme-text-primary">{value}</span>
   </div>
 );
 
