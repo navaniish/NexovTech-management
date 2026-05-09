@@ -104,14 +104,53 @@ body {
   border: 1px solid var(--border-default);
 }
 
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: var(--glow-brand);
+}
+
+/* Neon Glows */
+.neon-text-cyan {
+  color: #06b6d4;
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+}
+
+.neon-border-cyan {
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: var(--glow-cyan);
+}
+
+.neon-glow-brand {
+  box-shadow: var(--glow-brand);
+}
+
 .theme-card {
   background: var(--bg-card);
   border: 1px solid var(--border-default);
-  transition: border-color 0.2s ease, background 0.3s ease;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .theme-card:hover {
-  border-color: var(--border-hover);
+  border-color: var(--brand-500);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(139, 92, 246, 0.1);
+  transform: translateY(-2px);
 }
 
 .theme-sidebar {

@@ -12,7 +12,13 @@ import {
   MapPin,
   Sparkles,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  LayoutDashboard,
+  Users,
+  Clock,
+  Calendar,
+  Briefcase,
+  Bell
 } from 'lucide-react';
 import {
   BarChart,
@@ -134,61 +140,114 @@ const Dashboard = () => {
     </div>
   );
 
+  const mobileModules = [
+    { label: 'Dashboard', icon: LayoutDashboard, color: '#3b82f6', path: '/' },
+    { label: 'Projects', icon: Briefcase, color: '#8b5cf6', path: '/projects' },
+    { label: 'Team', icon: Users, color: '#10b981', path: '/team' },
+    { label: 'Attendance', icon: Clock, color: '#f59e0b', path: '/hr' },
+    { label: 'Employees', icon: Users, color: '#06b6d4', path: '/hr' },
+    { label: 'Leaves', icon: Calendar, color: '#ec4899', path: '/hr' },
+    { label: 'Payroll', icon: IndianRupee, color: '#f97316', path: '/payroll' },
+    { label: 'Invoices', icon: FileText, color: '#14b8a6', path: '/invoice-forge' },
+    { label: 'Reports', icon: BarChart, color: '#6366f1', path: '/finance' },
+    { label: 'Messages', icon: Sparkles, color: '#f43f5e', path: '/' },
+  ];
+
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center py-40 gap-4">
+       <Loader2 size={48} className="text-brand-500 animate-spin" />
+       <p className="text-surface-500 font-black uppercase tracking-widest text-xs text-center">Synchronizing Real-time Data...</p>
+    </div>
+  );
+
   return (
-    <div className="space-y-6 pb-12 max-w-[1400px] mx-auto">
+    <div className="space-y-6 pb-24 md:pb-12 max-w-[1400px] mx-auto px-1 md:px-0">
+      {/* Top Header - Exact Mockup Style */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
-            Analytics
-            <span className="text-xs font-bold px-3 py-1 rounded-full"
-              style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}>
-              {dateStr}
-            </span>
-          </h1>
-          <p className="text-[11px] font-bold mt-1 flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
-            <Sparkles size={12} className="text-brand-400 animate-pulse" />
-            Welcome back, {user?.name?.split(' ')[0]}. Here's what's happening.
-          </p>
+        className="flex flex-row items-center justify-between gap-4 mb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-black rounded-xl p-1.5 border border-white/10">
+             <img src="/assets/logo.png" alt="Logo" className="w-full h-full object-contain" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500">NexovTech</p>
+            <h1 className="text-lg md:text-3xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
+              Welcome back, Admin 👋
+            </h1>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
-          <div className="w-2 h-2 rounded-full" style={{ background: 'var(--border-default)' }} />
+        <div className="flex items-center gap-3">
+          <div className="relative p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/40 hover:text-white transition-colors cursor-pointer shadow-lg">
+             <Bell size={18} />
+             <div className="absolute top-2 right-2 w-1.5 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_10px_#22d3ee]" />
+          </div>
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MiniCard title="Total Projects" value={stats.totalProjects} change={5} icon={ShoppingCart} accent="#f59e0b" delay={0.05}>
-          <div className="w-full h-1.5 rounded-full" style={{ background: 'var(--border-default)' }}>
-            <div className="h-full rounded-full bg-amber-500" style={{ width: '62%' }} />
-          </div>
+      {/* DASHBOARD CARDS - Premium Neon Style */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <MiniCard title="Total Projects" value={stats.totalProjects} icon={Briefcase} accent="#06b6d4" delay={0.1} className="neon-border-cyan">
+           <div className="flex items-center gap-2 mt-1">
+              <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden">
+                 <div className="h-full bg-cyan-500 shadow-[0_0_8px_#06b6d4]" style={{ width: '65%' }} />
+              </div>
+              <span className="text-[8px] font-bold text-cyan-400">65%</span>
+           </div>
+        </MiniCard>
+        
+        <MiniCard title="Active Clients" value={stats.activeSubscribers} icon={Users} accent="#8b5cf6" delay={0.15}>
+           <div className="flex items-center gap-2 mt-1">
+              <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden">
+                 <div className="h-full bg-violet-500 shadow-[0_0_8px_#8b5cf6]" style={{ width: '82%' }} />
+              </div>
+              <span className="text-[8px] font-bold text-violet-400">82%</span>
+           </div>
         </MiniCard>
 
-        <MiniCard title="Completed" value={stats.overview.completed} change={12} icon={CheckSquare} accent="#10b981" delay={0.1}>
-          <div className="w-full h-1.5 rounded-full" style={{ background: 'var(--border-default)' }}>
-            <div className="h-full rounded-full bg-emerald-500" style={{ width: '85%' }} />
-          </div>
+        <MiniCard title="Revenue" value={`₹${(stats.mrr/1000).toFixed(1)}K`} icon={IndianRupee} accent="#10b981" delay={0.2}>
+           <div className="flex items-center gap-2 mt-1">
+              <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden">
+                 <div className="h-full bg-emerald-500 shadow-[0_0_8px_#10b981]" style={{ width: '74%' }} />
+              </div>
+              <span className="text-[8px] font-bold text-emerald-400">+12%</span>
+           </div>
         </MiniCard>
 
-        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-          className="theme-card rounded-2xl p-5 flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest theme-text-secondary">System Users</p>
-            <p className="text-[28px] font-black mt-1 tracking-tight leading-none" style={{ color: 'var(--text-primary)' }}>{stats.totalUsers}</p>
-            <p className="text-[10px] font-bold text-emerald-500 mt-1.5">▲ Live connectivity</p>
-          </div>
-          <DonutWidget data={[{name: 'Users', value: 100, color: '#a78bfa'}]} centerLabel={stats.totalUsers} />
-        </motion.div>
+        <MiniCard title="Pending Tasks" value={stats.overview.pending} icon={CheckSquare} accent="#f43f5e" delay={0.25}>
+           <div className="flex items-center gap-2 mt-1">
+              <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden">
+                 <div className="h-full bg-rose-500 shadow-[0_0_8px_#f43f5e]" style={{ width: '45%' }} />
+              </div>
+              <span className="text-[8px] font-bold text-rose-400">45%</span>
+           </div>
+        </MiniCard>
+      </div>
 
-        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-          className="theme-card rounded-2xl p-5 flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest theme-text-secondary">Clients</p>
-            <p className="text-[28px] font-black mt-1 tracking-tight leading-none" style={{ color: 'var(--text-primary)' }}>{stats.activeSubscribers}</p>
-            <p className="text-[10px] font-bold text-emerald-500 mt-1.5">▲ Managed Assets</p>
-          </div>
-          <DonutWidget data={[{name: 'Clients', value: 100, color: '#3b82f6'}]} centerLabel={stats.activeSubscribers} />
-        </motion.div>
+      {/* MANAGEMENT MODULES - Mobile Only */}
+      <div className="md:hidden space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-xs font-black uppercase tracking-widest text-white/60">Management Modules</h2>
+          <span className="text-[10px] font-bold text-brand-400">View All</span>
+        </div>
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+          {mobileModules.map((module, i) => (
+            <motion.div
+              key={module.label}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.03 }}
+              className="glass-card rounded-[22px] p-4 flex flex-col items-center justify-center gap-2.5 min-h-[90px] border-white/5 hover:border-brand-500/30"
+              onClick={() => window.location.href = module.path}
+            >
+              <div className="p-2.5 rounded-[14px]" style={{ background: `${module.color}12`, border: `1px solid ${module.color}25` }}>
+                 <module.icon size={20} style={{ color: module.color }} />
+              </div>
+              <span className="text-[9px] font-black uppercase tracking-[0.1em] text-white/70 text-center leading-tight">
+                {module.label}
+              </span>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

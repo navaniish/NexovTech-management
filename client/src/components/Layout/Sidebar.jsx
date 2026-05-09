@@ -29,6 +29,7 @@ const adminItems = [
   { path: '/finance', icon: IndianRupee, label: 'Billing', badge: '₹' },
   { path: '/invoice-forge', icon: FileText, label: 'Invoice Forge', badge: null },
   { path: '/id-cards', icon: CreditCard, label: 'ID Cards', badge: 'E-ID' },
+  { path: '/team', icon: Users, label: 'Team', badge: 'NEW' },
   { path: '/settings', icon: Settings, label: 'Preferences', badge: null },
 ];
 
