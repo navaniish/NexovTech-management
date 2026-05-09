@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Plus, X, CheckCircle2, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005/api';
+import API_URL from '../../config';
 
 const LEAVE_TYPES = ['Sick Leave', 'Casual Leave', 'Paid Leave', 'Work From Home'];
 

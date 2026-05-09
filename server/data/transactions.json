@@ -43,5 +43,50 @@
     "description": "Payroll Settlement - MANI CHARAN TEJA (5/2026)",
     "type": "Expense",
     "status": "Paid"
+  },
+  {
+    "id": "txn_pr_1778343619058",
+    "date": {
+      "_seconds": 1778343619,
+      "_nanoseconds": 58000000
+    },
+    "createdAt": {
+      "_seconds": 1778343619,
+      "_nanoseconds": 58000000
+    },
+    "amount": 4000,
+    "description": "Payroll Settlement - MANI CHARAN TEJA (5/2026)",
+    "type": "Expense",
+    "status": "Paid"
+  },
+  {
+    "id": "txn_pr_1778348560978",
+    "date": {
+      "_seconds": 1778348560,
+      "_nanoseconds": 978000000
+    },
+    "createdAt": {
+      "_seconds": 1778348560,
+      "_nanoseconds": 978000000
+    },
+    "amount": 4000,
+    "description": "Payroll Settlement - MANI CHARAN TEJA (5/2026)",
+    "type": "Expense",
+    "status": "Paid"
+  },
+  {
+    "id": "txn_pr_1778349381540",
+    "date": {
+      "_seconds": 1778349381,
+      "_nanoseconds": 540000000
+    },
+    "createdAt": {
+      "_seconds": 1778349381,
+      "_nanoseconds": 540000000
+    },
+    "amount": 4000,
+    "description": "Payroll Settlement - MANI CHARAN TEJA (5/2026)",
+    "type": "Expense",
+    "status": "Paid"
   }
 ]

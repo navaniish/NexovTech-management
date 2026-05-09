@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, CheckCircle2, LogIn, LogOut, Calendar, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005/api';
+import API_URL from '../../config';
 
 const MyAttendance = () => {
   const { user } = useAuth();

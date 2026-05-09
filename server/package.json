@@ -16,9 +16,14 @@
     "mongoose": "^9.5.0",
     "multer": "^2.1.1",
     "nodemon": "^3.1.14",
+    "openai": "^6.37.0",
+    "otplib": "^13.4.0",
     "pdfkit": "^0.18.0",
+    "puppeteer": "^24.43.0",
     "qrcode": "^1.5.4",
     "serverless-http": "^4.0.0",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "speakeasy": "^2.0.0",
+    "useragent": "^2.3.0"
   }
 }

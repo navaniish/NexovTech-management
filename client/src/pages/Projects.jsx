@@ -105,6 +105,7 @@ const Projects = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('pending'); // For mobile Kanban view
   const [newProject, setNewProject] = useState({ 
     title: '', 
     client: { name: '' }, 
@@ -223,11 +224,11 @@ const Projects = () => {
   );
 
   if (error) return (
-    <div className="text-center py-20 glass rounded-[40px] border border-rose-500/20">
+    <div className="text-center py-20 glass rounded-[40px] border border-rose-500/20 px-6">
        <AlertTriangle size={64} className="text-rose-500 mx-auto mb-6" />
-       <h3 className="text-2xl font-black text-white">Grid Connection Failure</h3>
-       <p className="text-surface-500 mt-2">{error}</p>
-       <button onClick={fetchProjects} className="mt-8 px-8 py-3 bg-brand-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-500 transition-all">Retry Link</button>
+       <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter">Grid Connection Failure</h3>
+       <p className="text-surface-500 mt-2 text-sm">{error}</p>
+       <button onClick={fetchProjects} className="mt-8 px-8 py-3 bg-brand-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-500 transition-all">Retry Link</button>
     </div>
   );
 
@@ -249,36 +250,55 @@ const Projects = () => {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter">Project Hub</h1>
-          <p className="text-surface-500 mt-2 font-medium">Manage and track company projects via real-time Kanban.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
+        <div className="px-1">
+          <h1 className="text-3xl md:text-4xl font-black text-white tracking-tighter uppercase">Project Hub</h1>
+          <p className="text-surface-500 mt-1 md:mt-2 text-xs md:text-sm font-medium">Real-time mission tracking and specialist deployment.</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-600 group-focus-within:text-brand-500 transition-colors" size={16} />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex-1 md:flex-none relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-600 group-focus-within:text-brand-500 transition-colors" size={14} />
             <input 
               type="text" 
-              placeholder="Filter missions..." 
-              className="bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 text-white"
+              placeholder="Search..." 
+              className="w-full md:w-auto bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/20 text-white"
             />
           </div>
-          <button className="p-3 bg-white/5 border border-white/10 rounded-xl text-surface-500 hover:text-white transition-all">
-            <Filter size={18} />
-          </button>
           <button 
             onClick={() => setShowModal(true)}
-            className="bg-brand-600 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-500 transition-all shadow-xl shadow-brand-600/30 flex items-center gap-2"
+            className="flex-1 md:flex-none bg-brand-600 text-white px-4 md:px-6 py-2.5 md:py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-500 transition-all shadow-xl shadow-brand-600/30 flex items-center justify-center gap-2 whitespace-nowrap"
           >
-            <Plus size={18} /> New Project
+            <Plus size={16} /> New Mission
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+      {/* Mobile Tab Switcher */}
+      <div className="lg:hidden flex p-1 bg-white/5 border border-white/10 rounded-2xl overflow-x-auto no-scrollbar">
+        {Object.values(columns).map((col) => (
+          <button
+            key={col.id}
+            onClick={() => setActiveTab(col.id)}
+            className={`flex-1 min-w-[100px] py-3 px-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex flex-col items-center gap-1 ${
+              activeTab === col.id ? 'bg-brand-600 text-white shadow-lg' : 'text-surface-500'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <div className={`w-1.5 h-1.5 rounded-full ${col.color}`}></div>
+              {col.title}
+            </div>
+            <span className={`text-[8px] ${activeTab === col.id ? 'text-white/70' : 'text-surface-700'}`}>{col.projects.length} Missions</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
         {Object.values(columns).map((column) => (
-          <div key={column.id} className="space-y-6">
-            <div className="flex items-center justify-between px-2">
+          <div 
+            key={column.id} 
+            className={`space-y-6 ${activeTab === column.id ? 'block' : 'hidden lg:block'}`}
+          >
+            <div className="hidden lg:flex items-center justify-between px-2">
               <div className="flex items-center gap-3">
                 <div className={`w-2.5 h-2.5 rounded-full ${column.color}`}></div>
                 <h3 className="text-white font-black text-sm uppercase tracking-widest">{column.title}</h3>
@@ -289,20 +309,26 @@ const Projects = () => {
               </button>
             </div>
             
-            <div className="space-y-5 min-h-[500px]">
-              {column.projects.length === 0 ? (
-                 <div className="h-32 border-2 border-dashed border-white/5 rounded-3xl flex items-center justify-center">
-                    <p className="text-[10px] font-black text-surface-800 uppercase tracking-widest">No Active Missions</p>
-                 </div>
-              ) : column.projects.map((project) => (
-                <TaskCard 
-                  key={project.id || project._id} 
-                  project={{ ...project, onDelete: handleDeleteProject }} 
-                />
-              ))}
+            <div className="space-y-4 md:space-y-5 min-h-[400px]">
+              <AnimatePresence mode="popLayout">
+                {column.projects.length === 0 ? (
+                   <motion.div 
+                     initial={{ opacity: 0 }}
+                     animate={{ opacity: 1 }}
+                     className="h-32 border-2 border-dashed border-white/5 rounded-[32px] flex items-center justify-center"
+                   >
+                      <p className="text-[10px] font-black text-surface-800 uppercase tracking-widest">No Active Missions</p>
+                   </motion.div>
+                ) : column.projects.map((project) => (
+                  <TaskCard 
+                    key={project.id || project._id} 
+                    project={{ ...project, onDelete: handleDeleteProject }} 
+                  />
+                ))}
+              </AnimatePresence>
               
-              <div className="h-24 border-2 border-dashed border-white/5 rounded-3xl flex items-center justify-center group hover:border-brand-500/20 transition-all cursor-pointer">
-                 <p className="text-[10px] font-black text-surface-700 uppercase tracking-widest group-hover:text-surface-500 transition-colors">Authorize New Phase</p>
+              <div className="h-20 border-2 border-dashed border-white/5 rounded-[32px] flex items-center justify-center group hover:border-brand-500/20 transition-all cursor-pointer">
+                 <p className="text-[10px] font-black text-surface-700 uppercase tracking-widest group-hover:text-surface-500 transition-colors">Authorize Phase</p>
               </div>
             </div>
           </div>
@@ -315,10 +341,10 @@ const Projects = () => {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setShowModal(false)} className="absolute inset-0 bg-[#020617]/80 backdrop-blur-md" />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md glass border border-white/10 rounded-[40px] p-10 shadow-2xl z-10"
+              className="relative w-full max-w-lg glass border border-white/10 rounded-[32px] md:rounded-[40px] p-6 md:p-10 shadow-2xl z-10 max-h-[90vh] overflow-y-auto custom-scrollbar"
             >
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-black text-white tracking-tighter">Launch Mission</h2>
+              <div className="flex justify-between items-center mb-6 md:mb-8">
+                <h2 className="text-2xl md:text-3xl font-black text-white tracking-tighter uppercase">Launch Mission</h2>
                 <button onClick={() => setShowModal(false)} className="p-2 text-surface-500 hover:text-white transition-colors"><X size={20} /></button>
               </div>
 
@@ -367,7 +393,7 @@ const Projects = () => {
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-surface-500 uppercase tracking-widest ml-1">Deploy Specialists</label>
-                  <div className="flex flex-wrap gap-2 p-3 bg-white/5 rounded-2xl border border-white/10 min-h-[60px]">
+                  <div className="flex flex-wrap gap-2 p-3 bg-white/5 rounded-2xl border border-white/10 min-h-[60px] max-h-[150px] overflow-y-auto custom-scrollbar">
                     {teamMembers.map((member) => {
                       const isSelected = newProject.team?.find(m => m.email === member.email);
                       return (
@@ -386,8 +412,10 @@ const Projects = () => {
                               : 'bg-white/5 border-white/5 text-surface-500 hover:border-white/20'
                           }`}
                         >
-                          <img src={member.avatar} className="w-5 h-5 rounded-lg" alt="" />
-                          <span className="text-[10px] font-bold">{member.name.split(' ')[0]}</span>
+                          <div className="w-5 h-5 rounded-lg overflow-hidden flex-shrink-0">
+                            <img src={member.avatar} className="w-full h-full object-cover" alt="" />
+                          </div>
+                          <span className="text-[10px] font-bold whitespace-nowrap">{member.name.split(' ')[0]}</span>
                         </button>
                       );
                     })}

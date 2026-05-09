@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Wallet, ArrowUpRight, Clock, CheckCircle2, Download, CreditCard, History, Loader2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5005/api';
+import API_URL from '../../config';
 
 const Earnings = () => {
   const { user } = useAuth();

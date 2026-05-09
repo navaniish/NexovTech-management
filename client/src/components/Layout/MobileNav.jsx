@@ -14,20 +14,18 @@ import { useAuth } from '../../context/AuthContext';
 const MobileNav = () => {
   const { user } = useAuth();
   
-  const navItems = user?.role === 'Admin' ? [
+  // Only show bottom navigation bar for Admin. Remove for team/employees.
+  if (user?.role !== 'Admin') return null;
+
+  const navItems = [
     { path: '/', icon: Home, label: 'Home' },
     { path: '/projects', icon: Briefcase, label: 'Projects' },
     { path: '/finance', icon: BarChart2, label: 'Analytics' },
     { path: '/settings', icon: User, label: 'Profile' },
-  ] : [
-    { path: '/employee/dashboard', icon: LayoutDashboard, label: 'Home' },
-    { path: '/employee/projects', icon: Briefcase, label: 'Projects' },
-    { path: '/employee/salary', icon: BarChart2, label: 'Earnings' },
-    { path: '/settings', icon: User, label: 'Profile' },
   ];
 
   return (
-    <div className="md:hidden fixed bottom-6 left-6 right-6 z-[100]">
+    <div className="md:hidden fixed bottom-6 left-6 right-6 z-[40]">
       <div className="relative h-16 backdrop-blur-xl bg-black/40 border border-white/10 rounded-[28px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-around px-4">
         {navItems.map((item) => (
           <NavLink

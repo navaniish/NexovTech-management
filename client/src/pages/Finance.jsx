@@ -104,14 +104,18 @@ const Finance = () => {
   const totalRevenue = transactions.filter(t => t.type === 'Revenue').reduce((acc, t) => acc + t.amount, 0);
   const pendingCollections = transactions.filter(t => t.status === 'Pending').reduce((acc, t) => acc + t.amount, 0);
   const operationalCosts = transactions.filter(t => t.type === 'Expense').reduce((acc, t) => acc + t.amount, 0);
+  const netProfit = totalRevenue - operationalCosts;
 
   // Generate chart data from real transactions
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const chartData = days.map(day => {
-    const dayTotal = transactions
+    const dayRevenue = transactions
       .filter(t => days[new Date(t.date).getDay()] === day && t.type === 'Revenue')
       .reduce((acc, t) => acc + t.amount, 0);
-    return { name: day, revenue: dayTotal };
+    const dayExpense = transactions
+      .filter(t => days[new Date(t.date).getDay()] === day && t.type === 'Expense')
+      .reduce((acc, t) => acc + t.amount, 0);
+    return { name: day, revenue: dayRevenue, expense: dayExpense };
   });
 
   if (loading) return (
@@ -168,6 +172,7 @@ const Finance = () => {
                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#475569', fontSize: 11, fontWeight: 800}} tickFormatter={(val) => `₹${val/1000}k`} />
                    <Tooltip contentStyle={{ backgroundColor: '#020617', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px' }} />
                    <Area type="monotone" dataKey="revenue" stroke="#00d2ff" strokeWidth={3} fillOpacity={1} fill="url(#colorFinance)" />
+                   <Area type="monotone" dataKey="expense" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="rgba(244, 63, 94, 0.1)" />
                  </AreaChart>
               </ResponsiveContainer>
            </div>
@@ -239,6 +244,22 @@ const Finance = () => {
                      placeholder="e.g. Reliance Industries"
                    />
                 </div>
+                <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-black uppercase tracking-widest ml-1">Tax Protocol (GST)</label>
+                       <div className="flex items-center gap-4 px-6 py-4 bg-white/5 border border-white/5 rounded-2xl">
+                          <input type="checkbox" className="w-5 h-5 rounded-lg border-white/10 bg-brand-600" defaultChecked />
+                          <span className="text-xs font-bold text-black">Apply 18% GST</span>
+                       </div>
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-black uppercase tracking-widest ml-1">Client GSTIN</label>
+                       <input 
+                         className="w-full px-6 py-4 bg-white/5 border border-white/5 rounded-2xl text-black focus:outline-none focus:border-brand-500/50" 
+                         placeholder="e.g. 27AAACN1234F1Z5"
+                       />
+                    </div>
+                 </div>
                 <div className="grid grid-cols-2 gap-6">
                    <div className="space-y-2">
                       <label className="text-[10px] font-black text-black uppercase tracking-widest ml-1">Amount (INR)</label>

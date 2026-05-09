@@ -5,29 +5,27 @@ import {
   Lock,
   Mail,
   ArrowRight,
-  ShieldCheck,
-  Code,
-  Globe,
-  User as UserIcon,
-  ChevronRight,
-  Sparkles,
-  Swords,
-  Gamepad2,
-  Zap,
-  AlertTriangle,
-  FileText,
   Eye,
-  EyeOff
+  EyeOff,
+  User as UserIcon,
+  Sparkles,
+  AlertTriangle,
+  UserPlus,
+  ShieldCheck,
+  CheckCircle2,
+  ChevronLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [otpToken, setOtpToken] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
+  const [require2FA, setRequire2FA] = useState(false);
+  
   const { login, resetPassword } = useAuth();
   const navigate = useNavigate();
 
@@ -37,9 +35,16 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const result = await login(email, password);
-      if (result.success) navigate('/');
-      else setError(result.message);
+      const result = await login(email, password, require2FA ? otpToken : null);
+      if (result.success) {
+        if (result.require2FA) {
+          setRequire2FA(true);
+        } else {
+          navigate('/');
+        }
+      } else {
+        setError(result.message);
+      }
     } catch (err) {
       setError('Connection to mission control failed. Try again.');
     } finally {
@@ -47,209 +52,114 @@ const Login = () => {
     }
   };
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      setError('Please enter your email address first, then click Forgot.');
-      return;
-    }
+  const handleBackToLogin = () => {
+    setRequire2FA(false);
+    setOtpToken('');
     setError('');
-    setSuccessMsg('');
-    try {
-      const result = await resetPassword(email.trim().toLowerCase());
-      if (result.success) {
-        setSuccessMsg('Password reset link sent! Check your email inbox (and spam folder).');
-      } else {
-        setError(result.message || 'Failed to send reset email. Please try again.');
-      }
-    } catch (err) {
-      setError('Failed to send reset email. Please try again.');
-    }
   };
 
   return (
-    <div className="min-h-screen bg-transparent flex flex-col md:flex-row font-sans selection:bg-brand-500/30 overflow-hidden">
-      {/* Left Side: Cinematic Branding */}
-      <div className="hidden md:flex md:w-[55%] relative items-center justify-center p-12 lg:p-20">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#020617] via-transparent to-transparent"></div>
-        </div>
+    <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
+      {/* Background Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-64 bg-brand-600/20 blur-[120px] rounded-full -translate-y-1/2 pointer-events-none" />
 
-        <div className="relative z-10 w-full max-w-xl space-y-16">
-          <div className="flex items-center justify-center mb-10">
-            <div className="w-[160%] h-80 bg-transparent flex items-center justify-center overflow-visible transition-all duration-700 hover:scale-105">
-              <img
-                src="/assets/logo.png"
-                alt="NexovTech Logo"
-                className="w-full h-full object-contain filter drop-shadow-[0_0_50px_rgba(0,210,255,0.4)]"
-                style={{ mixBlendMode: 'screen' }}
-              />
-            </div>
-          </div>
+      {/* Desktop View Logo (Top) */}
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <motion.div 
+          animate={{ 
+            boxShadow: ["0 0 30px rgba(139,92,246,0.1)", "0 0 60px rgba(139,92,246,0.3)", "0 0 30px rgba(139,92,246,0.1)"],
+            borderColor: ["rgba(139,92,246,0.1)", "rgba(139,92,246,0.4)", "rgba(139,92,246,0.1)"]
+          }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          className="w-40 h-28 bg-black border rounded-[32px] p-5 flex items-center justify-center shadow-2xl"
+        >
+          <img src="/logo.jpg" alt="NexovGen SaaS" className="w-full h-auto object-contain" />
+        </motion.div>
+      </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[32px] p-8 shadow-2xl relative overflow-hidden group max-w-sm"
-          >
-            <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-40 transition-opacity">
-              <Gamepad2 size={64} className="rotate-12" />
-            </div>
-
-            <div className="flex items-center gap-5 mb-8">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-xl">
-                <UserIcon size={32} />
-              </div>
-              <div>
-                <h3 className="theme-text-primary font-black text-xl tracking-tight">{name || 'New Explorer'}</h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-brand-400 text-[10px] font-black uppercase tracking-[0.2em]">Level 1</span>
-                  <div className="w-1 h-1 rounded-full bg-white/20"></div>
-                  <span className="text-surface-500 text-[10px] font-bold uppercase tracking-widest">Active Ops</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between text-[11px] text-surface-400 font-black uppercase tracking-widest px-1">
-                <span className="flex items-center gap-1.5"><Zap size={10} className="text-amber-500" /> Mission Sync</span>
-                <span>Ready</span>
-              </div>
-              <div className="w-full h-2.5 bg-white/5 rounded-full p-[2px] border border-white/5">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: '100%' }}
-                  className="h-full bg-gradient-to-r from-brand-500 to-blue-400 rounded-full shadow-[0_0_15px_rgba(139,92,246,0.6)]"
-                ></motion.div>
-              </div>
-            </div>
-          </motion.div>
-
-          <div className="space-y-6">
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-6xl lg:text-7xl font-black theme-text-primary leading-[1.1] tracking-tighter"
-            >
-              Enterprise <br />
-              <span className="text-brand-500">Management.</span>
-            </motion.h1>
-            <motion.p className="text-surface-400 text-xl leading-relaxed max-w-md font-medium">
-              Synchronize your missions, track earnings, and forge documents in the unified NexovTech ecosystem.
-            </motion.p>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Side: Authentication Form */}
-      <div className="w-full md:w-[45%] flex items-center justify-center p-8 md:p-12 lg:p-20 relative">
-        <div className="w-full max-w-[440px] space-y-12 backdrop-blur-xl bg-white/5 p-10 rounded-[40px] border border-white/10 shadow-2xl relative z-10">
-          <div className="space-y-3">
-            <h2 className="text-5xl font-black theme-text-primary tracking-tighter">
-              Mission Access
-            </h2>
-            <p className="text-surface-500 text-lg font-medium">
-              Provide credentials to enter the realm.
-            </p>
-          </div>
-
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="relative z-10 w-full max-w-[480px]">
+        <div className="bg-[#12121a] rounded-[40px] p-8 md:p-12 border border-white/5 shadow-2xl relative overflow-hidden">
+          
           <AnimatePresence mode="wait">
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl flex items-center gap-3 text-rose-500 text-sm font-bold"
-              >
-                <AlertTriangle size={18} />
-                {error}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <AnimatePresence mode="wait">
-            {successMsg && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex items-center gap-3 text-emerald-600 text-sm font-bold"
-              >
-                <Mail size={18} />
-                {successMsg}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="space-y-4">
-              <label className="text-[11px] font-black text-surface-400 uppercase tracking-[0.2em] ml-1">Email Address</label>
-              <div className="relative group">
-                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-surface-600 group-focus-within:text-brand-500 transition-colors pointer-events-none">
-                  <Mail size={20} />
+            {!require2FA ? (
+              <motion.div key="login" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-black text-white tracking-tight mb-2">Access Portal</h2>
+                  <p className="text-surface-500 text-sm font-medium">Verify your operational credentials.</p>
                 </div>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nexus@nexovtech.com"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 theme-text-primary text-lg placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500/40 transition-all font-medium"
-                  required
-                />
-              </div>
-            </div>
 
-            <div className="space-y-4">
-              <div className="flex justify-between items-center px-1">
-                <label className="text-[11px] font-black text-surface-400 uppercase tracking-[0.2em]">Password</label>
-                <button type="button" onClick={handleForgotPassword} className="text-[10px] font-black text-brand-500 hover:text-brand-400 uppercase tracking-widest transition-colors">Forgot?</button>
-              </div>
-              <div className="relative group">
-                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-surface-600 group-focus-within:text-brand-500 transition-colors pointer-events-none">
-                  <Lock size={20} />
-                </div>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-14 theme-text-primary text-lg placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500/40 transition-all font-medium"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-surface-600 hover:text-brand-500 transition-colors"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {error && (
+                  <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl flex items-center gap-3 text-rose-500 text-xs font-bold mb-6">
+                    <AlertTriangle size={16} />
+                    {error}
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-white/70 ml-1">Email Identifier</label>
+                    <div className="relative group">
+                      <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-600 group-focus-within:text-brand-500 transition-colors" />
+                      <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="sarah@nexov.tech"
+                        className="w-full bg-[#181824] border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-white placeholder:text-surface-700 focus:outline-none focus:border-brand-500/50 transition-all" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-white/70 ml-1">Auth Key</label>
+                    <div className="relative group">
+                      <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-600 group-focus-within:text-brand-500 transition-colors" />
+                      <input required type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
+                        className="w-full bg-[#181824] border border-white/5 rounded-2xl py-4 pl-12 pr-12 text-white placeholder:text-surface-700 focus:outline-none focus:border-brand-500/50 transition-all" />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-600 hover:text-brand-500">
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button type="submit" disabled={loading} className="w-full bg-brand-600 hover:bg-brand-500 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-brand-600/10 flex items-center justify-center gap-3 disabled:opacity-50">
+                    {loading ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <>Initiate Access <ArrowRight size={18} /></>}
+                  </button>
+                </form>
+              </motion.div>
+            ) : (
+              <motion.div key="2fa" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
+                <button onClick={handleBackToLogin} className="mb-6 flex items-center gap-2 text-surface-500 hover:text-white transition-colors text-xs font-black uppercase tracking-widest">
+                  <ChevronLeft size={16} /> Back to Login
                 </button>
-              </div>
-            </div>
+                
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 bg-brand-500/10 rounded-2xl flex items-center justify-center text-brand-500 mx-auto mb-4 shadow-2xl border border-brand-500/20">
+                     <ShieldCheck size={32} />
+                  </div>
+                  <h2 className="text-2xl font-black text-white tracking-tight mb-2">2FA Verification</h2>
+                  <p className="text-surface-500 text-sm font-medium px-4">Enter the synchronization code from your authenticator device.</p>
+                </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-brand-600 hover:bg-brand-500 text-white font-black py-5 rounded-2xl transition-all shadow-2xl shadow-brand-600/30 flex items-center justify-center gap-3 group text-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  Enter Realm
-                  <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </button>
-          </form>
+                {error && (
+                  <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl flex items-center gap-3 text-rose-500 text-xs font-bold mb-6">
+                    <AlertTriangle size={16} />
+                    {error}
+                  </div>
+                )}
 
-          {/* Admin Context Helper */}
-          {email === 'nexovtech@myyahoo.com' && (
-            <div className="p-4 bg-brand-500/5 border border-brand-500/10 rounded-xl flex items-center gap-3">
-              <Sparkles size={16} className="text-brand-500" />
-              <p className="text-[10px] text-brand-400 font-bold uppercase tracking-widest">Permanent Admin Credentials Detected</p>
-            </div>
-          )}
+                <form onSubmit={handleSubmit} className="space-y-6">
+                   <div className="space-y-4 text-center">
+                      <input required type="text" maxLength="6" value={otpToken} onChange={(e) => setOtpToken(e.target.value)} placeholder="0 0 0 0 0 0"
+                        className="w-full bg-[#181824] border border-white/5 rounded-2xl py-6 text-center text-3xl font-black tracking-[0.5em] text-brand-400 placeholder:text-surface-800 focus:outline-none focus:border-brand-500/50 transition-all" />
+                      <p className="text-[10px] text-surface-700 font-bold uppercase tracking-widest">Identity Shield Active</p>
+                   </div>
+
+                   <button type="submit" disabled={loading || otpToken.length < 6} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-emerald-600/10 flex items-center justify-center gap-3 disabled:opacity-20">
+                    {loading ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <>Verify Identity <CheckCircle2 size={18} /></>}
+                  </button>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

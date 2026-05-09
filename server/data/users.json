@@ -10,7 +10,16 @@
     "email": "manicharanteja1234@gmail.com",
     "role": "EDITOR",
     "phone": "7780662246",
-    "avatar": "http://localhost:5005/uploads/avatars/avatar-1778137041400-541752919.jpeg"
+    "avatar": "http://localhost:5005/uploads/avatars/avatar-1778137041400-541752919.jpeg",
+    "twoFactorSecret": "OBWUIWB2PVTVOTJTIBVTKULSIZWFKWDLKVRE6MTSGY4UM63RNVTA",
+    "twoFactorEnabled": true,
+    "backupCodes": [
+      "BC8UJTBP",
+      "Y40D6OS0",
+      "8ETB5HD5",
+      "8M0LR1QP",
+      "YKCIOS5D"
+    ]
   },
   {
     "id": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
@@ -64,7 +73,9 @@
       "_seconds": 1778152073,
       "_nanoseconds": 781000000
     },
-    "avatar": "/uploads/avatars/avatar-1778316297522-937278961.jpeg"
+    "avatar": "/uploads/avatars/avatar-1778316297522-937278961.jpeg",
+    "twoFactorEnabled": false,
+    "twoFactorSecret": "IF3DIUDLF56VCKJEFZZGM5KSLNNHAT3XKU2HE533HFIXGWBZHBUQ"
   },
   {
     "id": "manicharanteja1234@gmail.com",
@@ -92,10 +103,13 @@
     },
     "name": "NexovTech Administrator",
     "email": "nexovtech@myyahoo.com",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin123",
     "createdAt": {
-      "_seconds": 1778134330,
-      "_nanoseconds": 841000000
+      "_seconds": 1778362976,
+      "_nanoseconds": 892000000
     },
-    "avatar": "/uploads/avatars/avatar-1778317063275-345119420.jpeg"
+    "password": "$2b$10$2L52ujMhYN3BJUkeylMfeeMq2me528AGJrhUzK08HXhB9beWuTjau",
+    "twoFactorEnabled": false,
+    "twoFactorSecret": "J5NTUIKGGNVWQ5ZZKRXVA6BGIJWTIKCDIBAESST3LJJDYUJGMZ5A"
   }
 ]

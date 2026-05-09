@@ -55,4 +55,44 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// Get Specialist Documents (Vault)
+router.get('/:id/documents', async (req, res) => {
+  try {
+    const docs = await fallbackDb.find('documents', { userId: req.params.id });
+    res.json(docs);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to access document vault' });
+  }
+});
+
+// Upload Document to Vault
+router.post('/:id/documents', async (req, res) => {
+  const { name, type, size } = req.body;
+  const docData = {
+    userId: req.params.id,
+    name,
+    type,
+    size,
+    date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+    createdAt: new Date()
+  };
+
+  try {
+    const saved = await fallbackDb.save('documents', docData);
+    res.json(saved);
+  } catch (err) {
+    res.status(500).json({ message: 'Document archiving failed' });
+  }
+});
+
+// Remove Document
+router.delete('/documents/:docId', async (req, res) => {
+  try {
+    await fallbackDb.deleteOne('documents', req.params.docId);
+    res.json({ message: 'Document purged from vault' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to purge document' });
+  }
+});
+
 module.exports = router;

@@ -20,5 +20,27 @@
     "checkOut": null,
     "attendanceStatus": "Present",
     "remarks": ""
+  },
+  {
+    "id": "att_1778358962521",
+    "date": "2026-05-09",
+    "createdAt": "2026-05-09T20:36:02.521Z",
+    "checkIn": "2026-05-09T20:36:02.521Z",
+    "totalHours": 0,
+    "employeeId": "3Nrcp0hlh1e04bQwjAnrwzQvodD2",
+    "checkOut": null,
+    "attendanceStatus": "Present",
+    "remarks": "Marked by Admin as Present"
+  },
+  {
+    "id": "att_1778358970719",
+    "date": "2026-05-09",
+    "createdAt": "2026-05-09T20:36:10.719Z",
+    "checkIn": "2026-05-09T20:36:10.719Z",
+    "totalHours": 0,
+    "employeeId": "gundasaranya2006@gmail.com",
+    "checkOut": null,
+    "attendanceStatus": "Present",
+    "remarks": "Marked by Admin as Present"
   }
 ]

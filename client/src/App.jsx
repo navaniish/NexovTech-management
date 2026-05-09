@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import FuturisticBackground from './components/Common/FuturisticBackground';
@@ -21,6 +21,10 @@ import Settings from './pages/Settings';
 import Login from './pages/Login';
 import AdminPayroll from './pages/AdminPayroll';
 import AdminHR from './pages/AdminHR';
+import AdminAttendance from './pages/AdminAttendance';
+import AdminLeaves from './pages/AdminLeaves';
+import AdminRecruitment from './pages/AdminRecruitment';
+import AIAuditEngine from './pages/AIAuditEngine';
 
 // Employee Pages
 import EmployeeDashboard from './pages/employee/Dashboard';
@@ -72,6 +76,10 @@ function AppRoutes() {
         <Route path="/invoice-forge" element={<InvoiceGenerator />} />
         <Route path="/payroll" element={<AdminPayroll />} />
         <Route path="/hr" element={<AdminHR />} />
+        <Route path="/attendance" element={<AdminAttendance />} />
+        <Route path="/leaves" element={<AdminLeaves />} />
+        <Route path="/recruitment" element={<AdminRecruitment />} />
+        <Route path="/audit" element={<AIAuditEngine />} />
         <Route path="/id-cards" element={<AdminIDCards />} />
         <Route path="/settings" element={<Settings />} />
       </Route>

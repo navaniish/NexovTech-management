@@ -18,7 +18,16 @@ const userSchema = new mongoose.Schema({
     tasksCompleted: { type: Number, default: 0 },
     onTimeRate: { type: Number, default: 100 },
     rating: { type: Number, default: 5 }
-  }
+  },
+  // Security Suite Fields
+  passwordUpdatedAt: { type: Date, default: Date.now },
+  twoFactorEnabled: { type: Boolean, default: false },
+  twoFactorSecret: { type: String },
+  backupCodes: [{ type: String }],
+  bankName: { type: String },
+  accountNumber: { type: String },
+  ifscCode: { type: String },
+  upiId: { type: String }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

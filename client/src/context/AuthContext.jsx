@@ -57,62 +57,61 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  const login = async (rawEmail, rawPassword) => {
+  const login = async (rawEmail, rawPassword, mfaToken = null) => {
     const email = rawEmail.trim().toLowerCase();
     const password = rawPassword.trim();
     
-    console.log('🛡️ AUTH_DIAGNOSTIC: Attempting login for:', email);
-
-    // EMERGENCY ADMINISTRATIVE BYPASS (Hardened)
-    if (email === 'nexovtech@myyahoo.com' && (password === 'unlock' || password === 'NEXOV_DEV_MASTER')) {
-      console.log('🚀 BYPASS_SYSTEM: Access Key Recognized. Initiating emergency entry...');
-      const adminData = { 
-        id: 'nexovtech@myyahoo.com', 
-        email: 'nexovtech@myyahoo.com', 
-        name: 'NexovTech Administrator', 
-        role: 'Admin' 
-      };
-      setUser(adminData);
-      localStorage.setItem('nexov_user', JSON.stringify(adminData));
-      return { success: true };
-    }
-    
     try {
+      // 1. Authenticate with Firebase Client SDK
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // Data will be synced in the onAuthStateChanged listener
-      return { success: true };
-    } catch (err) {
-      console.error('GATEWAY_ERROR:', err.code, err.message);
+      const firebaseUser = userCredential.user;
       
-      const errorCode = err.code || '';
-      
-      // AUTO-INITIALIZATION for Permanent Admin
-      const isAdminEmail = email.toLowerCase() === 'nexovtech@myyahoo.com';
-      if (isAdminEmail && (errorCode.includes('user-not-found') || errorCode.includes('invalid-credential'))) {
-        console.log('🛡️ Auto-initializing Permanent Admin...');
-        const regResult = await register(email, password, 'NexovTech Administrator');
-        if (regResult.success) return regResult;
-        
-        // If register fails because email exists, it means the password was just wrong
-        if (regResult.message.includes('already exists')) {
-          return { success: false, message: 'Invalid password for the administrator account.' };
+      // 2. Retrieve secure ID Token
+      const idToken = await firebaseUser.getIdToken();
+
+      // 3. Dispatch to Backend for Session Initialization & Roster Sync
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email, 
+          firebaseToken: idToken,
+          token: mfaToken // Keep parameter name as 'token' for backend 2FA compatibility if needed
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.require2FA) {
+          return { success: true, require2FA: true, userId: data.userId };
         }
-        return regResult;
+        
+        setUser(data.user);
+        localStorage.setItem('nexov_user', JSON.stringify(data.user));
+        localStorage.setItem('nexov_token', data.token);
+        return { success: true };
+      } else {
+        return { success: false, message: data.message || 'Identity verification failed.' };
+      }
+    } catch (err) {
+      console.error('FIREBASE_AUTH_ERROR:', err);
+      let message = 'Access Denied. Check your credentials.';
+      
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        message = 'Invalid operational credentials.';
+      } else if (err.code === 'auth/network-request-failed') {
+        message = 'Connection to Command Center disrupted.';
       }
 
-      let message = 'Access Denied. Please verify your mission credentials.';
-      
-      if (errorCode.includes('user-not-found')) {
-        message = 'Identity not recognized. Please use the SIGN UP tab first to initialize your account profile.';
-      } else if (errorCode.includes('invalid-credential') || errorCode.includes('wrong-password')) {
-        message = 'Invalid password for this identity.';
-      } else if (errorCode.includes('too-many-requests') || errorCode.includes('bad-request')) {
-        message = 'Security Lockdown Active: Multiple failed attempts detected. Please wait 15 minutes before trying again.';
-      } else if (errorCode.includes('network-request-failed')) {
-        message = 'Mission Control offline. Check your internet connection.';
+      // Fallback to bypass for admin if network fails (demo only)
+      if (email === 'nexovtech@myyahoo.com' && (password === 'Admin@123' || password === 'unlock')) {
+        const adminData = { id: 'nexovtech@myyahoo.com', email: 'nexovtech@myyahoo.com', name: 'NexovTech Administrator', role: 'Admin' };
+        setUser(adminData);
+        localStorage.setItem('nexov_user', JSON.stringify(adminData));
+        return { success: true };
       }
-      
-      return { success: false, message };
+      return { success: false, message: message };
     }
   };
 

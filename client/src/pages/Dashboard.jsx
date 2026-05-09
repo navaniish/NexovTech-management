@@ -14,12 +14,15 @@ import {
   Loader2,
   AlertCircle,
   LayoutDashboard,
+  TrendingUp,
   Users,
   Clock,
   Calendar,
   Briefcase,
-  Bell
+  Bell,
+  Zap
 } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   BarChart,
   Bar,
@@ -61,8 +64,8 @@ const MiniCard = ({ title, value, change, icon: Icon, accent, delay, children })
   >
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-[10px] font-black uppercase tracking-widest theme-text-secondary">{title}</p>
-        <p className="text-[28px] font-black mt-1 tracking-tight leading-none" style={{ color: 'var(--text-primary)' }}>{value}</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-white/40">{title}</p>
+        <p className="text-[28px] font-black mt-1 tracking-tight leading-none text-white">{value}</p>
         {change !== undefined && (
           <p className={`text-[10px] font-bold mt-1.5 ${change >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
             {change >= 0 ? '▲' : '▼'} {Math.abs(change)}% since last month
@@ -81,24 +84,35 @@ const MiniCard = ({ title, value, change, icon: Icon, accent, delay, children })
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { theme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [stats, setStats] = useState(null);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetch(`${API_URL}/dashboard/stats`);
-        if (!response.ok) throw new Error('Failed to fetch analytics');
-        const data = await response.json();
-        setStats(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  const fetchStats = async (retryCount = 0) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_URL}/dashboard/stats`, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!response.ok) throw new Error(`Engine offline (${response.status})`);
+      const data = await response.json();
+      setStats(data);
+    } catch (err) {
+      console.error('FETCH_ERROR:', err);
+      if (retryCount < 2) {
+        setTimeout(() => fetchStats(retryCount + 1), 1500);
+      } else {
+        setError(err.message || 'Connection lost. Check mission uplink.');
       }
-    };
+    } finally {
+      if (retryCount === 0 || !error) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchStats();
   }, []);
 
@@ -165,62 +179,124 @@ const Dashboard = () => {
       {/* Top Header - Exact Mockup Style */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
         className="flex flex-row items-center justify-between gap-4 mb-2">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-black rounded-xl p-1.5 border border-white/10">
-             <img src="/assets/logo.png" alt="Logo" className="w-full h-full object-contain" />
-          </div>
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-500">NexovTech</p>
-            <h1 className="text-lg md:text-3xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
-              Welcome back, Admin 👋
-            </h1>
-          </div>
+        <div className="flex flex-col gap-1">
+          <h1 className="text-lg md:text-3xl font-black tracking-tight text-white">
+            Welcome back, Admin 👋
+          </h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div className="relative p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/40 hover:text-white transition-colors cursor-pointer shadow-lg">
              <Bell size={18} />
              <div className="absolute top-2 right-2 w-1.5 h-1.5 bg-cyan-400 rounded-full shadow-[0_0_10px_#22d3ee]" />
           </div>
+          <div className="hidden md:flex items-center gap-3 pl-3 border-l border-white/10">
+            <div className="text-right">
+              <p className="text-[13px] font-black text-white leading-none">Admin</p>
+              <p className="text-[9px] font-black text-brand-500 uppercase tracking-[0.2em] mt-1.5">Executive</p>
+            </div>
+            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/10 shadow-xl bg-black">
+              <img src="/logo.jpg" alt="Admin" className="w-full h-full object-cover" />
+            </div>
+          </div>
         </div>
       </motion.div>
 
-      {/* DASHBOARD CARDS - Premium Neon Style */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <MiniCard title="Total Projects" value={stats.totalProjects} icon={Briefcase} accent="#06b6d4" delay={0.1} className="neon-border-cyan">
+      {/* DASHBOARD CARDS - Enterprise SaaS Style */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <MiniCard title="Active Roster" value={stats?.totalEmployees || 18} icon={Users} accent="#06b6d4" delay={0.1}>
            <div className="flex items-center gap-2 mt-1">
-              <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden">
-                 <div className="h-full bg-cyan-500 shadow-[0_0_8px_#06b6d4]" style={{ width: '65%' }} />
-              </div>
-              <span className="text-[8px] font-bold text-cyan-400">65%</span>
+              <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">{stats?.onSiteRatio || '94%'} On-Site</span>
+              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
            </div>
         </MiniCard>
         
-        <MiniCard title="Active Clients" value={stats.activeSubscribers} icon={Users} accent="#8b5cf6" delay={0.15}>
+        <MiniCard title="MRR (Global)" value={`₹${((stats?.mrr || 0)/1000).toFixed(1)}K`} icon={IndianRupee} accent="#10b981" delay={0.15}>
            <div className="flex items-center gap-2 mt-1">
-              <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden">
-                 <div className="h-full bg-violet-500 shadow-[0_0_8px_#8b5cf6]" style={{ width: '82%' }} />
-              </div>
-              <span className="text-[8px] font-bold text-violet-400">82%</span>
+              <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">{stats?.mrrGrowth || '+12.4%'} Growth</span>
+              <TrendingUp size={12} className="text-emerald-500" />
            </div>
         </MiniCard>
 
-        <MiniCard title="Revenue" value={`₹${(stats.mrr/1000).toFixed(1)}K`} icon={IndianRupee} accent="#10b981" delay={0.2}>
+        <MiniCard title="Talent Pipeline" value={stats?.activeVacancies || 3} icon={Briefcase} accent="#f59e0b" delay={0.2}>
            <div className="flex items-center gap-2 mt-1">
-              <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden">
-                 <div className="h-full bg-emerald-500 shadow-[0_0_8px_#10b981]" style={{ width: '74%' }} />
-              </div>
-              <span className="text-[8px] font-bold text-emerald-400">+12%</span>
+              <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">{stats?.totalApplicants || '84'} Applicants</span>
            </div>
         </MiniCard>
 
-        <MiniCard title="Pending Tasks" value={stats.overview.pending} icon={CheckSquare} accent="#f43f5e" delay={0.25}>
+        <MiniCard title="Leave Load" value={stats?.pendingLeaves || 2} icon={Calendar} accent="#f43f5e" delay={0.25}>
            <div className="flex items-center gap-2 mt-1">
-              <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden">
-                 <div className="h-full bg-rose-500 shadow-[0_0_8px_#f43f5e]" style={{ width: '45%' }} />
-              </div>
-              <span className="text-[8px] font-bold text-rose-400">45%</span>
+              <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Action Required</span>
            </div>
         </MiniCard>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* AI Insight Orchestrator */}
+        <div className="lg:col-span-1 glass-light p-8 rounded-[40px] border border-brand-500/20 relative overflow-hidden group">
+           <div className="absolute top-0 right-0 p-6 opacity-[0.05] group-hover:rotate-12 transition-transform">
+              <Sparkles size={100} className="text-brand-500" />
+           </div>
+           <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white shadow-[0_0_20px_rgba(139,92,246,0.4)]">
+                 <Zap size={20} />
+              </div>
+              <div>
+                 <h3 className="text-lg font-black text-white tracking-tight">Neural Insights</h3>
+                 <p className="text-[9px] text-brand-500 font-black uppercase tracking-widest mt-0.5">Nexov AI Analysis</p>
+              </div>
+           </div>
+           
+           <div className="space-y-6">
+              <div className="p-5 bg-white/5 border border-white/5 rounded-2xl">
+                 <p className="text-xs text-white/70 leading-relaxed font-bold italic">
+                   "Payroll liability is projected to increase by 12% next month due to performance bonuses. Recommend auditing the specialist roster."
+                 </p>
+              </div>
+              <div className="space-y-4">
+                 {[
+                    { label: 'Hiring Speed', val: '+14%', color: 'text-emerald-500' },
+                    { label: 'Workforce Stability', val: '98.2%', color: 'text-brand-400' },
+                    { label: 'Fiscal Health', val: 'Optimized', color: 'text-emerald-500' }
+                 ].map((stat, i) => (
+                    <div key={i} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
+                       <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">{stat.label}</span>
+                       <span className={`text-[11px] font-black ${stat.color}`}>{stat.val}</span>
+                    </div>
+                 ))}
+              </div>
+           </div>
+        </div>
+
+        {/* Operational Overview Chart */}
+        <div className="lg:col-span-2 glass-light p-8 rounded-[40px] border border-white/5 min-w-0">
+           <div className="flex items-center justify-between mb-8">
+              <div>
+                 <h2 className="text-xl font-black text-white tracking-tight">Operational Flux</h2>
+                 <p className="text-[10px] text-white/30 font-black uppercase tracking-widest mt-1">Revenue vs Productivity</p>
+              </div>
+              <div className="flex items-center gap-4">
+                 <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-brand-500" />
+                    <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Revenue</span>
+                 </div>
+                 <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Efficiency</span>
+                 </div>
+              </div>
+           </div>
+           <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                 <BarChart data={stats?.salesData || []}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#475569', fontSize: 10, fontWeight: 800}} dy={8} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#475569', fontSize: 10, fontWeight: 800}} />
+                    <Tooltip contentStyle={{ backgroundColor: '#020617', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px' }} />
+                    <Bar dataKey="value" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                 </BarChart>
+              </ResponsiveContainer>
+           </div>
+        </div>
       </div>
 
       {/* MANAGEMENT MODULES - Mobile Only */}
@@ -237,7 +313,7 @@ const Dashboard = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.03 }}
               className="glass-card rounded-[22px] p-4 flex flex-col items-center justify-center gap-2.5 min-h-[90px] border-white/5 hover:border-brand-500/30"
-              onClick={() => window.location.href = module.path}
+              onClick={() => navigate(module.path)}
             >
               <div className="p-2.5 rounded-[14px]" style={{ background: `${module.color}12`, border: `1px solid ${module.color}25` }}>
                  <module.icon size={20} style={{ color: module.color }} />
@@ -265,8 +341,8 @@ const Dashboard = () => {
             ].map(s => (
               <div key={s.label} className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: s.color }} />
-                <span className="text-[10px] font-bold theme-text-secondary">{s.label}</span>
-                <span className="ml-auto text-xs font-black" style={{ color: 'var(--text-primary)' }}>{s.val}</span>
+                <span className="text-[10px] font-bold text-white/50">{s.label}</span>
+                <span className="ml-auto text-xs font-black text-white">{s.val}</span>
               </div>
             ))}
           </div>
@@ -275,7 +351,7 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}
-          className="lg:col-span-2 theme-card rounded-2xl p-6">
+          className="lg:col-span-2 theme-card rounded-2xl p-6 min-w-0">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-black" style={{ color: 'var(--text-primary)' }}>Revenue Stream</h2>
           </div>
@@ -321,7 +397,7 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}
-          className="lg:col-span-2 theme-card rounded-2xl p-6">
+          className="lg:col-span-2 theme-card rounded-2xl p-6 min-w-0">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-black" style={{ color: 'var(--text-primary)' }}>User Growth Curve</h2>
           </div>

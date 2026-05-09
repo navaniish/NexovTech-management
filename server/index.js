@@ -1,4 +1,5 @@
 const express = require('express');
+// NEXOV-HEARTBEAT: Premium PDF Architecture Active [SYNC_2026-05-10T0310]
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
@@ -13,12 +14,18 @@ try { if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: tr
 
 const app = express();
 
-app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] }));
+// Hardened CORS for Mobile APK + Netlify compatibility
+app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
+// Routes - High Priority Security Bridge
+const securityRoutes = require('./routes/securityRoutes');
+app.post('/api/security/2fa/setup', (req, res) => securityRoutes.handleSetup(req, res));
+app.post('/api/security/2fa/verify', (req, res) => securityRoutes.handleVerify(req, res));
+app.use('/api/security', securityRoutes);
+
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
@@ -31,6 +38,9 @@ app.use('/api/payroll', require('./routes/payrollRoutes'));
 app.use('/api/attendance', require('./routes/attendanceRoutes'));
 app.use('/api/idcard', require('./routes/idCardRoutes'));
 app.use('/api/leave', require('./routes/leaveRoutes'));
+app.use('/api/ai', require('./routes/aiRoutes'));
+app.use('/api/recruitment', require('./routes/recruitmentRoutes'));
+app.use('/api/audit', require('./routes/auditRoutes'));
 
 // Health check
 app.get('/', (req, res) => {
@@ -39,8 +49,17 @@ app.get('/', (req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error('UNHANDLED_API_ERROR:', err.stack || err.message || err);
-  res.status(500).json({ message: 'Internal server error' });
+  console.error('🔥 UNHANDLED_API_ERROR:', {
+    message: err.message,
+    stack: err.stack,
+    path: req.path,
+    method: req.method,
+    body: req.body
+  });
+  res.status(500).json({ 
+    message: 'Internal server error', 
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined 
+  });
 });
 
 // === INITIALIZATION ===

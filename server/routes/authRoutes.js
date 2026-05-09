@@ -3,6 +3,11 @@ const router = express.Router();
 const fallbackDb = require('../utils/fallbackDb');
 const upload = require('../middleware/upload');
 const path = require('path');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const User = require('../models/User');
+const LoginHistory = require('../models/LoginHistory');
+const useragent = require('useragent');
 
 // POST /auth/upload-avatar/:id — Upload profile photo
 router.post('/upload-avatar/:id', upload.single('avatar'), async (req, res) => {
@@ -47,7 +52,7 @@ router.get('/me', async (req, res) => {
 
 // POST /auth/register — Create/Sync profile from Firebase
 router.post('/register', async (req, res) => {
-  const { uid, email, name, role } = req.body;
+  const { uid, email, name, role, password } = req.body;
   const userData = { 
     firebaseUid: uid, 
     email: email.toLowerCase(), 
@@ -57,8 +62,105 @@ router.post('/register', async (req, res) => {
     createdAt: new Date()
   };
 
+  if (password) {
+    const salt = await bcrypt.genSalt(10);
+    userData.password = await bcrypt.hash(password, salt);
+  }
+
   const savedUser = await fallbackDb.save('users', userData);
   res.json(savedUser);
+});
+
+// POST /auth/login — Secure Identity Verification & Session Initialization
+router.post('/login', async (req, res) => {
+  const { email, firebaseToken, token } = req.body; // 'token' here is the 2FA MFA token
+  const agent = useragent.parse(req.headers['user-agent']);
+  const { admin } = require('../firebaseAdmin');
+  
+  try {
+    let firebaseUser;
+
+    // 1. Verify Firebase ID Token if provided (Modern Flow)
+    if (firebaseToken) {
+      try {
+        firebaseUser = await admin.auth().verifyIdToken(firebaseToken);
+        console.log(`✅ FIREBASE_VERIFIED: [${firebaseUser.email}]`);
+      } catch (authErr) {
+        console.error('🔥 FIREBASE_TOKEN_INVALID:', authErr.message);
+        return res.status(401).json({ message: 'Identity verification failed. Token expired or invalid.' });
+      }
+    } else {
+      return res.status(400).json({ message: 'Identity token required for authorization.' });
+    }
+
+    // 2. Fetch/Sync User from Registry
+    const lookupEmail = firebaseUser.email || email.toLowerCase();
+    let user = await fallbackDb.findOne('users', { email: lookupEmail });
+    
+    if (!user) {
+       console.log(`🚀 AUTO_SYNC: New identity detected [${lookupEmail}]. Provisioning roster profile...`);
+       user = await fallbackDb.save('users', {
+         email: lookupEmail,
+         firebaseUid: firebaseUser.uid,
+         name: firebaseUser.name || lookupEmail.split('@')[0],
+         role: lookupEmail === 'nexovtech@myyahoo.com' ? 'Admin' : 'Employee',
+         avatar: firebaseUser.picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${lookupEmail}`,
+         createdAt: new Date()
+       });
+    }
+
+    // 3. Check 2FA (TOTP)
+    if (user.twoFactorEnabled) {
+      if (!token) {
+        return res.json({ require2FA: true, userId: user.id || user._id });
+      }
+      const speakeasy = require('speakeasy');
+      const verified = speakeasy.totp.verify({
+        secret: user.twoFactorSecret,
+        encoding: 'base32',
+        token
+      });
+      if (!verified) {
+        return res.status(400).json({ message: 'Invalid 2FA token' });
+      }
+    }
+
+    // 4. Record Success History
+    await fallbackDb.save('loginHistory', {
+      userId: user.id || user._id,
+      email: user.email,
+      ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
+      device: agent.device.toString(),
+      browser: agent.toAgent(),
+      os: agent.os.toString(),
+      loginStatus: 'Success',
+      location: 'Firebase Auth',
+      timestamp: new Date()
+    });
+
+    // 5. Generate Internal Session JWT
+    const jwtToken = jwt.sign(
+      { id: user.id || user._id, role: user.role, firebaseUid: firebaseUser.uid },
+      process.env.JWT_SECRET || 'nexovtech_secret_key',
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      token: jwtToken,
+      user: {
+        id: user.id || user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        twoFactorEnabled: user.twoFactorEnabled
+      }
+    });
+
+  } catch (err) {
+    console.error('🔥 SESSION_INIT_ERROR:', err);
+    res.status(500).json({ message: 'Mission Control failed to initialize session.' });
+  }
 });
 
 // Grant Access (Admin)
@@ -91,10 +193,14 @@ router.post('/grant-access', async (req, res) => {
       }
     }
 
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(tempPassword, salt);
+
     const userData = {
       name,
       email: email.trim().toLowerCase(),
       firebaseUid: firebaseUser.uid,
+      password: hashedPassword,
       role: role || 'Employee',
       bankName,
       accountNumber,

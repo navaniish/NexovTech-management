@@ -102,7 +102,7 @@ const AdminHR = () => {
           <div className="h-[180px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#000', fontSize: 9, fontWeight: 900 }} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#ffffff', fontSize: 9, fontWeight: 900 }} />
                 <Tooltip contentStyle={{ background: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px' }} />
                 <Bar dataKey="value" radius={[8, 8, 0, 0]}>
                   {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
@@ -227,10 +227,10 @@ const AttendanceTab = ({ attendance, dateFilter, setDateFilter, search, setSearc
           <tbody className="divide-y" style={{ borderColor: 'var(--border-default)' }}>
             {filtered.map(a => (
               <tr key={a.id} className="hover:bg-black/[0.02] transition-colors">
-                <td className="py-3 px-2 text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{getName(a.employeeId)}</td>
-                <td className="py-3 px-2 text-sm" style={{ color: 'var(--text-primary)' }}>{a.checkIn ? new Date(a.checkIn).toLocaleTimeString() : '—'}</td>
-                <td className="py-3 px-2 text-sm" style={{ color: 'var(--text-primary)' }}>{a.checkOut ? new Date(a.checkOut).toLocaleTimeString() : '—'}</td>
-                <td className="py-3 px-2 text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{a.totalHours || 0}h</td>
+                <td className="py-3 px-2 text-sm font-bold text-white">{getName(a.employeeId)}</td>
+                <td className="py-3 px-2 text-sm text-white/60">{a.checkIn ? new Date(a.checkIn).toLocaleTimeString() : '—'}</td>
+                <td className="py-3 px-2 text-sm text-white/60">{a.checkOut ? new Date(a.checkOut).toLocaleTimeString() : '—'}</td>
+                <td className="py-3 px-2 text-sm font-bold text-white">{a.totalHours || 0}h</td>
                 <td className="py-3 px-2">
                   <StatusBadge status={a.attendanceStatus} />
                 </td>
@@ -414,8 +414,8 @@ const DirectoryTab = ({ team, search, setSearch, onTeamUpdated }) => {
               <div key={emp.id || emp._id} className="flex items-center gap-4 p-4 rounded-2xl border transition-all hover:shadow-md" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-default)' }}>
                 <img src={emp.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${emp.name}`} className="w-12 h-12 rounded-xl" alt="" />
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{emp.name}</p>
-                  <p className="text-[10px] font-bold" style={{ color: 'var(--text-primary)' }}>{emp.email}</p>
+                  <p className="font-bold text-sm truncate text-white">{emp.name}</p>
+                  <p className="text-[10px] font-bold text-white/40">{emp.email}</p>
                 </div>
                 <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">Active</span>
                 <button onClick={() => handleDelete(emp.id || emp._id)} className="p-1.5 rounded-lg hover:bg-rose-500/10 text-rose-500 transition-colors">

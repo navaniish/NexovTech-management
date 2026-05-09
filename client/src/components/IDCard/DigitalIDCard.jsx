@@ -84,9 +84,9 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
 
               {/* ── Logo + Company Name ── */}
               <div className="relative z-10 flex items-center gap-2.5 p-4 pt-5 pl-5">
-                <div className="w-10 h-10 rounded-full border-[1.5px] border-[#D41920] flex items-center justify-center bg-[#0d0d0d] p-1 shadow-lg">
+                <div className="w-12 h-10 rounded-none border-[1.5px] border-[#D41920] flex items-center justify-center bg-[#0d0d0d] p-1 shadow-lg">
                   <img 
-                    src="/assets/logo.jpeg" 
+                    src="/logo.jpg" 
                     alt="" 
                     className="w-full h-full object-contain rounded-full" 
                     onError={(e) => {
@@ -159,9 +159,9 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
           >
             {/* Logo centered at top */}
             <div className="flex flex-col items-center pt-7 pb-4">
-              <div className="w-14 h-14 rounded-full border-[2.5px] border-[#C9A84C] flex items-center justify-center bg-[#0a0a0a] p-2.5">
+              <div className="w-14 h-14 rounded-none border-[2.5px] border-[#C9A84C] flex items-center justify-center bg-[#0a0a0a] p-2.5">
                  <img 
-                  src="/assets/logo.jpeg" 
+                  src="/logo.jpg" 
                   alt="" 
                   className="w-full h-full object-contain rounded-full" 
                   onError={(e) => {

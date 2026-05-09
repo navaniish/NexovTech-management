@@ -1,0 +1,47 @@
+[
+  {
+    "id": "d.navaneeswar@gmail.com",
+    "os": "Windows 10.0.0",
+    "browser": "Chrome 147.0.0",
+    "ipAddress": "::1",
+    "location": "Local Sync",
+    "loginStatus": "Failed",
+    "device": "Other 0.0.0",
+    "userId": "M9k04c1c5Mein3NcwqPRE5nVqOf2",
+    "email": "d.navaneeswar@gmail.com",
+    "timestamp": {
+      "_seconds": 1778342632,
+      "_nanoseconds": 598000000
+    }
+  },
+  {
+    "id": "gundasaranya2006@gmail.com",
+    "os": "Windows 10.0.0",
+    "browser": "Chrome 147.0.0",
+    "ipAddress": "::1",
+    "location": "Firebase Auth",
+    "loginStatus": "Success",
+    "device": "Other 0.0.0",
+    "userId": "gundasaranya2006@gmail.com",
+    "email": "gundasaranya2006@gmail.com",
+    "timestamp": {
+      "_seconds": 1778363434,
+      "_nanoseconds": 687000000
+    }
+  },
+  {
+    "id": "manicharanteja1234@gmail.com",
+    "os": "Windows 10.0.0",
+    "browser": "Chrome 147.0.0",
+    "ipAddress": "::1",
+    "location": "Firebase Auth",
+    "loginStatus": "Success",
+    "device": "Other 0.0.0",
+    "userId": "3Nrcp0hlh1e04bQwjAnrwzQvodD2",
+    "email": "manicharanteja1234@gmail.com",
+    "timestamp": {
+      "_seconds": 1778363260,
+      "_nanoseconds": 362000000
+    }
+  }
+]

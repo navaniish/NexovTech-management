@@ -94,6 +94,16 @@
     "status": "Active"
   },
   {
+    "id": "manicharanteja1234@gmail.com",
+    "expiryDate": "2028-05-09T18:45:34.337Z",
+    "qrToken": "0e1ae38c4c73f5e2b1d82fd5e8ac1917",
+    "employeeId": "NXG-WZQVODD2",
+    "issueDate": "2026-05-09T18:45:34.337Z",
+    "userId": "manicharanteja1234@gmail.com",
+    "email": "manicharanteja1234@gmail.com",
+    "status": "Active"
+  },
+  {
     "id": "vdQqcBnKLaL92zJA8g4v",
     "expiryDate": "2028-05-08T18:33:43.058Z",
     "qrToken": "0e3203cc965ce0735775b8b1a5cec47e",

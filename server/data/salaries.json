@@ -2,9 +2,19 @@
   {
     "id": "xvukOiKPGZw6Pd605qHX",
     "salaryType": "Per Project",
-    "bonus": 0,
-    "baseSalary": 4000,
     "employeeId": "3Nrcp0hlh1e04bQwjAnrwzQvodD2",
-    "deductions": 0
+    "deductions": 0,
+    "metadata": {
+      "service": "video editing",
+      "projectName": "hellohii"
+    },
+    "bonus": -1,
+    "breakdown": {
+      "systems": 0,
+      "web": 0,
+      "ai": 0,
+      "video": 9997
+    },
+    "baseSalary": 9997
   }
 ]

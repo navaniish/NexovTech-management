@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Briefcase, Calendar, Target, Users, ExternalLink, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import API_URL from '../../config';
 
 const MyProjects = () => {
   const { user } = useAuth();
   const [projects, setProjects] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:5005/api/projects')
+    fetch(`${API_URL}/projects`)
       .then(r => r.json()).then(setProjects)
       .catch(() => setProjects([
         { _id: '1', title: 'NexovTech AI Platform', description: 'Building a real-time SaaS dashboard with AI integration.', deadline: new Date(Date.now() + 7 * 86400000).toISOString(), status: 'In Progress', progress: 72, team: [{ name: 'Sarah M.' }, { name: 'Alex J.' }], sector: 'AI' },

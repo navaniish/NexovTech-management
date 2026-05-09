@@ -81,6 +81,7 @@ const EmployeeSidebar = ({ mobileOpen, setMobileOpen }) => {
             <NavLink
               key={item.path}
               to={item.path}
+              onClick={() => setMobileOpen(false)}
               className={({ isActive }) => `
               relative flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 group
               ${isActive ? 'bg-brand-600/10 text-brand-400' : 'theme-text-secondary hover:theme-text-primary'}

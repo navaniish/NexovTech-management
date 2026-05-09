@@ -64,11 +64,11 @@ const EmployeeDashboard = () => {
   return (
     <div className="space-y-8 pb-12 max-w-[1400px] mx-auto">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl font-black tracking-tight flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
+        <h1 className="text-3xl font-black tracking-tight flex items-center gap-3 text-white">
           Mission Control
-          <span className="text-[9px] font-black px-3 py-1 rounded-full bg-brand-500/10 text-brand-400 uppercase tracking-widest">Employee</span>
+          <span className="text-[9px] font-black px-3 py-1 rounded-full bg-brand-500/10 text-brand-400 uppercase tracking-widest">Specialist</span>
         </h1>
-        <p className="text-[11px] font-bold mt-1 flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
+        <p className="text-[11px] font-bold mt-1 flex items-center gap-2 text-white/50">
           <Sparkles size={12} className="text-brand-400 animate-pulse" />
           Welcome back, {user?.name?.split(' ')[0]}. Here's your assignment overview.
         </p>
@@ -80,8 +80,8 @@ const EmployeeDashboard = () => {
             className="theme-card rounded-2xl p-5 group">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest theme-text-secondary">{s.label}</p>
-                <p className="text-[28px] font-black mt-1 tracking-tight leading-none" style={{ color: 'var(--text-primary)' }}>{s.value}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/40">{s.label}</p>
+                <p className="text-[28px] font-black mt-1 tracking-tight leading-none text-white">{s.value}</p>
               </div>
               <div className="p-2.5 rounded-xl group-hover:scale-110 transition-transform" style={{ background: `${s.accent}22` }}>
                 <s.icon size={18} style={{ color: s.accent }} />
@@ -95,10 +95,10 @@ const EmployeeDashboard = () => {
         <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}
           className="lg:col-span-2 theme-card rounded-2xl p-6">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-base font-black flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <h2 className="text-base font-black flex items-center gap-2 text-white">
               <Target size={18} className="text-brand-400" /> Active Missions
             </h2>
-            <span className="text-[9px] font-black px-2 py-1 rounded-md theme-text-secondary" style={{ background: 'var(--card-hover-bg)' }}>
+            <span className="text-[9px] font-black px-2 py-1 rounded-md text-white/40 bg-white/5">
               {tasks.filter(t => t.status !== 'Completed').length} deployments
             </span>
           </div>
@@ -110,8 +110,8 @@ const EmployeeDashboard = () => {
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: priorityColor(task.priority), boxShadow: task.priority === 'High' ? '0 0 8px rgba(239,68,68,0.4)' : 'none' }} />
                   <div>
-                    <p className="text-sm font-black leading-none" style={{ color: 'var(--text-primary)' }}>{task.title}</p>
-                    <p className="text-[10px] font-bold theme-text-secondary mt-0.5">{task.projectId?.title || 'Direct Assignment'}</p>
+                    <p className="text-sm font-black leading-none text-white">{task.title}</p>
+                    <p className="text-[10px] font-bold text-white/40 mt-0.5">{task.projectId?.title || 'Direct Assignment'}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -127,22 +127,22 @@ const EmployeeDashboard = () => {
 
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}
           className="theme-card rounded-2xl p-6">
-          <h2 className="text-base font-black mb-5 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+          <h2 className="text-base font-black mb-5 flex items-center gap-2 text-white">
             <Calendar size={18} className="text-brand-400" /> Network Events
           </h2>
           <div className="space-y-6">
-            <div className="flex gap-4 relative pl-5" style={{ borderLeft: '2px solid var(--border-default)' }}>
+            <div className="flex gap-4 relative pl-5 border-l-2 border-white/10">
               <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-brand-500" />
               <div>
-                <h4 className="text-sm font-black leading-none" style={{ color: 'var(--text-primary)' }}>Daily Standup</h4>
-                <p className="text-[10px] font-bold theme-text-secondary mt-1">Today • 10:00 AM</p>
+                <h4 className="text-sm font-black leading-none text-white">Daily Standup</h4>
+                <p className="text-[10px] font-bold text-white/40 mt-1">Today • 10:00 AM</p>
               </div>
             </div>
-            <div className="flex gap-4 relative pl-5 opacity-40" style={{ borderLeft: '2px solid var(--border-default)' }}>
-              <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-surface-600" />
+            <div className="flex gap-4 relative pl-5 opacity-40 border-l-2 border-white/10">
+              <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-white/20" />
               <div>
-                <h4 className="text-sm font-black leading-none" style={{ color: 'var(--text-primary)' }}>Sprint Review</h4>
-                <p className="text-[10px] font-bold theme-text-secondary mt-1">Tomorrow • 04:00 PM</p>
+                <h4 className="text-sm font-black leading-none text-white">Sprint Review</h4>
+                <p className="text-[10px] font-bold text-white/40 mt-1">Tomorrow • 04:00 PM</p>
               </div>
             </div>
           </div>

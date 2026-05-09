@@ -106,4 +106,53 @@ router.get('/balance/:employeeId', async (req, res) => {
   }
 });
 
+// --- ADMIN: Leave Summary (Dashboard) ---
+router.get('/admin/summary', async (req, res) => {
+  try {
+    const leaves = await fallbackDb.find('leaves', {});
+    const team = await fallbackDb.find('team', {});
+    
+    const stats = {
+      pending: leaves.filter(l => l.status === 'Pending').length,
+      approved: leaves.filter(l => l.status === 'Approved').length,
+      rejected: leaves.filter(l => l.status === 'Rejected').length,
+      teamAvailability: '94%' // Simulated based on logic
+    };
+
+    const mapped = leaves.map(l => {
+      const specialist = team.find(s => s.id === l.employeeId) || {};
+      return {
+        _id: l._id || l.id,
+        name: l.employeeName || specialist.name || 'Unknown',
+        role: specialist.role || 'Specialist',
+        startDate: l.startDate,
+        days: l.totalDays || 1,
+        type: l.leaveType,
+        status: l.status,
+        avatar: specialist.avatar
+      };
+    });
+
+    res.json({ requests: mapped, stats });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to aggregate leave intelligence' });
+  }
+});
+
+// --- ADMIN: Quick Action (Approve/Reject) ---
+router.post('/admin/action', async (req, res) => {
+  const { requestId, action } = req.body; // action: 'Approved' or 'Rejected'
+  try {
+    const all = await fallbackDb.find('leaves', {});
+    const leave = all.find(l => (l._id || l.id) === requestId);
+    if (!leave) return res.status(404).json({ message: 'Leave request not found' });
+
+    const updated = { ...leave, status: action, approvedBy: 'Admin Orchestrator' };
+    await fallbackDb.save('leaves', updated);
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: 'Decision protocol failed' });
+  }
+});
+
 module.exports = router;

@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import API_URL from '../../config';
-import { Search, Bell, HelpCircle, Sparkles, Command, ChevronDown, Menu, IndianRupee, FileText } from 'lucide-react';
+import { Search, Bell, HelpCircle, Sparkles, Command, ChevronDown, Menu, IndianRupee, FileText, LogOut, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const TopBar = ({ onMenuToggle }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [notifications, setNotifications] = useState([
     { id: 1, title: 'Identity Synced', desc: 'Specialist ID #442 synchronized successfully.', time: '2m ago', type: 'system', icon: Sparkles, color: '#22d3ee', path: '/id-cards' },
     { id: 2, title: 'Payroll Processed', desc: 'Monthly cycle for May 2024 finalized.', time: '1h ago', type: 'finance', icon: IndianRupee, color: '#10b981', path: '/payroll' },
@@ -20,10 +23,11 @@ const TopBar = ({ onMenuToggle }) => {
   const clearNotifications = () => setNotifications([]);
   const handleNotifyClick = (path) => {
     setShowNotifications(false);
-    window.location.href = path;
+    navigate(path);
   };
 
   return (
+    <>
     <header className="backdrop-blur-xl bg-[#020617]/60 h-20 flex items-center justify-between px-4 md:px-10 sticky top-0 z-[60] border-b border-white/10 shadow-2xl">
       <div className="flex items-center gap-2 md:gap-4 flex-1">
         <button 
@@ -32,41 +36,26 @@ const TopBar = ({ onMenuToggle }) => {
         >
           <Menu size={24} />
         </button>
-        {/* Search */}
-        <div className="flex-1 max-w-2xl group hidden sm:block">
-        <div className="relative">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 theme-text-secondary group-focus-within:text-brand-400 transition-colors pointer-events-none">
-            <Search size={20} />
-          </div>
-          <input
-            type="text"
-            placeholder="Search missions, specialists, or reports... (Ctrl+K)"
-            className="w-full pl-12 pr-16 py-3.5 rounded-[20px] focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500/30 transition-all theme-text-primary font-medium text-sm"
-            style={{
-              background: 'rgba(15, 23, 42, 0.6)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              color: 'var(--text-primary)',
-            }}
-          />
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 rounded-lg border border-white/10 theme-text-secondary group-focus-within:text-brand-500 transition-colors"
-            style={{ background: 'rgba(255, 255, 255, 0.03)' }}>
-            <Command size={12} />
-            <span className="text-[10px] font-black tracking-widest uppercase">K</span>
-          </div>
-        </div>
-        </div>
+        {/* Mobile Search Trigger */}
+        <button 
+          onClick={() => setShowMobileSearch(true)}
+          className="sm:hidden p-2.5 rounded-xl bg-white/5 text-surface-400 active:bg-brand-500/10 active:text-brand-400 transition-all"
+        >
+          <Search size={20} />
+        </button>
       </div>
 
       <div className="flex items-center gap-2 md:gap-6">
         <div className="flex items-center gap-2">
           {/* Notifications */}
           <div className="relative">
-            <button
+            <motion.button
               onClick={() => {
                 setShowNotifications(!showNotifications);
                 setShowHelp(false);
                 setShowProfileMenu(false);
               }}
+              whileTap={{ scale: 0.9 }}
               className={`p-3 rounded-2xl transition-all relative group ${showNotifications ? 'bg-cyan-500/10' : 'hover:bg-white/5'}`}
               style={{ color: showNotifications ? '#22d3ee' : 'var(--text-secondary)' }}
             >
@@ -74,16 +63,19 @@ const TopBar = ({ onMenuToggle }) => {
               {notifications.length > 0 && !showNotifications && (
                 <span className="absolute top-3.5 right-3.5 w-2.5 h-2.5 bg-cyan-500 rounded-full border-2 border-[#020617] shadow-[0_0_10px_#06b6d4]"></span>
               )}
-            </button>
+            </motion.button>
             
             <AnimatePresence>
               {showNotifications && (
-                <motion.div
-                  initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                  className="absolute right-0 mt-4 w-80 bg-white rounded-[28px] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.5)] z-[100]"
-                >
+                <>
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    onClick={() => setShowNotifications(false)} className="fixed inset-0 bg-black/40 z-[90] md:hidden" />
+                  <motion.div
+                    initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                    className="fixed md:absolute top-20 right-4 left-4 md:left-auto md:w-80 bg-white rounded-[28px] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.5)] z-[100]"
+                  >
                   <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Mission Control</h3>
                     <button onClick={clearNotifications} className="text-[10px] font-bold text-brand-600 hover:text-brand-700 transition-colors uppercase tracking-widest">Clear All</button>
@@ -122,33 +114,38 @@ const TopBar = ({ onMenuToggle }) => {
                       <button className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-600 hover:text-brand-700 transition-colors">Audit Full Activity Log</button>
                     </div>
                   )}
-                </motion.div>
+                 </motion.div>
+               </>
               )}
             </AnimatePresence>
           </div>
 
           {/* Help */}
           <div className="relative">
-            <button
+            <motion.button
               onClick={() => {
                 setShowHelp(!showHelp);
                 setShowNotifications(false);
                 setShowProfileMenu(false);
               }}
+              whileTap={{ scale: 0.9 }}
               className={`p-3 rounded-2xl transition-all relative group ${showHelp ? 'bg-violet-500/10' : 'hover:bg-white/5'}`}
               style={{ color: showHelp ? '#a78bfa' : 'var(--text-secondary)' }}
             >
               <HelpCircle size={22} />
-            </button>
+            </motion.button>
             
             <AnimatePresence>
               {showHelp && (
-                <motion.div
-                  initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                  className="absolute right-0 mt-4 w-80 bg-white rounded-[32px] p-1 shadow-[0_40px_80px_rgba(0,0,0,0.5)] z-[100]"
-                >
+                <>
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    onClick={() => setShowHelp(false)} className="fixed inset-0 bg-black/40 z-[90] md:hidden" />
+                  <motion.div
+                    initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                    className="fixed md:absolute top-20 right-4 left-4 md:left-auto md:w-80 bg-white rounded-[32px] p-1 shadow-[0_40px_80px_rgba(0,0,0,0.5)] z-[100]"
+                  >
                   <div className="p-6 bg-white rounded-[31px]">
                     <div className="flex items-center gap-4 mb-6">
                       <div className="p-3 bg-violet-100 rounded-2xl">
@@ -180,7 +177,8 @@ const TopBar = ({ onMenuToggle }) => {
                       Summon Specialist
                     </button>
                   </div>
-                </motion.div>
+                 </motion.div>
+               </>
               )}
             </AnimatePresence>
           </div>
@@ -246,9 +244,14 @@ const TopBar = ({ onMenuToggle }) => {
                 </button>
                 <div className="mt-2 pt-2 border-t border-white/5">
                    <button 
-                    onClick={() => { window.location.href = '/settings' }}
+                    onClick={() => { setShowProfileMenu(false); navigate('/settings'); }}
                     className="w-full flex items-center gap-3 p-3 rounded-xl text-sm font-bold text-white/60 hover:text-white transition-colors">
                      Settings
+                   </button>
+                   <button 
+                    onClick={() => { setShowProfileMenu(false); logout(); navigate('/login'); }}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl text-sm font-bold text-rose-400 hover:text-rose-300 transition-colors">
+                     <LogOut size={16} /> Logout
                    </button>
                 </div>
               </motion.div>
@@ -257,6 +260,43 @@ const TopBar = ({ onMenuToggle }) => {
         </div>
       </div>
     </header>
+
+    {/* Mobile Search Overlay */}
+    <AnimatePresence>
+      {showMobileSearch && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="fixed inset-0 z-[200] bg-[#020617] p-4 flex flex-col gap-6"
+        >
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-500">Secure Search</p>
+            <button onClick={() => setShowMobileSearch(false)} className="p-2 text-white/40 hover:text-white"><X size={24} /></button>
+          </div>
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+            <input 
+              autoFocus
+              placeholder="Search specialists or missions..."
+              className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all"
+            />
+          </div>
+          <div className="flex-1 overflow-y-auto space-y-4">
+             <p className="text-[9px] font-black text-white/20 uppercase tracking-widest px-2">Recent Queries</p>
+             <div className="space-y-2">
+                {['Database Optimization', 'Security Audit 2024', 'Sarah Jenkins'].map(q => (
+                  <button key={q} className="w-full flex items-center justify-between p-4 bg-white/[0.02] rounded-2xl text-xs text-white/60 hover:bg-white/5 transition-all">
+                    <span>{q}</span>
+                    <Command size={12} className="text-white/10" />
+                  </button>
+                ))}
+             </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    </>
   );
 };
 

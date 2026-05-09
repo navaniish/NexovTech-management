@@ -14,33 +14,57 @@ import {
   Clock,
   Calendar,
   Globe,
-  CreditCard
+  CreditCard,
+  ShieldCheck
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import API_URL from '../../config';
 
-const adminItems = [
-  { path: '/', icon: LayoutDashboard, label: 'Dashboard', badge: null },
-  { path: '/clients', icon: Users, label: 'Subscribers', badge: null },
-  { path: '/projects', icon: Briefcase, label: 'Project Hub', badge: null },
-  { path: '/hr', icon: Users, label: 'HR Center', badge: 'HR' },
-  { path: '/payroll', icon: IndianRupee, label: 'Payroll', badge: null },
-  { path: '/finance', icon: IndianRupee, label: 'Billing', badge: '₹' },
-  { path: '/invoice-forge', icon: FileText, label: 'Invoice Forge', badge: null },
-  { path: '/id-cards', icon: CreditCard, label: 'ID Cards', badge: 'E-ID' },
-  { path: '/team', icon: Users, label: 'Team', badge: 'NEW' },
-  { path: '/settings', icon: Settings, label: 'Preferences', badge: null },
+const adminGroups = [
+  {
+    title: 'Core Workspace',
+    items: [
+      { path: '/', icon: LayoutDashboard, label: 'Global Overview' },
+      { path: '/projects', icon: Briefcase, label: 'Project Hub', badge: 'LIVE' },
+      { path: '/clients', icon: Globe, label: 'Client Portals' },
+    ]
+  },
+  {
+    title: 'Human Resources',
+    items: [
+      { path: '/team', icon: Users, label: 'Specialist Roster', badge: 'NEW' },
+      { path: '/hr', icon: Users, label: 'HR Command' },
+      { path: '/id-cards', icon: CreditCard, label: 'Digital IDs' },
+      { path: '/attendance', icon: Clock, label: 'Smart Attendance' },
+    ]
+  },
+  {
+    title: 'Financial Management',
+    items: [
+      { path: '/payroll', icon: IndianRupee, label: 'Payroll Engine' },
+      { path: '/finance', icon: IndianRupee, label: 'Transaction Ledger', badge: '₹' },
+      { path: '/invoice-forge', icon: FileText, label: 'Invoice Forge' },
+    ]
+  },
+  {
+    title: 'System & AI',
+    items: [
+      { path: '/ai', icon: Sparkles, label: 'AI Command Center', badge: 'LIVE' },
+      { path: '/audit', icon: ShieldCheck, label: 'Audit Intelligence', badge: 'NEW' },
+      { path: '/settings', icon: Settings, label: 'Preferences' },
+    ]
+  }
 ];
 
 const employeeItems = [
-  { path: '/employee/dashboard', icon: LayoutDashboard, label: 'Dashboard', badge: null },
-  { path: '/employee/tasks', icon: Briefcase, label: 'My Tasks', badge: null },
-  { path: '/employee/projects', icon: Globe, label: 'My Projects', badge: null },
-  { path: '/employee/attendance', icon: Clock, label: 'Attendance', badge: null },
-  { path: '/employee/leaves', icon: Calendar, label: 'Leave Manager', badge: null },
-  { path: '/employee/salary', icon: IndianRupee, label: 'Salary', badge: '₹' },
-  { path: '/settings', icon: Settings, label: 'Settings', badge: null },
+  { path: '/employee/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/employee/tasks', icon: Briefcase, label: 'My Tasks' },
+  { path: '/employee/projects', icon: Globe, label: 'My Projects' },
+  { path: '/employee/attendance', icon: Clock, label: 'Attendance' },
+  { path: '/employee/leaves', icon: Calendar, label: 'Leave Manager' },
+  { path: '/employee/salary', icon: IndianRupee, label: 'Earnings' },
+  { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 const Sidebar = ({ mobileOpen, setMobileOpen }) => {
@@ -53,7 +77,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     navigate('/login');
   };
 
-  const displayItems = user?.role === 'Admin' ? adminItems : employeeItems;
+  const groups = user?.role === 'Admin' ? adminGroups : [{ title: 'Employee Workspace', items: employeeItems }];
 
   return (
     <>
@@ -62,120 +86,103 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 z-[50] md:hidden backdrop-blur-sm"
+            className="fixed inset-0 bg-[#020617]/90 z-[50] md:hidden backdrop-blur-md"
             onClick={() => setMobileOpen(false)}
           />
         )}
       </AnimatePresence>
 
       <motion.aside
-        animate={{ width: isCollapsed ? '96px' : '280px' }}
-        className={`h-screen backdrop-blur-xl bg-[#020617]/40 border-r border-white/5 flex flex-col fixed md:relative z-[60] top-0 bottom-0 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+        animate={{ width: isCollapsed ? '96px' : '300px' }}
+        className={`h-screen backdrop-blur-3xl bg-[#020617]/60 border-r border-white/5 flex flex-col fixed md:relative z-[60] top-0 bottom-0 transition-transform duration-500 ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
         style={{ flexShrink: 0 }}
       >
-        {/* Logo */}
-        <div className="p-0 mb-4 flex items-center justify-center bg-black border-b border-white/5">
-          <AnimatePresence mode="wait">
-            {!isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                className="flex items-center gap-3 w-full justify-between"
-              >
-                <div className="w-full flex items-center justify-center overflow-hidden">
-                  <div className="w-full h-28 bg-black flex items-center justify-center overflow-hidden transition-all duration-300">
-                    <img src="/assets/logo.png" alt="NexovTech Logo" className="w-full h-full object-contain" />
-                  </div>
-                </div>
-                {/* Mobile Close Button */}
-                <button
-                  className="md:hidden p-2 text-surface-500 hover:text-brand-500"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <ChevronLeft size={24} />
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          {isCollapsed && (
-            <div className="w-full px-4 flex items-center justify-center">
-              <div className="w-full h-12 bg-transparent flex items-center justify-center overflow-hidden transition-all">
-                <img src="/assets/logo.png" alt="Logo" className="w-full h-full object-contain" />
-              </div>
-            </div>
-          )}
+        <div className="p-4">
+          <motion.div 
+            animate={{ 
+              boxShadow: ["0 0 15px rgba(139,92,246,0.15)", "0 0 35px rgba(139,92,246,0.35)", "0 0 15px rgba(139,92,246,0.15)"],
+              borderColor: ["rgba(139,92,246,0.1)", "rgba(139,92,246,0.4)", "rgba(139,92,246,0.1)"]
+            }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="w-full bg-black border rounded-[32px] p-5 flex items-center justify-center group transition-all"
+          >
+             <div className="w-full h-24 rounded-2xl overflow-hidden bg-white/5 flex items-center justify-center border border-white/10">
+                <img src="/logo.jpg" alt="Logo" className="w-[90%] h-auto object-contain transition-all duration-500" />
+             </div>
+          </motion.div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
-          {displayItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.path === '/'}
-              className={({ isActive }) => `
-              relative flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 group
-              ${isActive ? 'bg-brand-600/10 text-brand-400' : 'theme-text-secondary hover:theme-text-primary'}
-              ${isCollapsed ? 'justify-center' : ''}
-            `}
-            >
-              {({ isActive }) => (
-                <>
-                  <item.icon
-                    size={22}
-                    className={isActive ? 'text-brand-400' : 'group-hover:scale-110 transition-transform'}
-                  />
-                  {!isCollapsed && (
-                    <span className="font-bold text-sm tracking-tight">{item.label}</span>
-                  )}
-                  {!isCollapsed && item.badge && (
-                    <span className="ml-auto px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-colors"
-                      style={{ background: 'var(--card-hover-bg)', color: 'var(--text-secondary)' }}>
-                      {item.badge}
-                    </span>
-                  )}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeGlow"
-                      className="absolute left-0 w-1 h-6 bg-brand-500 rounded-r-full shadow-[0_0_10px_#8b5cf6]"
-                    />
-                  )}
-                  {isCollapsed && (
-                    <div className="absolute left-full ml-4 px-3 py-2 rounded-xl text-xs font-bold opacity-0 group-hover:opacity-100 pointer-events-none transition-all whitespace-nowrap shadow-2xl z-50"
-                      style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}>
-                      {item.label}
-                    </div>
-                  )}
-                </>
+        <nav className="flex-1 px-4 space-y-8 overflow-y-auto custom-scrollbar py-4">
+          {groups.map((group, idx) => (
+            <div key={idx} className="space-y-3">
+              {!isCollapsed && (
+                <h3 className="px-4 text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mb-4">{group.title}</h3>
               )}
-            </NavLink>
+              <div className="space-y-1">
+                {group.items.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    end={item.path === '/'}
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) => `
+                    relative flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 group
+                    ${isActive ? 'bg-brand-600/10 text-brand-400 shadow-[inset_0_0_20px_rgba(139,92,246,0.05)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}
+                    ${isCollapsed ? 'justify-center' : ''}
+                  `}
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <item.icon
+                          size={20}
+                          className={isActive ? 'text-brand-400' : 'group-hover:scale-110 group-hover:text-white transition-all'}
+                        />
+                        {!isCollapsed && (
+                          <span className="font-bold text-[13px] tracking-tight">{item.label}</span>
+                        )}
+                        {!isCollapsed && item.badge && (
+                          <span className={`ml-auto px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest transition-colors ${item.badge === 'LIVE' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-brand-500/10 text-brand-500'}`}>
+                            {item.badge}
+                          </span>
+                        )}
+                        {isActive && (
+                          <motion.div
+                            layoutId="activeGlow"
+                            className="absolute left-0 w-1.5 h-6 bg-brand-500 rounded-r-full shadow-[0_0_20px_#8b5cf6]"
+                          />
+                        )}
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 
         {/* User Footer */}
-        <div className="p-4 mt-auto" style={{ borderTop: '1px solid var(--border-default)', background: 'var(--card-hover-bg)' }}>
-          <div className={`flex items-center gap-4 ${isCollapsed ? 'justify-center' : 'px-4 py-3 rounded-2xl'}`}
-            style={!isCollapsed ? { background: 'var(--bg-card)', border: '1px solid var(--border-default)' } : {}}>
-            <div className="w-10 h-10 rounded-xl overflow-hidden bg-brand-600 shadow-lg relative group shrink-0 cursor-pointer">
+        <div className="p-6 border-t border-white/5">
+          <div className={`flex items-center gap-4 ${isCollapsed ? 'justify-center' : 'bg-white/5 p-4 rounded-3xl border border-white/5 hover:border-white/10 transition-all'}`}>
+            <div className="w-12 h-12 rounded-full overflow-hidden bg-brand-600 shadow-2xl relative group shrink-0 cursor-pointer border-2 border-white/10 transition-all hover:border-brand-500/50">
               <img 
-                src={user?.role === 'Admin' ? '/assets/admin_dp.jpg' : 
+                src={user?.role === 'Admin' ? '/logo.jpg' : 
                   (user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL}${user.avatar}`) : 
                   'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin')} 
                 alt="User" 
                 className="w-full h-full object-cover"
               />
               <div
-                className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
                 onClick={handleLogout}
               >
-                <LogOut size={16} className="text-white" />
+                <LogOut size={18} className="text-white" />
               </div>
             </div>
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-black truncate leading-tight uppercase tracking-tighter theme-text-primary">{user?.name}</p>
-                <p className="text-[10px] font-black text-brand-500 uppercase tracking-widest">{user?.role || 'Admin'}</p>
+                <p className="text-[13px] font-black text-white truncate leading-tight uppercase tracking-tighter">{user?.name}</p>
+                <p className="text-[9px] font-black text-brand-500 uppercase tracking-[0.2em] mt-1">{user?.role || 'Admin'}</p>
               </div>
             )}
           </div>
