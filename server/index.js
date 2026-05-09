@@ -1,5 +1,5 @@
 const express = require('express');
-// NEXOV-HEARTBEAT: Premium PDF Architecture Active [SYNC_2026-05-10T0310]
+// NEXOV-HEARTBEAT: Premium PDF Architecture Active [FINAL_SYNC_2026-05-10T0349]
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
