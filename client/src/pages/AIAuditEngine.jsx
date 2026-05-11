@@ -80,14 +80,14 @@ const AIAuditEngine = () => {
           />
           <Brain className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-brand-500 animate-pulse" size={32} />
        </div>
-       <p className="text-white/40 font-black uppercase tracking-[0.3em] text-[10px]">Initializing Neural Audit Engine...</p>
+       <p className="text-gray-400 font-black uppercase tracking-[0.3em] text-[10px]">Initializing Neural Audit Engine...</p>
     </div>
   );
 
   return (
     <div className="space-y-10 pb-20 max-w-7xl mx-auto">
       {/* Executive HUD Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-[#020617]/60 p-10 rounded-[48px] border border-white/5 backdrop-blur-xl relative overflow-hidden">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 bg-white/60 p-10 rounded-[48px] border border-gray-100 backdrop-blur-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-20 opacity-[0.03] pointer-events-none">
            <ShieldCheck size={300} />
         </div>
@@ -99,10 +99,10 @@ const AIAuditEngine = () => {
                    <Zap size={12} className="animate-pulse" /> Live Audit Active
                 </span>
              </div>
-             <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Protocol Version: 4.2.0-Alpha</span>
+             <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Protocol Version: 4.2.0-Alpha</span>
           </div>
-          <h1 className="text-5xl font-black text-white tracking-tighter">Workforce Intelligence</h1>
-          <p className="text-white/40 mt-3 font-bold uppercase tracking-[0.2em] text-[11px] max-w-xl">
+          <h1 className="text-5xl font-black text-gray-900 tracking-tighter">Workforce Intelligence</h1>
+          <p className="text-gray-400 mt-3 font-bold uppercase tracking-[0.2em] text-[11px] max-w-xl">
              {summary?.executiveSummary}
           </p>
         </div>
@@ -110,10 +110,10 @@ const AIAuditEngine = () => {
         <div className="flex flex-col items-end gap-4 relative z-10">
            <div className="flex items-center gap-4">
               <div className="text-right">
-                 <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">AI Confidence</p>
+                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">AI Confidence</p>
                  <p className="text-2xl font-black text-brand-400 tracking-tight">{summary?.confidenceScore}%</p>
               </div>
-              <div className="w-16 h-16 rounded-full border-4 border-brand-500/20 border-t-brand-500 flex items-center justify-center text-xs font-black text-white">
+              <div className="w-16 h-16 rounded-full border-4 border-brand-500/20 border-t-brand-500 flex items-center justify-center text-xs font-black text-gray-900">
                  96%
               </div>
            </div>
@@ -125,9 +125,9 @@ const AIAuditEngine = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Org Health Gauge */}
-        <div className="glass-light p-10 rounded-[48px] border border-white/5 relative overflow-hidden flex flex-col items-center justify-center text-center group shadow-2xl">
+        <div className="glass-light p-10 rounded-[48px] border border-gray-100 relative overflow-hidden flex flex-col items-center justify-center text-center group shadow-2xl">
            <div className="absolute inset-0 bg-gradient-to-b from-brand-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-           <p className="text-[11px] font-black text-white/30 uppercase tracking-widest mb-8">Org Health Index</p>
+           <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-8">Org Health Index</p>
            
            <div className="relative w-48 h-48 mb-8">
               <svg className="w-full h-full transform -rotate-90">
@@ -141,28 +141,28 @@ const AIAuditEngine = () => {
                  />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                 <span className="text-5xl font-black text-white tracking-tighter">{summary?.healthScore}</span>
+                 <span className="text-5xl font-black text-gray-900 tracking-tighter">{summary?.healthScore}</span>
                  <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Stable</span>
               </div>
            </div>
 
            <div className="grid grid-cols-2 gap-4 w-full">
-              <div className="p-4 bg-white/5 rounded-3xl border border-white/5">
-                 <p className="text-[9px] font-black text-white/30 uppercase tracking-widest mb-1">Stability</p>
-                 <p className="text-sm font-black text-white">94.2%</p>
+              <div className="p-4 bg-gray-50 rounded-3xl border border-gray-100">
+                 <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Stability</p>
+                 <p className="text-sm font-black text-gray-900">94.2%</p>
               </div>
-              <div className="p-4 bg-white/5 rounded-3xl border border-white/5">
-                 <p className="text-[9px] font-black text-white/30 uppercase tracking-widest mb-1">Risk Level</p>
+              <div className="p-4 bg-gray-50 rounded-3xl border border-gray-100">
+                 <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Risk Level</p>
                  <p className="text-sm font-black text-rose-500">Minimal</p>
               </div>
            </div>
         </div>
 
         {/* Workforce Analytics Sector */}
-        <div className="lg:col-span-2 glass-light p-10 rounded-[48px] border border-white/5 shadow-2xl relative overflow-hidden">
+        <div className="lg:col-span-2 glass-light p-10 rounded-[48px] border border-gray-100 shadow-2xl relative overflow-hidden">
            <div className="flex items-center justify-between mb-10">
               <div>
-                 <h3 className="text-2xl font-black text-white tracking-tight">Personnel Distribution</h3>
+                 <h3 className="text-2xl font-black text-gray-900 tracking-tight">Personnel Distribution</h3>
                  <p className="text-[10px] font-black text-brand-400 uppercase tracking-widest mt-1">Cross-Departmental Mission Balance</p>
               </div>
               <BarChart3 className="text-white/10" size={40} />
@@ -192,12 +192,12 @@ const AIAuditEngine = () => {
               </div>
               <div className="space-y-4">
                  {analytics?.workforceDistribution.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5 group hover:border-brand-500/30 transition-all">
+                    <div key={i} className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-gray-100 group hover:border-brand-500/30 transition-all">
                        <div className="flex items-center gap-3">
                           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                          <span className="text-[11px] font-black text-white uppercase tracking-widest">{item.name}</span>
+                          <span className="text-[11px] font-black text-gray-900 uppercase tracking-widest">{item.name}</span>
                        </div>
-                       <span className="text-xs font-black text-white/40">{item.value} specialists</span>
+                       <span className="text-xs font-black text-gray-400">{item.value} specialists</span>
                     </div>
                  ))}
               </div>
@@ -207,10 +207,10 @@ const AIAuditEngine = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Predictive Sector */}
-        <div className="lg:col-span-2 glass-light p-10 rounded-[48px] border border-white/5 shadow-2xl overflow-hidden relative">
+        <div className="lg:col-span-2 glass-light p-10 rounded-[48px] border border-gray-100 shadow-2xl overflow-hidden relative">
            <div className="flex items-center justify-between mb-10">
               <div>
-                 <h3 className="text-2xl font-black text-white tracking-tight">Predictive Scaling</h3>
+                 <h3 className="text-2xl font-black text-gray-900 tracking-tight">Predictive Scaling</h3>
                  <p className="text-[10px] font-black text-brand-400 uppercase tracking-widest mt-1">AI-Driven Financial & Growth Forecasting</p>
               </div>
               <div className="flex gap-2">
@@ -239,7 +239,7 @@ const AIAuditEngine = () => {
            </div>
            
            <div className="mt-8 p-6 bg-brand-500/5 border border-brand-500/10 rounded-[32px] flex items-center gap-6">
-              <div className="w-12 h-12 bg-brand-600 rounded-2xl flex items-center justify-center text-white shrink-0">
+              <div className="w-12 h-12 bg-brand-600 rounded-2xl flex items-center justify-center text-gray-900 shrink-0">
                  <Brain size={24} />
               </div>
               <div>
@@ -250,14 +250,14 @@ const AIAuditEngine = () => {
         </div>
 
         {/* Risk Detection Feed */}
-        <div className="glass-light p-10 rounded-[48px] border border-white/5 shadow-2xl flex flex-col">
-           <h3 className="text-xl font-black text-white tracking-tight mb-8">Anomaly Feed</h3>
+        <div className="glass-light p-10 rounded-[48px] border border-gray-100 shadow-2xl flex flex-col">
+           <h3 className="text-xl font-black text-gray-900 tracking-tight mb-8">Anomaly Feed</h3>
            <div className="space-y-6 flex-1">
               {risks.map((risk, i) => (
-                 <div key={i} className="p-6 bg-white/[0.03] rounded-3xl border border-white/5 relative overflow-hidden group">
+                 <div key={i} className="p-6 bg-white/[0.03] rounded-3xl border border-gray-100 relative overflow-hidden group">
                     <div className={`absolute top-0 right-0 px-3 py-1 rounded-bl-xl text-[8px] font-black uppercase tracking-widest ${
                        risk.severity === 'Critical' ? 'bg-rose-500 text-white' : 
-                       risk.severity === 'Warning' ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white'
+                       risk.severity === 'Warning' ? 'bg-amber-500 text-gray-900' : 'bg-emerald-500 text-white'
                     }`}>
                        {risk.severity}
                     </div>
@@ -266,17 +266,17 @@ const AIAuditEngine = () => {
                           risk.severity === 'Critical' ? 'bg-rose-500 animate-pulse' : 
                           risk.severity === 'Warning' ? 'bg-amber-500' : 'bg-emerald-500'
                        }`} />
-                       <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{risk.category}</span>
+                       <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{risk.category}</span>
                     </div>
-                    <p className="text-xs font-bold text-white mb-4">{risk.message}</p>
-                    <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                    <p className="text-xs font-bold text-gray-900 mb-4">{risk.message}</p>
+                    <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
                        <span className="text-[9px] font-black text-brand-400 uppercase tracking-widest">Remediation Protocol</span>
-                       <ChevronRight size={14} className="text-white/20 group-hover:translate-x-1 transition-transform" />
+                       <ChevronRight size={14} className="text-gray-300 group-hover:translate-x-1 transition-transform" />
                     </div>
                  </div>
               ))}
            </div>
-           <button className="w-full py-4 mt-8 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-all">Clear Resolve All</button>
+           <button className="w-full py-4 mt-8 bg-gray-50 border border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-all">Clear Resolve All</button>
         </div>
       </div>
     </div>
@@ -284,3 +284,5 @@ const AIAuditEngine = () => {
 };
 
 export default AIAuditEngine;
+
+

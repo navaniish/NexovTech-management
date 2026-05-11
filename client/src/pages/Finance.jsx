@@ -156,7 +156,7 @@ const Finance = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <div className="lg:col-span-2 glass-light p-10 rounded-[40px] border border-white/5 min-w-0">
+        <div className="lg:col-span-2 glass-light p-10 rounded-[40px] border border-gray-100 min-w-0">
            <h2 className="text-2xl font-black text-black tracking-tight mb-10">Cash Flow Intelligence</h2>
            <div className="h-[350px] w-full relative min-w-0 overflow-hidden">
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
@@ -178,15 +178,15 @@ const Finance = () => {
            </div>
         </div>
 
-        <div className="glass-light p-10 rounded-[40px] border border-white/5 flex flex-col shadow-2xl">
+        <div className="glass-light p-10 rounded-[40px] border border-gray-100 flex flex-col shadow-2xl">
            <h2 className="text-2xl font-black text-black tracking-tight mb-10">Subscription Ledger</h2>
            <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2">
               {transactions.length === 0 ? (
                  <p className="text-black font-black text-center py-20 uppercase tracking-widest text-xs">No Recorded Ledger Entries</p>
               ) : transactions.map((inv, index) => (
-                <div key={inv._id || inv.id || index} className="flex items-center justify-between p-5 bg-white/5 rounded-[24px] border border-white/5 hover:border-brand-500/30 transition-all group">
+                <div key={inv._id || inv.id || index} className="flex items-center justify-between p-5 bg-gray-50 rounded-[24px] border border-gray-100 hover:border-brand-500/30 transition-all group">
                    <div className="flex items-center gap-5">
-                      <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-black group-hover:text-brand-400 transition-colors">
+                      <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-black group-hover:text-brand-400 transition-colors">
                          <FileText size={22} />
                       </div>
                       <div className="max-w-[120px]">
@@ -201,7 +201,7 @@ const Finance = () => {
                       </div>
                       <button 
                         onClick={() => handleDownloadPDF(inv._id)}
-                        className="p-3 bg-white/5 rounded-xl text-black hover:text-black transition-colors"
+                        className="p-3 bg-gray-50 rounded-xl text-black hover:text-black transition-colors"
                       >
                          <Download size={16} />
                       </button>
@@ -220,13 +220,13 @@ const Finance = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowGenerator(false)}
-              className="absolute inset-0 bg-[#020617]/80 backdrop-blur-md"
+              className="absolute inset-0 bg-white/80 backdrop-blur-md"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-xl glass border border-white/10 rounded-[40px] p-10 shadow-2xl"
+              className="relative w-full max-w-xl glass border border-gray-200 rounded-[40px] p-10 shadow-2xl"
             >
               <div className="flex justify-between items-center mb-10">
                 <h2 className="text-3xl font-black text-black tracking-tighter">Forge Invoice</h2>
@@ -240,22 +240,22 @@ const Finance = () => {
                      required
                      value={newInvoice.clientName}
                      onChange={(e) => setNewInvoice({...newInvoice, clientName: e.target.value})}
-                     className="w-full px-6 py-4 bg-white/5 border border-white/5 rounded-2xl text-black focus:outline-none focus:border-brand-500/50" 
+                     className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-black focus:outline-none focus:border-brand-500/50" 
                      placeholder="e.g. Reliance Industries"
                    />
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
                        <label className="text-[10px] font-black text-black uppercase tracking-widest ml-1">Tax Protocol (GST)</label>
-                       <div className="flex items-center gap-4 px-6 py-4 bg-white/5 border border-white/5 rounded-2xl">
-                          <input type="checkbox" className="w-5 h-5 rounded-lg border-white/10 bg-brand-600" defaultChecked />
+                       <div className="flex items-center gap-4 px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl">
+                          <input type="checkbox" className="w-5 h-5 rounded-lg border-gray-200 bg-brand-600" defaultChecked />
                           <span className="text-xs font-bold text-black">Apply 18% GST</span>
                        </div>
                     </div>
                     <div className="space-y-2">
                        <label className="text-[10px] font-black text-black uppercase tracking-widest ml-1">Client GSTIN</label>
                        <input 
-                         className="w-full px-6 py-4 bg-white/5 border border-white/5 rounded-2xl text-black focus:outline-none focus:border-brand-500/50" 
+                         className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-black focus:outline-none focus:border-brand-500/50" 
                          placeholder="e.g. 27AAACN1234F1Z5"
                        />
                     </div>
@@ -268,13 +268,13 @@ const Finance = () => {
                         type="number"
                         value={newInvoice.amount}
                         onChange={(e) => setNewInvoice({...newInvoice, amount: e.target.value})}
-                        className="w-full px-6 py-4 bg-white/5 border border-white/5 rounded-2xl text-black focus:outline-none focus:border-brand-500/50" 
+                        className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-black focus:outline-none focus:border-brand-500/50" 
                         placeholder="e.g. 125000"
                       />
                    </div>
                    <div className="space-y-2">
                       <label className="text-[10px] font-black text-black uppercase tracking-widest ml-1">Service Type</label>
-                      <select className="w-full px-6 py-4 bg-white/5 border border-white/5 rounded-2xl text-black focus:outline-none focus:border-brand-500/50 appearance-none">
+                      <select className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-black focus:outline-none focus:border-brand-500/50 appearance-none">
                          <option>Subscription</option>
                          <option>One-time Audit</option>
                          <option>Implementation</option>
@@ -287,7 +287,7 @@ const Finance = () => {
                      required
                      value={newInvoice.description}
                      onChange={(e) => setNewInvoice({...newInvoice, description: e.target.value})}
-                     className="w-full px-6 py-4 bg-white/5 border border-white/5 rounded-2xl text-black focus:outline-none focus:border-brand-500/50 h-32" 
+                     className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-black focus:outline-none focus:border-brand-500/50 h-32" 
                      placeholder="Specify services rendered..."
                    />
                 </div>
@@ -316,9 +316,9 @@ const Finance = () => {
 };
 
 const StatCard = ({ title, value, icon: Icon, color, bgColor, trend }) => (
-  <div className="glass-light p-8 rounded-[32px] border border-white/5 relative overflow-hidden group">
+  <div className="glass-light p-8 rounded-[32px] border border-gray-100 relative overflow-hidden group">
     <div className={`flex items-center gap-4 mb-6 ${color}`}>
-      <div className={`p-4 ${bgColor} rounded-2xl border border-white/5 group-hover:scale-110 transition-transform`}><Icon size={24} /></div>
+      <div className={`p-4 ${bgColor} rounded-2xl border border-gray-100 group-hover:scale-110 transition-transform`}><Icon size={24} /></div>
       <h3 className="text-[10px] font-black uppercase tracking-widest">{title}</h3>
     </div>
     <p className="text-4xl font-black text-black tracking-tighter">{formatCurrency(value)}</p>
@@ -329,3 +329,5 @@ const StatCard = ({ title, value, icon: Icon, color, bgColor, trend }) => (
 );
 
 export default Finance;
+
+

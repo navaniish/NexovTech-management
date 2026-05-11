@@ -24,6 +24,21 @@ router.post('/apply', async (req, res) => {
       createdAt: new Date().toISOString()
     };
     const saved = await fallbackDb.save('leaves', leave);
+    
+    // Notify Admin of new leave request
+    try {
+      await fallbackDb.save('notifications', {
+        id: `nt_${Date.now()}_leave_req`,
+        userId: 'all', // Or specific HR/Admin IDs
+        title: 'New Leave Request',
+        message: `${leave.employeeName || 'An employee'} has requested ${leave.leaveType} for ${leave.totalDays} days.`,
+        type: 'warning',
+        link: '/hr',
+        read: false,
+        createdAt: new Date().toISOString()
+      });
+    } catch (nErr) { console.error('Notification trigger failed:', nErr); }
+
     res.status(201).json(saved);
   } catch (err) {
     res.status(500).json({ message: 'Leave application failed' });
@@ -62,6 +77,21 @@ router.put('/:id/approve', async (req, res) => {
 
     const updated = { ...leave, status, approvedBy: approvedBy || 'Admin' };
     await fallbackDb.save('leaves', updated);
+    
+    // Notify Employee of status change
+    try {
+      await fallbackDb.save('notifications', {
+        id: `nt_${Date.now()}_leave_status`,
+        userId: leave.employeeId,
+        title: `Leave ${status}`,
+        message: `Your leave request for ${leave.leaveType} has been ${status.toLowerCase()}.`,
+        type: status === 'Approved' ? 'success' : 'error',
+        link: '/attendance',
+        read: false,
+        createdAt: new Date().toISOString()
+      });
+    } catch (nErr) { console.error('Notification trigger failed:', nErr); }
+
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: 'Leave update failed' });

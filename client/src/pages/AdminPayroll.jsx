@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  IndianRupee, 
-  Users, 
-  Calendar, 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle, 
-  Filter, 
-  Download, 
-  Search, 
+import {
+  IndianRupee,
+  Users,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  Filter,
+  Download,
+  Search,
   Settings2,
   TrendingUp,
   CreditCard,
@@ -18,21 +18,41 @@ import {
   Loader2,
   FileText,
   Trash2,
-  Eye
+  Eye,
+  Globe
 } from 'lucide-react';
 import DigitalPayslip from '../components/Payroll/DigitalPayslip';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   Cell
 } from 'recharts';
 
 import API_URL from '../config';
+const StatCard = ({ title, value, icon: Icon, color, bgColor }) => (
+  <div className="glass-card flex flex-col group">
+    <div className="flex items-center justify-between mb-6">
+      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{title}</span>
+      <div className={`w-10 h-10 ${bgColor} rounded-xl flex items-center justify-center ${color} shadow-sm group-hover:scale-110 transition-transform`}>
+         <Icon size={18} strokeWidth={2.5} />
+      </div>
+    </div>
+    <div className="flex items-baseline gap-1">
+      <span className="text-[14px] font-black text-slate-400 leading-none">₹</span>
+      <span className="text-[32px] font-black text-slate-900 tracking-tighter leading-none">{value.toLocaleString()}</span>
+    </div>
+    <div className="mt-6 flex items-center gap-2">
+      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
+      <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Global Sync Active</span>
+    </div>
+  </div>
+);
+
 const AdminPayroll = () => {
   const [payrolls, setPayrolls] = useState([]);
   const [team, setTeam] = useState([]);
@@ -40,24 +60,11 @@ const AdminPayroll = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [search, setSearch] = useState('');
-  
-  // Modals
-  const [showConfig, setShowConfig] = useState(null); // Employee object
-  const [configData, setConfigData] = useState({ 
-    baseSalary: 0, 
-    bonus: 0, 
-    deductions: 0, 
-    salaryType: 'Monthly',
-    metadata: {
-      service: '',
-      projectName: ''
-    },
-    breakdown: {
-      web: 0,
-      ai: 0,
-      video: 0,
-      systems: 0
-    }
+  const [showConfig, setShowConfig] = useState(null);
+  const [configData, setConfigData] = useState({
+    baseSalary: 0, bonus: 0, deductions: 0, salaryType: 'Monthly',
+    metadata: { service: '', projectName: '' },
+    breakdown: { web: 0, ai: 0, video: 0, systems: 0 }
   });
   const [generating, setGenerating] = useState(false);
   const [viewingPayslip, setViewingPayslip] = useState(null);
@@ -90,9 +97,7 @@ const AdminPayroll = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ month: selectedMonth, year: selectedYear })
       });
-      if (response.ok) {
-        fetchData();
-      }
+      if (response.ok) fetchData();
     } catch (err) {
       console.error('Generation failed');
     } finally {
@@ -107,9 +112,7 @@ const AdminPayroll = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paymentStatus: 'Paid', paymentDate: new Date() })
       });
-      if (response.ok) {
-        fetchData(); // Refresh all data to ensure charts update
-      }
+      if (response.ok) fetchData();
     } catch (err) {
       console.error('Update failed');
     }
@@ -118,12 +121,8 @@ const AdminPayroll = () => {
   const handleDelete = async (payrollId) => {
     if (!window.confirm('Are you sure you want to delete this payroll record?')) return;
     try {
-      const response = await fetch(`${API_URL}/payroll/${payrollId}`, {
-        method: 'DELETE'
-      });
-      if (response.ok) {
-        fetchData(); // Refresh UI
-      }
+      const response = await fetch(`${API_URL}/payroll/${payrollId}`, { method: 'DELETE' });
+      if (response.ok) fetchData();
     } catch (err) {
       console.error('Delete failed');
     }
@@ -135,22 +134,16 @@ const AdminPayroll = () => {
       const res = await fetch(`${API_URL}/payroll/salary/${emp.id || emp._id}`);
       if (res.ok) {
         const data = await res.json();
-        setConfigData(data || { 
-          baseSalary: 0, 
-          bonus: 0, 
-          deductions: 0, 
-          salaryType: 'Monthly', 
+        setConfigData(data || {
+          baseSalary: 0, bonus: 0, deductions: 0, salaryType: 'Monthly',
           employeeId: emp.id || emp._id,
           metadata: { service: '', projectName: '' },
           breakdown: { web: 0, ai: 0, video: 0, systems: 0 }
         });
       }
     } catch (err) {
-      setConfigData({ 
-        baseSalary: 0, 
-        bonus: 0, 
-        deductions: 0, 
-        salaryType: 'Monthly', 
+      setConfigData({
+        baseSalary: 0, bonus: 0, deductions: 0, salaryType: 'Monthly',
         employeeId: emp.id || emp._id,
         metadata: { service: '', projectName: '' },
         breakdown: { web: 0, ai: 0, video: 0, systems: 0 }
@@ -166,419 +159,322 @@ const AdminPayroll = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(configData)
       });
-      if (response.ok) {
-        setShowConfig(null);
-      }
+      if (response.ok) setShowConfig(null);
     } catch (err) {
       console.error('Save failed');
     }
   };
 
   const handleDownloadPayslip = (id) => {
-    if (!id || id === 'undefined') {
-      console.error('❌ PDF_GEN_ABORT: Invalid identifier detected.');
-      alert('Mission Error: Payroll record identifier is missing. Please refresh.');
-      return;
-    }
+    if (!id || id === 'undefined') return;
     window.open(`${API_URL}/payroll/${id}/pdf`, '_blank');
   };
 
-  // Calculations
-  const currentRecords = payrolls.filter(p => p.month === Number(selectedMonth) && p.year === Number(selectedYear));
+  const currentRecords = payrolls.filter(p => Number(p.month) === Number(selectedMonth) && Number(p.year) === Number(selectedYear));
   const totalPayroll = currentRecords.reduce((acc, p) => acc + (p.calculatedSalary?.total || 0), 0);
   const paidTotal = currentRecords.filter(p => p.paymentStatus === 'Paid').reduce((acc, p) => acc + (p.calculatedSalary?.total || 0), 0);
   const pendingTotal = totalPayroll - paidTotal;
 
   const sectorTotals = currentRecords.reduce((acc, curr) => {
     const bd = curr.calculatedSalary?.breakdown || { web: 0, ai: 0, video: 0, systems: 0 };
-    acc.web += bd.web || 0;
-    acc.ai += bd.ai || 0;
-    acc.video += bd.video || 0;
-    acc.systems += bd.systems || 0;
+    acc.web += bd.web || 0; acc.ai += bd.ai || 0; acc.video += bd.video || 0; acc.systems += bd.systems || 0;
     return acc;
   }, { web: 0, ai: 0, video: 0, systems: 0 });
 
   const chartData = [
-    { name: 'Paid', value: paidTotal, color: '#10b981' },
+    { name: 'Settled', value: paidTotal, color: '#10b981' },
     { name: 'Pending', value: pendingTotal, color: '#f59e0b' }
   ];
 
-  if (loading) return <div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin text-brand-500" size={48} /></div>;
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center py-40 gap-6">
+       <div className="w-16 h-16 border-4 border-indigo-600/10 border-t-indigo-600 rounded-full animate-spin" />
+       <p className="text-slate-400 font-black uppercase tracking-[0.2em] text-[10px]">Accessing Financial Vault...</p>
+    </div>
+  );
 
   return (
-    <div className="space-y-8 pb-20 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter uppercase">Payroll Architecture</h1>
-          <p className="text-slate-400 mt-1 text-[10px] font-black uppercase tracking-widest">Automated sector-based ledger • {selectedMonth}/{selectedYear}</p>
+    <div className="w-full h-full flex flex-col space-y-6 md:space-y-10 animate-in fade-in duration-1000 overflow-y-auto scrollbar-hide">
+      
+      {/* 1. HEADER SECTION */}
+      <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+        <div className="flex flex-col">
+          <h1 className="text-2xl md:text-[42px] font-black text-slate-900 tracking-tighter leading-none mb-2">
+             PAYROLL ARCHITECTURE
+          </h1>
+          <p className="text-slate-400 text-[12px] md:text-[14px] font-bold tracking-[0.05em]">
+             Automated sector-based ledger: cycle {selectedMonth}/{selectedYear}.
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <select 
-            value={selectedMonth} 
-            onChange={e => setSelectedMonth(e.target.value)}
-            className="bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-xs font-black text-black outline-none focus:border-brand-500"
-          >
-            {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
-              <option key={m} value={i + 1}>{m}</option>
-            ))}
-          </select>
-          <button 
-            onClick={handleGenerate}
-            disabled={generating}
-            className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest flex items-center gap-3 hover:bg-brand-600 transition-all shadow-xl shadow-brand-600/20 disabled:opacity-50"
-          >
-            {generating ? (
-              <>
-                <Loader2 className="animate-spin" size={18} />
-                Detecting Members...
-              </>
-            ) : (
-              <>
-                <Plus size={18} />
-                Generate Payroll
-              </>
-            )}
-          </button>
+        
+        <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6">
+           <select
+             value={selectedMonth}
+             onChange={e => setSelectedMonth(e.target.value)}
+             className="w-full sm:w-auto h-12 px-6 bg-white border border-slate-100 rounded-2xl text-[13px] font-black text-slate-900 outline-none shadow-sm focus:border-indigo-500 transition-all cursor-pointer"
+           >
+             {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
+               <option key={m} value={i + 1}>{m}</option>
+             ))}
+           </select>
+           <button
+             onClick={handleGenerate}
+             disabled={generating}
+             className="w-full sm:w-auto h-12 px-8 bg-indigo-600 text-white text-[12px] font-black rounded-2xl hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-100 flex items-center justify-center gap-3 uppercase tracking-widest disabled:opacity-50"
+           >
+             {generating ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
+             {generating ? 'Processing Registry...' : 'Generate Payroll'}
+           </button>
         </div>
-      </div>
+      </section>
 
-      {/* Global Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Total Liability" value={totalPayroll} icon={IndianRupee} color="text-white" />
-        <StatCard title="Settled" value={paidTotal} icon={CheckCircle2} color="text-emerald-500" />
-        <StatCard title="Outstanding" value={pendingTotal} icon={Clock} color="text-amber-500" />
-      </div>
+      {/* 2. GLOBAL STATS ROW */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+        <StatCard title="Total Liability" value={totalPayroll} icon={IndianRupee} color="text-slate-900" bgColor="bg-slate-100" />
+        <StatCard title="Settled" value={paidTotal} icon={CheckCircle2} color="text-emerald-500" bgColor="bg-emerald-500/10" />
+        <StatCard title="Outstanding" value={pendingTotal} icon={Clock} color="text-amber-500" bgColor="bg-amber-500/10" />
+      </section>
 
-      {/* Sector Budget Breakdown */}
-      <div className="bg-slate-900 rounded-[40px] p-8 shadow-2xl overflow-hidden relative group border border-white/10">
-        <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform duration-700">
-           <IndianRupee size={200} className="text-white" />
-        </div>
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-2 h-8 bg-amber-500 rounded-full" />
-            <h3 className="text-lg font-black text-white tracking-tighter uppercase">Sector Allocation Analytics</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+      {/* 3. SECTOR BUDGET ANALYTICS */}
+      <div className="glass-card relative overflow-hidden group">
+         <div className="absolute top-0 right-0 p-12 opacity-[0.03] group-hover:rotate-12 transition-transform duration-1000">
+            <IndianRupee size={180} />
+         </div>
+         <div className="flex items-center gap-4 mb-10">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+               <TrendingUp size={20} />
+            </div>
+            <h3 className="text-[18px] font-black text-slate-900 tracking-tight">Sector Allocation Analytics</h3>
+         </div>
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
             {[
-              { label: 'Web Dev', val: sectorTotals.web || 0, color: 'bg-blue-500' },
-              { label: 'AI Solutions', val: sectorTotals.ai || 0, color: 'bg-purple-500' },
+              { label: 'Web Dev', val: sectorTotals.web || 0, color: 'bg-indigo-600' },
+              { label: 'AI Solutions', val: sectorTotals.ai || 0, color: 'bg-purple-600' },
               { label: 'Video Edit', val: sectorTotals.video || 0, color: 'bg-amber-500' },
               { label: 'Systems', val: sectorTotals.systems || 0, color: 'bg-emerald-500' }
             ].map((s) => (
-              <div key={s.label} className="space-y-3">
-                 <div className="flex justify-between items-center text-[9px] font-black uppercase text-slate-400 tracking-widest">
-                    <span>{s.label}</span>
-                    <span className="text-white font-black">₹ {s.val.toLocaleString()}</span>
-                 </div>
-                 <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${totalPayroll > 0 ? (s.val / totalPayroll) * 100 : 0}%` }}
-                      className={`h-full ${s.color}`}
+              <div key={s.label} className="flex flex-col gap-4">
+                <div className="flex justify-between items-end">
+                   <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{s.label}</span>
+                   <span className="text-[14px] font-black text-slate-900">₹{s.val.toLocaleString()}</span>
+                </div>
+                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden p-[1px]">
+                   <motion.div
+                     initial={{ width: 0 }}
+                     animate={{ width: `${totalPayroll > 0 ? (s.val / totalPayroll) * 100 : 0}%` }}
+                     className={`h-full ${s.color} rounded-full shadow-[0_0_8px_rgba(79,70,229,0.3)]`}
+                   />
+                </div>
+              </div>
+            ))}
+         </div>
+      </div>
+
+      {/* 4. MAIN SETTLEMENT GRID */}
+      <div className="grid grid-cols-12 gap-10 items-start">
+        
+        <div className="col-span-12 lg:col-span-8 flex flex-col gap-8">
+           <div className="glass-card p-0 overflow-hidden">
+              <div className="p-8 border-b border-slate-100 flex items-center justify-between">
+                 <h2 className="text-[18px] font-black text-slate-900 tracking-tight">Settlement Registry</h2>
+                 <div className="relative w-full md:w-64">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                    <input
+                       placeholder="Find specialist..."
+                       value={search}
+                       onChange={e => setSearch(e.target.value)}
+                       className="w-full h-10 pl-10 pr-4 bg-slate-50 border-none rounded-xl text-[12px] font-medium outline-none focus:ring-1 focus:ring-indigo-500"
                     />
                  </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 glass-light rounded-[40px] border border-slate-100 p-4 md:p-8 flex flex-col shadow-2xl bg-white">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 px-2">
-            <h2 className="text-2xl font-black text-white tracking-tight">Settlement Grid</h2>
-            <div className="relative w-full sm:w-auto">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" size={14} />
-              <input 
-                placeholder="Find specialist..." 
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full sm:w-64 bg-white/5 border border-white/10 rounded-xl py-3 pl-9 pr-4 text-xs font-bold text-white outline-none focus:border-brand-500"
-              />
-            </div>
-          </div>
-
-          {/* Desktop Table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="text-[10px] font-black text-white/50 uppercase tracking-widest border-b border-white/5">
-                  <th className="pb-4 px-2">Identity</th>
-                  <th className="pb-4 px-2">Attendance</th>
-                  <th className="pb-4 px-2">Base</th>
-                  <th className="pb-4 px-2">Bonus</th>
-                  <th className="pb-4 px-2">Net Salary</th>
-                  <th className="pb-4 px-2">Status</th>
-                  <th className="pb-4 px-2 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {currentRecords.filter(p => p.employeeName?.toLowerCase().includes(search.toLowerCase())).map((p) => (
-                  <tr key={p.id || p._id} className="group hover:bg-slate-50 transition-colors">
-                    <td className="py-4 px-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center text-brand-400 font-bold text-xs">{p.employeeName?.charAt(0)}</div>
-                        <span className="text-sm font-bold text-white">{p.employeeName}</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-2">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                        <span className="text-xs font-black text-white/60">{p.attendanceSummary?.presentDays || 0} / 22</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-2 text-sm text-white/80">₹{(p.calculatedSalary?.base || 0).toLocaleString()}</td>
-                    <td className="py-4 px-2 text-sm text-emerald-400 font-bold">+₹{p.calculatedSalary?.bonus || 0}</td>
-                    <td className="py-4 px-2 text-sm font-black text-white">₹{(p.calculatedSalary?.total || 0).toLocaleString()}</td>
-                    <td className="py-4 px-2">
-                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${p.paymentStatus === 'Paid' ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'}`}>
-                        {p.paymentStatus}
-                      </span>
-                    </td>
-                     <td className="py-4 px-2 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button 
-                          onClick={() => setViewingPayslip(p)}
-                          className="p-2 text-slate-400 hover:text-brand-500 transition-colors"
-                          title="Review Statement"
-                        >
-                          <Eye size={14} />
-                        </button>
-                        {p.paymentStatus === 'Pending' ? (
-                          <button 
-                            onClick={() => handleMarkPaid(p.id || p._id)}
-                            className="px-3 py-1.5 bg-brand-600 text-white rounded-lg text-[10px] font-black uppercase hover:bg-brand-500 transition-all"
-                          >
-                            Settle
-                          </button>
-                        ) : (
-                          <button 
-                            onClick={() => handleDownloadPayslip(p.id || p._id)}
-                            className="p-2 text-slate-900 hover:text-brand-500 transition-colors"
-                          >
-                            <Download size={14} />
-                          </button>
-                        )}
-                        <button 
-                          onClick={() => handleDelete(p.id || p._id)}
-                          className="p-2 text-rose-600 hover:text-rose-700 hover:bg-rose-500/10 rounded-lg transition-colors"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile Card List */}
-          <div className="md:hidden space-y-4">
-             {currentRecords.filter(p => p.employeeName?.toLowerCase().includes(search.toLowerCase())).map((p) => (
-                <div key={p.id || p._id} className="p-5 bg-white/5 rounded-3xl border border-white/5 flex flex-col gap-4">
-                   <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 rounded-xl bg-brand-500 text-white flex items-center justify-center font-black">{p.employeeName?.charAt(0)}</div>
-                         <div>
-                            <p className="text-sm font-black text-white">{p.employeeName}</p>
-                            <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${p.paymentStatus === 'Paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
-                              {p.paymentStatus}
-                            </span>
-                         </div>
-                      </div>
-                      <p className="text-lg font-black text-white tracking-tight">₹{p.calculatedSalary.total.toLocaleString()}</p>
-                   </div>
-                   <div className="grid grid-cols-2 gap-4 py-2 border-y border-white/5">
-                      <div>
-                         <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">Base Compensation</p>
-                         <p className="text-xs font-bold text-white">₹{p.calculatedSalary.base.toLocaleString()}</p>
-                      </div>
-                      <div className="text-right">
-                         <p className="text-[8px] font-black text-white/30 uppercase tracking-widest">Incentives</p>
-                         <p className="text-xs font-bold text-emerald-600">+₹{p.calculatedSalary.bonus}</p>
-                      </div>
-                   </div>
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => setViewingPayslip(p)}
-                        className="p-4 bg-white/5 text-white/60 rounded-2xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"
-                      >
-                        <Eye size={16} /> View
-                      </button>
-                      {p.paymentStatus === 'Pending' ? (
-                        <button 
-                          onClick={() => handleMarkPaid(p.id || p._id)}
-                          className="flex-1 py-4 bg-brand-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand-600/20 active:scale-[0.98] transition-all"
-                        >
-                          Process Settlement
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={() => handleDownloadPayslip(p.id || p._id)}
-                          className="flex-1 py-4 bg-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
-                        >
-                          <FileText size={14} /> Download Slip
-                        </button>
-                      )}
-                      <button 
-                        onClick={() => handleDelete(p.id || p._id)}
-                        className="p-4 bg-rose-500/10 text-rose-500 rounded-2xl"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                   </div>
-                </div>
-             ))}
-          </div>
-
-          {currentRecords.length === 0 && (
-            <div className="py-20 text-center">
-              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
-                 <AlertCircle size={32} className="text-slate-300" />
+              <div className="overflow-x-auto">
+                 <table className="w-full text-left">
+                    <thead>
+                       <tr className="bg-slate-50/50">
+                          <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Identity</th>
+                          <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Net Salary</th>
+                          <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Status</th>
+                          <th className="p-8 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Control</th>
+                       </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                       {currentRecords.filter(p => p.employeeName?.toLowerCase().includes(search.toLowerCase())).map((p) => (
+                          <tr key={p.id || p._id} className="group hover:bg-slate-50/30 transition-colors">
+                             <td className="p-8">
+                                <div className="flex items-center gap-4">
+                                   <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-white shadow-lg bg-indigo-50 flex items-center justify-center text-indigo-600 font-black">
+                                      {p.employeeName?.charAt(0)}
+                                   </div>
+                                   <div>
+                                      <p className="text-[14px] font-black text-slate-900">{p.employeeName}</p>
+                                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Specialist</p>
+                                   </div>
+                                </div>
+                             </td>
+                             <td className="p-8">
+                                <div className="flex flex-col">
+                                   <span className="text-[14px] font-black text-slate-900">₹{(p.calculatedSalary?.total || 0).toLocaleString()}</span>
+                                   <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mt-1">+{p.calculatedSalary?.bonus || 0} incentive</span>
+                                </div>
+                             </td>
+                             <td className="p-8">
+                                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${
+                                   p.paymentStatus === 'Paid' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-amber-500/10 border-amber-500/20 text-amber-500'
+                                }`}>
+                                   <div className={`w-1.5 h-1.5 rounded-full ${p.paymentStatus === 'Paid' ? 'bg-emerald-500' : 'bg-amber-500'} ${p.paymentStatus === 'Pending' ? 'animate-pulse' : ''}`} />
+                                   <span className="text-[9px] font-black uppercase tracking-[0.15em]">{p.paymentStatus}</span>
+                                </div>
+                             </td>
+                             <td className="p-8 text-right">
+                                <div className="flex items-center justify-end gap-3">
+                                   <button onClick={() => setViewingPayslip(p)} className="p-2 text-slate-300 hover:text-indigo-600 transition-all"><Eye size={16} /></button>
+                                   {p.paymentStatus === 'Pending' ? (
+                                      <button onClick={() => handleMarkPaid(p.id || p._id)} className="px-5 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 hover:bg-indigo-500 transition-all">Settle</button>
+                                   ) : (
+                                      <button onClick={() => handleDownloadPayslip(p.id || p._id)} className="p-2 text-slate-300 hover:text-indigo-600 transition-all"><Download size={16} /></button>
+                                   )}
+                                   <button onClick={() => handleDelete(p.id || p._id)} className="p-2 text-slate-300 hover:text-rose-500 transition-all"><Trash2 size={16} /></button>
+                                </div>
+                             </td>
+                          </tr>
+                       ))}
+                    </tbody>
+                 </table>
               </div>
-              <p className="text-xs font-black text-slate-900 uppercase tracking-[0.2em]">No Financial Records Detected</p>
-              <p className="text-[10px] text-slate-500 font-bold mt-2">Generate payroll for the current cycle to populate the grid.</p>
-            </div>
-          )}
-        </div>
 
-        <div className="space-y-6">
-          <div className="glass-light rounded-[40px] border border-white/10 shadow-2xl p-8 bg-slate-900 min-w-0">
-            <h3 className="text-lg font-black text-white mb-6 flex items-center gap-2">
-              <TrendingUp size={18} className="text-brand-400" /> Flux Analysis
-            </h3>
-            <div className="h-[200px]">
-               <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#0f172a', fontSize: 10, fontWeight: 900}} />
-                    <Bar dataKey="value" radius={[10, 10, 0, 0]}>
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-               </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="glass-light rounded-[40px] border border-white/10 shadow-2xl p-8 bg-slate-900">
-            <h3 className="text-lg font-black text-white mb-6">Salary Configuration</h3>
-            <div className="space-y-3">
-              {team.map(member => (
-                <div key={member.id || member._id} className="flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-2xl hover:border-brand-500/30 transition-all group shadow-sm">
-                   <div className="flex items-center gap-3">
-                      <img 
-                        src={member.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`} 
-                        className="w-8 h-8 rounded-lg object-cover border border-white/10" 
-                        alt="" 
-                        onError={(e) => { e.target.onerror = null; e.target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`; }}
-                      />
-                      <div className="max-w-[120px]">
-                         <p className="text-xs font-black text-white truncate">{member.name}</p>
-                         <p className="text-[8px] text-white/40 font-black uppercase tracking-widest">{member.role}</p>
-                      </div>
+              {currentRecords.length === 0 && (
+                <div className="py-20 text-center flex flex-col items-center gap-6">
+                   <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center relative">
+                      <Globe size={32} className="text-slate-200" />
+                      <div className="absolute inset-0 border-2 border-indigo-500/10 rounded-full animate-ping-slow" />
                    </div>
-                   <button 
-                    onClick={() => openConfig(member)}
-                    className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-white/60 hover:text-white hover:border-brand-500 transition-all"
-                   >
-                     <Settings2 size={16} />
-                   </button>
+                   <div>
+                      <p className="text-[12px] font-black text-slate-900 uppercase tracking-[0.2em]">No Financial Records Detected</p>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">Awaiting Generation Signal</p>
+                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              )}
+           </div>
         </div>
+
+        {/* SIDEBAR WIDGETS */}
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-10">
+           
+           <div className="glass-card">
+              <h3 className="text-[16px] font-black text-slate-900 tracking-tight mb-8 flex items-center gap-3">
+                 <Settings2 size={18} className="text-indigo-600" /> Specialist Registry
+              </h3>
+              <div className="space-y-4 max-h-[500px] overflow-y-auto scrollbar-hide pr-2">
+                 {team.map(member => (
+                    <div key={member.id || member._id} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100 hover:border-indigo-600/30 transition-all group">
+                       <div className="flex items-center gap-4">
+                          <img src={member.avatar} className="w-10 h-10 rounded-xl border-2 border-white shadow-md object-cover" alt="" />
+                          <div>
+                             <p className="text-[13px] font-black text-slate-900">{member.name}</p>
+                             <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest mt-0.5">{member.role}</p>
+                          </div>
+                       </div>
+                       <button onClick={() => openConfig(member)} className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-300 group-hover:text-indigo-600 group-hover:shadow-md transition-all">
+                          <Settings2 size={16} />
+                       </button>
+                    </div>
+                 ))}
+              </div>
+           </div>
+
+           <div className="glass-card bg-indigo-600 text-white relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+              <h3 className="text-[16px] font-black tracking-tight mb-8 relative z-10">Flux Analysis</h3>
+              <div className="h-[200px] relative z-10">
+                 <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                       <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                          {chartData.map((entry, index) => (
+                             <Cell key={`cell-${index}`} fill={entry.color === '#10b981' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)'} />
+                          ))}
+                       </Bar>
+                    </BarChart>
+                 </ResponsiveContainer>
+              </div>
+              <div className="mt-8 flex justify-between relative z-10">
+                 {chartData.map(d => (
+                    <div key={d.name} className="flex flex-col">
+                       <span className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">{d.name}</span>
+                       <span className="text-[18px] font-black">₹{d.value.toLocaleString()}</span>
+                    </div>
+                 ))}
+              </div>
+           </div>
+
+        </div>
+
       </div>
 
+
+      {/* 6. MODAL SYSTEMS */}
       <AnimatePresence>
         {showConfig && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowConfig(null)} className="absolute inset-0 bg-[#020617]/80 backdrop-blur-md" />
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-md glass border border-white/10 rounded-[40px] p-10 shadow-2xl bg-[#020617]"
-            >
-              <h2 className="text-3xl font-black text-white tracking-tighter mb-2">Config: {showConfig.name}</h2>
-              <p className="text-xs text-brand-500 font-black uppercase tracking-widest mb-8">Set Base Compensation</p>
-              
-              <form onSubmit={saveConfig} className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Member Service</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. AI Solutions"
-                      value={configData?.metadata?.service || ''} 
-                      onChange={e => setConfigData({...configData, metadata: { ...configData.metadata, service: e.target.value }})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white outline-none focus:border-brand-500" 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Project Name</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. NexovTech"
-                      value={configData?.metadata?.projectName || ''} 
-                      onChange={e => setConfigData({...configData, metadata: { ...configData.metadata, projectName: e.target.value }})}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white outline-none focus:border-brand-500" 
-                    />
-                  </div>
-                </div>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowConfig(null)} className="absolute inset-0 bg-slate-900/40 backdrop-blur-xl" />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-lg glass-card p-10 z-10 max-h-[90vh] overflow-y-auto scrollbar-hide">
+              <div className="flex justify-between items-center mb-8">
+                 <h2 className="text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">CONFIG: {showConfig.name}</h2>
+                 <button onClick={() => setShowConfig(null)} className="p-2 text-slate-400 hover:text-slate-900 transition-all"><X size={24} /></button>
+              </div>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Salary Type</label>
-                  <select 
-                    value={configData.salaryType} 
-                    onChange={e => setConfigData({...configData, salaryType: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-brand-500"
-                  >
-                    <option className="bg-slate-900">Monthly</option>
-                    <option className="bg-slate-900">Hourly</option>
-                    <option className="bg-slate-900">Per Project</option>
-                  </select>
-                </div>
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Sector Breakdown (INR)</label>
-                  <div className="grid grid-cols-1 gap-3 max-h-[240px] overflow-y-auto pr-2 custom-scrollbar">
-                    {[
-                      { key: 'web', label: 'Web Development' },
-                      { key: 'ai', label: 'AI Solutions' },
-                      { key: 'video', label: 'Video Editing' },
-                      { key: 'systems', label: 'Management Systems' }
-                    ].map((sector) => (
-                      <div key={sector.key} className="flex items-center gap-3 bg-white/5 p-2 rounded-xl border border-white/5">
-                        <span className="text-[9px] font-bold text-white/40 w-24 leading-tight">{sector.label}</span>
-                        <input 
-                          type="number"
-                          value={configData?.breakdown?.[sector.key] || 0}
-                          onChange={(e) => {
-                            const val = Number(e.target.value);
-                            const currentBreakdown = configData?.breakdown || { web: 0, ai: 0, video: 0, systems: 0 };
-                            const newBreakdown = { ...currentBreakdown, [sector.key]: val };
-                            const newTotal = Object.values(newBreakdown).reduce((a, b) => a + (Number(b) || 0), 0);
-                            setConfigData({ ...configData, breakdown: newBreakdown, baseSalary: newTotal });
-                          }}
-                          className="flex-1 bg-white/5 border border-white/5 rounded-lg p-2 text-sm font-bold text-white outline-none focus:border-brand-500"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-between items-center bg-slate-900 p-4 rounded-2xl text-white">
-                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Total Base</span>
-                    <span className="text-lg font-black tracking-tighter">₹ {configData.baseSalary}</span>
-                  </div>
-                </div>
+              <form onSubmit={saveConfig} className="space-y-8">
+                 <div className="grid grid-cols-2 gap-6">
+                    <div className="flex flex-col gap-2">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Member Service</label>
+                       <input type="text" placeholder="e.g. AI Solutions" value={configData?.metadata?.service || ''} onChange={e => setConfigData({ ...configData, metadata: { ...configData.metadata, service: e.target.value } })} className="h-12 px-5 bg-slate-50 border-none rounded-2xl text-[13px] font-bold text-slate-900 focus:ring-1 focus:ring-indigo-600" />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Project Name</label>
+                       <input type="text" placeholder="e.g. NexovTech" value={configData?.metadata?.projectName || ''} onChange={e => setConfigData({ ...configData, metadata: { ...configData.metadata, projectName: e.target.value } })} className="h-12 px-5 bg-slate-50 border-none rounded-2xl text-[13px] font-bold text-slate-900 focus:ring-1 focus:ring-indigo-600" />
+                    </div>
+                 </div>
 
-                <div className="grid grid-cols-1">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest ml-1">Performance Bonus (INR)</label>
-                    <input type="number" value={configData.bonus} onChange={e => setConfigData({...configData, bonus: Number(e.target.value)})} className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white outline-none focus:border-brand-500" />
-                  </div>
-                </div>
-                <button type="submit" className="w-full py-5 bg-brand-600 rounded-2xl text-xs font-black uppercase tracking-widest text-white hover:bg-brand-500 transition-all">Store Configuration</button>
+                 <div className="flex flex-col gap-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Compensation Strategy</label>
+                    <div className="flex p-1 bg-slate-50 rounded-2xl">
+                       {['Monthly', 'Hourly', 'Per Project'].map(t => (
+                          <button key={t} type="button" onClick={() => setConfigData({ ...configData, salaryType: t })} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${configData.salaryType === t ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-400'}`}>{t}</button>
+                       ))}
+                    </div>
+                 </div>
+
+                 <div className="flex flex-col gap-4">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sector Breakdown (INR)</label>
+                    <div className="grid grid-cols-1 gap-3">
+                       {[
+                         { key: 'web', label: 'Web Development' },
+                         { key: 'ai', label: 'AI Solutions' },
+                         { key: 'video', label: 'Video Editing' },
+                         { key: 'systems', label: 'Management Systems' }
+                       ].map((sector) => (
+                         <div key={sector.key} className="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-transparent focus-within:border-indigo-600/30 transition-all">
+                            <span className="text-[11px] font-black text-slate-900 w-32 uppercase tracking-tighter">{sector.label}</span>
+                            <input type="number" value={configData?.breakdown?.[sector.key] || 0} onChange={(e) => {
+                                const val = Number(e.target.value);
+                                const newBreakdown = { ...configData.breakdown, [sector.key]: val };
+                                const newTotal = Object.values(newBreakdown).reduce((a, b) => a + (Number(b) || 0), 0);
+                                setConfigData({ ...configData, breakdown: newBreakdown, baseSalary: newTotal });
+                             }} className="flex-1 h-10 bg-white rounded-xl px-4 text-[13px] font-black text-slate-900 outline-none" />
+                         </div>
+                       ))}
+                    </div>
+                 </div>
+
+                 <div className="bg-indigo-600 p-8 rounded-[24px] text-white flex justify-between items-center shadow-xl shadow-indigo-100">
+                    <div className="flex flex-col">
+                       <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Total Base Compensation</span>
+                       <span className="text-3xl font-black tracking-tighter">₹{configData.baseSalary.toLocaleString()}</span>
+                    </div>
+                    <IndianRupee size={42} className="opacity-20" />
+                 </div>
+
+                 <button type="submit" className="w-full h-16 bg-indigo-600 text-white text-[12px] font-black uppercase tracking-widest rounded-2xl shadow-2xl shadow-indigo-100 hover:bg-indigo-500 transition-all">Store Configuration</button>
               </form>
             </motion.div>
           </div>
@@ -590,28 +486,12 @@ const AdminPayroll = () => {
           <DigitalPayslip 
             data={viewingPayslip} 
             onClose={() => setViewingPayslip(null)} 
+            onDownload={() => handleDownloadPayslip(viewingPayslip.id || viewingPayslip._id)}
           />
         )}
       </AnimatePresence>
     </div>
   );
 };
-
-const StatCard = ({ title, value, icon: Icon, color }) => (
-  <div className="glass-light rounded-[32px] border border-white/10 shadow-xl p-8 relative overflow-hidden group bg-slate-900">
-    <div className="flex items-center justify-between mb-4">
-       <span className="text-[10px] font-black text-white/60 uppercase tracking-widest">{title}</span>
-       <div className={`p-3 bg-white/5 rounded-xl ${color}`}><Icon size={18} /></div>
-    </div>
-    <div className="flex items-baseline gap-1">
-      <span className="text-xs font-black text-white/60">₹</span>
-      <span className="text-4xl font-black text-white tracking-tighter">{value.toLocaleString()}</span>
-    </div>
-    <div className="mt-4 flex items-center gap-2">
-      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-      <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">Real-time Synchronization</span>
-    </div>
-  </div>
-);
 
 export default AdminPayroll;

@@ -4,6 +4,7 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const DATA_DIR = path.join(__dirname, '../data');
+const fallbackDb = require('../utils/fallbackDb');
 
 async function readData(file) {
     try {
@@ -13,6 +14,17 @@ async function readData(file) {
         return [];
     }
 }
+
+// @route   GET /api/audit/logs
+// @desc    Get system-wide activity logs
+router.get('/logs', async (req, res) => {
+  try {
+    const logs = await fallbackDb.find('audit_logs', {});
+    res.json(logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)));
+  } catch (err) {
+    res.status(500).json({ message: 'Log retrieval failed' });
+  }
+});
 
 // @route   GET /api/audit/summary
 // @desc    Get executive organizational health summary

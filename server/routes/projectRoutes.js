@@ -2,17 +2,26 @@ const express = require('express');
 const router = express.Router();
 const fallbackDb = require('../utils/fallbackDb');
 
-// GET All Projects with Task Progress
+// GET All Projects with Task Progress and Real-time Team Sync
 router.get('/', async (req, res) => {
   try {
     let projects = await fallbackDb.find('projects', {});
     const tasks = await fallbackDb.find('tasks', {});
+    const users = await fallbackDb.find('users', {});
     
     const projectsWithProgress = (projects || []).map(project => {
       const projectTasks = tasks.filter(t => t.projectId === project.id || t.projectId === project._id);
       const completed = projectTasks.filter(t => t.status === 'Completed').length;
+      
+      // Hydrate team members with latest profiles from users collection
+      const hydratedTeam = (project.team || []).map(member => {
+        const latestProfile = users.find(u => u.email?.toLowerCase() === member.email?.toLowerCase());
+        return latestProfile ? { ...member, ...latestProfile } : member;
+      });
+
       return {
         ...project,
+        team: hydratedTeam,
         progress: projectTasks.length > 0 ? Math.round((completed / projectTasks.length) * 100) : (project.progress || 0),
         tasksCount: projectTasks.length || 0
       };

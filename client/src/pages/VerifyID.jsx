@@ -44,7 +44,7 @@ const VerifyID = () => {
     <div className="min-h-screen bg-transparent p-6 flex items-center justify-center">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-10">
-          <div className="w-16 h-16 bg-white/10 backdrop-blur-xl rounded-[24px] flex items-center justify-center p-3 shadow-2xl shadow-brand-600/20 mb-4 border border-white/10">
+          <div className="w-16 h-16 bg-white/10 backdrop-blur-xl rounded-[24px] flex items-center justify-center p-3 shadow-2xl shadow-brand-600/20 mb-4 border border-gray-200">
             <img 
               src="/assets/logo.jpeg" 
               alt="Logo" 
@@ -88,7 +88,7 @@ const VerifyID = () => {
                   Identity Verified: {data.status}
                </div>
 
-               <div className="w-32 h-32 rounded-[32px] bg-white/5 p-1 shadow-2xl mb-6 border-4 border-white/10 overflow-hidden backdrop-blur-xl">
+               <div className="w-32 h-32 rounded-[32px] bg-gray-50 p-1 shadow-2xl mb-6 border-4 border-gray-200 overflow-hidden backdrop-blur-xl">
                   <img 
                     src={data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`} 
                     className="w-full h-full object-cover rounded-[26px]" 
@@ -140,3 +140,5 @@ const InfoRow = ({ icon: Icon, label, value }) => (
 );
 
 export default VerifyID;
+
+

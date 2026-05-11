@@ -147,7 +147,7 @@ const Clients = () => {
   if (error) return (
     <div className="text-center py-20 glass rounded-[40px] border border-rose-500/20">
        <AlertTriangle size={64} className="text-rose-500 mx-auto mb-6" />
-       <h3 className="text-2xl font-black text-white">Directory Unreachable</h3>
+       <h3 className="text-2xl font-black text-gray-900">Directory Unreachable</h3>
        <p className="text-surface-500 mt-2">{error}</p>
        <button onClick={fetchClients} className="mt-8 px-8 py-3 bg-brand-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-500 transition-all">Retry Link</button>
     </div>
@@ -158,7 +158,7 @@ const Clients = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter">Client Directory</h1>
+          <h1 className="text-4xl font-black text-gray-900 tracking-tighter">Client Directory</h1>
           <p className="text-surface-500 mt-2 font-medium">Manage corporate accounts and conversion funnels.</p>
         </div>
         <button 
@@ -178,19 +178,19 @@ const Clients = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by name, company, or tier..." 
-            className="w-full pl-12 pr-6 py-4 bg-white/[0.03] border border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500/30 transition-all text-white placeholder:text-surface-700"
+            className="w-full pl-12 pr-6 py-4 bg-white/[0.03] border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500/30 transition-all text-gray-900 placeholder:text-surface-700"
           />
         </div>
-        <button className="p-4 bg-white/5 border border-white/5 rounded-2xl text-surface-500 hover:text-white transition-all">
+        <button className="p-4 bg-gray-50 border border-gray-100 rounded-2xl text-surface-500 hover:text-gray-900 transition-all">
           <Filter size={20} />
         </button>
       </div>
 
       {/* Table */}
-      <div className="glass-light rounded-[40px] border border-white/5 overflow-hidden shadow-2xl">
+      <div className="glass-light rounded-[40px] border border-gray-100 overflow-hidden shadow-2xl">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-white/5 bg-white/[0.02]">
+            <tr className="border-b border-gray-100 bg-white/[0.02]">
               <th className="px-8 py-6 text-[10px] font-black text-surface-500 uppercase tracking-widest">Client Identity</th>
               <th className="px-8 py-6 text-[10px] font-black text-surface-500 uppercase tracking-widest">Service Vertical</th>
               <th className="px-8 py-6 text-[10px] font-black text-surface-500 uppercase tracking-widest">Engagement Status</th>
@@ -206,11 +206,11 @@ const Clients = () => {
               <tr key={client._id} className="hover:bg-white/[0.02] transition-colors group">
                 <td className="px-8 py-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-neon-blue flex items-center justify-center text-white font-black text-xl shadow-lg">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-neon-blue flex items-center justify-center text-gray-900 font-black text-xl shadow-lg">
                       {client.name.charAt(0)}
                     </div>
                     <div>
-                      <p className="font-bold text-white text-base">{client.name}</p>
+                      <p className="font-bold text-gray-900 text-base">{client.name}</p>
                       <p className="text-[10px] text-surface-500 font-black uppercase tracking-widest">{client.businessType}</p>
                     </div>
                   </div>
@@ -234,7 +234,7 @@ const Clients = () => {
                     >
                       <FileText size={18} />
                     </button>
-                    <button className="p-3 bg-white/5 hover:bg-white/10 rounded-xl text-surface-500 hover:text-white transition-colors">
+                    <button className="p-3 bg-gray-50 hover:bg-white/10 rounded-xl text-surface-500 hover:text-gray-900 transition-colors">
                       <Mail size={18} />
                     </button>
                     <button 
@@ -260,17 +260,17 @@ const Clients = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setAddModal(false)}
-              className="absolute inset-0 bg-[#020617]/80 backdrop-blur-md"
+              className="absolute inset-0 bg-white/80 backdrop-blur-md"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-md glass border border-white/10 rounded-[40px] p-10 shadow-2xl"
+              className="relative w-full max-w-md glass border border-gray-200 rounded-[40px] p-10 shadow-2xl"
             >
               <div className="flex justify-between items-center mb-10">
-                <h2 className="text-3xl font-black text-white tracking-tighter">Onboard Client</h2>
-                <button onClick={() => setAddModal(false)} className="p-2 text-surface-500 hover:text-white transition-colors"><X size={24} /></button>
+                <h2 className="text-3xl font-black text-gray-900 tracking-tighter">Onboard Client</h2>
+                <button onClick={() => setAddModal(false)} className="p-2 text-surface-500 hover:text-gray-900 transition-colors"><X size={24} /></button>
               </div>
 
               <form onSubmit={handleAddClient} className="space-y-6">
@@ -280,7 +280,7 @@ const Clients = () => {
                      required
                      value={newClient.name}
                      onChange={(e) => setNewClient({...newClient, name: e.target.value})}
-                     className="w-full px-6 py-4 bg-white/5 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-brand-500/50" 
+                     className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 focus:outline-none focus:border-brand-500/50" 
                      placeholder="e.g. Acme Corp"
                    />
                 </div>
@@ -291,7 +291,7 @@ const Clients = () => {
                      type="email"
                      value={newClient.email}
                      onChange={(e) => setNewClient({...newClient, email: e.target.value})}
-                     className="w-full px-6 py-4 bg-white/5 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-brand-500/50" 
+                     className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 focus:outline-none focus:border-brand-500/50" 
                      placeholder="ops@acme.com"
                    />
                 </div>
@@ -301,7 +301,7 @@ const Clients = () => {
                     <select 
                       value={newClient.businessType}
                       onChange={(e) => setNewClient({...newClient, businessType: e.target.value})}
-                      className="w-full px-4 py-4 bg-white/5 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-brand-500/50 appearance-none"
+                      className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 focus:outline-none focus:border-brand-500/50 appearance-none"
                     >
                         <option>Enterprise</option>
                         <option>Startup</option>
@@ -313,7 +313,7 @@ const Clients = () => {
                     <select 
                       value={newClient.serviceType}
                       onChange={(e) => setNewClient({...newClient, serviceType: e.target.value})}
-                      className="w-full px-4 py-4 bg-white/5 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-brand-500/50 appearance-none"
+                      className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 focus:outline-none focus:border-brand-500/50 appearance-none"
                     >
                         <option>AI Solutions</option>
                         <option>Web Development</option>
@@ -337,20 +337,20 @@ const Clients = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setInvoiceModal({ ...invoiceModal, show: false })}
-              className="absolute inset-0 bg-[#020617]/80 backdrop-blur-md"
+              className="absolute inset-0 bg-white/80 backdrop-blur-md"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-xl glass border border-white/10 rounded-[40px] p-10 shadow-2xl"
+              className="relative w-full max-w-xl glass border border-gray-200 rounded-[40px] p-10 shadow-2xl"
             >
               <div className="flex justify-between items-center mb-10">
                 <div>
-                   <h2 className="text-3xl font-black text-white tracking-tighter">Forge Invoice</h2>
+                   <h2 className="text-3xl font-black text-gray-900 tracking-tighter">Forge Invoice</h2>
                    <p className="text-xs text-brand-500 font-black uppercase tracking-widest mt-1">For: {invoiceModal.clientName}</p>
                 </div>
-                <button onClick={() => setInvoiceModal({ ...invoiceModal, show: false })} className="p-2 text-surface-500 hover:text-white transition-colors"><X size={24} /></button>
+                <button onClick={() => setInvoiceModal({ ...invoiceModal, show: false })} className="p-2 text-surface-500 hover:text-gray-900 transition-colors"><X size={24} /></button>
               </div>
 
               <form onSubmit={handleGenerateInvoice} className="space-y-6">
@@ -364,14 +364,14 @@ const Clients = () => {
                            type="number"
                            value={invoiceModal.amount}
                            onChange={(e) => setInvoiceModal({...invoiceModal, amount: e.target.value})}
-                           className="w-full pl-10 pr-6 py-4 bg-white/5 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-brand-500/50" 
+                           className="w-full pl-10 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 focus:outline-none focus:border-brand-500/50" 
                            placeholder="e.g. 85000"
                          />
                       </div>
                    </div>
                    <div className="space-y-2">
                       <label className="text-[10px] font-black text-surface-500 uppercase tracking-widest ml-1">Payment Terms</label>
-                      <select className="w-full px-6 py-4 bg-white/5 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-brand-500/50 appearance-none">
+                      <select className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 focus:outline-none focus:border-brand-500/50 appearance-none">
                          <option>Net 15</option>
                          <option>Net 30</option>
                          <option>Due on Receipt</option>
@@ -384,7 +384,7 @@ const Clients = () => {
                      required
                      value={invoiceModal.description}
                      onChange={(e) => setInvoiceModal({...invoiceModal, description: e.target.value})}
-                     className="w-full px-6 py-4 bg-white/5 border border-white/5 rounded-2xl text-white focus:outline-none focus:border-brand-500/50 h-32" 
+                     className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 focus:outline-none focus:border-brand-500/50 h-32" 
                      placeholder="Specify deliverables..."
                    />
                 </div>
@@ -404,23 +404,23 @@ const Clients = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setDeleteModal({ show: false, clientId: null, clientName: '' })}
-              className="absolute inset-0 bg-[#020617]/80 backdrop-blur-md"
+              className="absolute inset-0 bg-white/80 backdrop-blur-md"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-md glass border border-white/10 rounded-[40px] p-10 shadow-2xl text-center"
+              className="relative w-full max-w-md glass border border-gray-200 rounded-[40px] p-10 shadow-2xl text-center"
             >
                <div className="w-20 h-20 bg-rose-500/20 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-8 border border-rose-500/20">
                   <AlertTriangle size={40} />
                </div>
-               <h2 className="text-3xl font-black text-white tracking-tighter mb-4">Confirm Removal</h2>
+               <h2 className="text-3xl font-black text-gray-900 tracking-tighter mb-4">Confirm Removal</h2>
                <p className="text-surface-500 text-sm font-medium leading-relaxed mb-10">
-                  Are you sure you want to remove <span className="text-white font-bold">{deleteModal.clientName}</span> from the system?
+                  Are you sure you want to remove <span className="text-gray-900 font-bold">{deleteModal.clientName}</span> from the system?
                </p>
                <div className="flex gap-4">
-                  <button onClick={() => setDeleteModal({ show: false, clientId: null, clientName: '' })} className="flex-1 py-4 bg-white/5 text-surface-400 rounded-2xl text-xs font-black uppercase tracking-widest hover:text-white transition-all border border-white/5">Cancel</button>
+                  <button onClick={() => setDeleteModal({ show: false, clientId: null, clientName: '' })} className="flex-1 py-4 bg-gray-50 text-surface-400 rounded-2xl text-xs font-black uppercase tracking-widest hover:text-gray-900 transition-all border border-gray-100">Cancel</button>
                   <button onClick={confirmDelete} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-rose-500 transition-all shadow-xl shadow-rose-600/30">Delete Account</button>
                </div>
             </motion.div>
@@ -435,7 +435,7 @@ const Clients = () => {
             initial={{ opacity: 0, y: 50, x: '-50%' }}
             animate={{ opacity: 1, y: 0, x: '-50%' }}
             exit={{ opacity: 0, y: 50, x: '-50%' }}
-            className="fixed bottom-10 left-1/2 glass border border-brand-500/30 px-8 py-4 rounded-3xl shadow-2xl text-white font-bold flex items-center gap-6 z-50"
+            className="fixed bottom-10 left-1/2 glass border border-brand-500/30 px-8 py-4 rounded-3xl shadow-2xl text-gray-900 font-bold flex items-center gap-6 z-50"
           >
              <div className="flex items-center gap-3">
                 {notification.isError ? <AlertTriangle className="text-rose-500" /> : <CheckCircle2 className="text-emerald-500" />}
@@ -457,3 +457,5 @@ const Clients = () => {
 };
 
 export default Clients;
+
+

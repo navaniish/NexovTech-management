@@ -44,7 +44,11 @@ const fallbackDb = {
       return docs;
     } catch (err) {
       console.warn(`Firestore fail [${collection}]: falling back to local vault.`);
-      return readLocalData(collection);
+      const localData = readLocalData(collection);
+      if (!query || Object.keys(query).length === 0) return localData;
+      return localData.filter(item => {
+        return Object.keys(query).every(key => item[key] === query[key]);
+      });
     }
   },
 
@@ -64,7 +68,7 @@ const fallbackDb = {
         return { id: doc.id, ...doc.data() };
       }
     } catch (err) {
-      console.warn(`Firestore query fail: ${err.message}`);
+      console.warn(`Firestore query fail [${collection}]: ${err.message}`);
     }
 
     // Fallback to local
@@ -90,15 +94,15 @@ const fallbackDb = {
   // SAVE / UPDATE
   save: async (collection, item) => {
     try {
-      const id = item.firebaseUid || item.id || item.email || (db ? db.collection(collection).doc().id : Date.now().toString());
+      const id = item.firebaseUid || item.id || item.email || (db ? db.collection(collection).doc().id : `${Date.now()}_${Math.random().toString(36).substr(2, 5)}`);
       if (!item.id && !item.firebaseUid && !item.email) item.id = id;
       
       if (!db) throw new Error('DATABASE_OFFLINE: No Firestore handle found. Please check Netlify Environment Variables.');
       await db.collection(collection).doc(id).set(item, { merge: true });
       console.log(`Cloud Sync Success: [${collection}] document updated.`);
     } catch (err) {
-      console.error(`🔥 DATABASE_CRITICAL_FAILURE: ${err.message}`);
-      throw err; // Re-throw to inform the API
+      console.warn(`🔥 Cloud Sync Failed [${collection}]: proceeding with local vault only.`);
+      // Do not re-throw, allow falling back to local cache logic below
     }
 
     // Always update local cache

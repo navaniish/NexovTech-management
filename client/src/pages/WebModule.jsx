@@ -26,7 +26,7 @@ const WebModule = () => {
           <p className="text-surface-500 mt-2 font-medium">Synchronize frontend, backend, and deployment pipelines.</p>
         </div>
         <div className="flex gap-4">
-          <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5">
+          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
              <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                 <span className="text-[10px] font-black theme-text-primary uppercase tracking-widest">Main Branch</span>
@@ -48,7 +48,7 @@ const WebModule = () => {
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="glass-light p-10 rounded-[40px] border border-white/5 shadow-2xl relative overflow-hidden group"
+          className="glass-light p-10 rounded-[40px] border border-gray-100 shadow-2xl relative overflow-hidden group"
         >
           <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity">
             <Layout size={120} />
@@ -74,7 +74,7 @@ const WebModule = () => {
               { task: 'Dark Mode System', status: 'Todo', priority: 'Low' },
               { task: 'Auth Flow Integration', status: 'Done', priority: 'High' },
             ].map((t, i) => (
-              <div key={i} className="flex items-center justify-between p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-blue-500/30 transition-all group/task">
+              <div key={i} className="flex items-center justify-between p-6 bg-gray-50 rounded-3xl border border-gray-100 hover:border-blue-500/30 transition-all group/task">
                 <div className="flex items-center gap-5">
                   <div className={`w-3 h-3 rounded-full ${t.status === 'Done' ? 'bg-emerald-500' : t.status === 'In Progress' ? 'bg-blue-500' : 'bg-surface-700'}`}></div>
                   <p className="text-sm font-bold theme-text-primary group-hover/task:text-blue-400 transition-colors">{t.task}</p>
@@ -92,7 +92,7 @@ const WebModule = () => {
         <motion.div 
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="glass-light p-10 rounded-[40px] border border-white/5 shadow-2xl relative overflow-hidden group"
+          className="glass-light p-10 rounded-[40px] border border-gray-100 shadow-2xl relative overflow-hidden group"
         >
           <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity">
             <Server size={120} />
@@ -118,7 +118,7 @@ const WebModule = () => {
               { task: 'JWT Logic', status: 'In Progress', priority: 'Critical' },
               { task: 'Socket.io Flows', status: 'Todo', priority: 'Medium' },
             ].map((t, i) => (
-              <div key={i} className="flex items-center justify-between p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-emerald-500/30 transition-all group/task">
+              <div key={i} className="flex items-center justify-between p-6 bg-gray-50 rounded-3xl border border-gray-100 hover:border-emerald-500/30 transition-all group/task">
                 <div className="flex items-center gap-5">
                   <div className={`w-3 h-3 rounded-full ${t.status === 'Done' ? 'bg-emerald-500' : t.status === 'In Progress' ? 'bg-blue-500' : 'bg-surface-700'}`}></div>
                   <p className="text-sm font-bold theme-text-primary group-hover/task:text-emerald-400 transition-colors">{t.task}</p>
@@ -134,7 +134,7 @@ const WebModule = () => {
       </div>
 
       {/* Deployment & Terminal */}
-      <div className="glass-light p-10 rounded-[40px] border border-white/5 shadow-2xl relative overflow-hidden">
+      <div className="glass-light p-10 rounded-[40px] border border-gray-100 shadow-2xl relative overflow-hidden">
          <div className="flex items-center justify-between mb-8">
             <h2 className="text-xl font-black theme-text-primary tracking-tight flex items-center gap-3">
                <Terminal size={22} className="text-brand-400" /> System Logs
@@ -148,7 +148,7 @@ const WebModule = () => {
                </div>
             </div>
          </div>
-         <div className="bg-surface-950 p-8 rounded-3xl border border-white/5 font-mono text-sm space-y-3 shadow-inner">
+         <div className="bg-surface-950 p-8 rounded-3xl border border-gray-100 font-mono text-sm space-y-3 shadow-inner">
             <p className="text-emerald-400"><span className="text-surface-600">09:14:22</span> [BUILD] Production build successful in 12s.</p>
             <p className="text-brand-400"><span className="text-surface-600">09:14:25</span> [DEPLOY] Deploying to edge node... v2.4.1</p>
             <p className="theme-text-primary"><span className="text-surface-600">09:15:01</span> [SERVER] Listening on port 3000 (HTTPS)</p>
@@ -163,3 +163,5 @@ const WebModule = () => {
 };
 
 export default WebModule;
+
+

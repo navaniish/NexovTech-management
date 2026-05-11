@@ -3,6 +3,28 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fallbackDb = require('../utils/fallbackDb');
+ 
+ // GET /tasks — get all tasks (Admin)
+ router.get('/', async (req, res) => {
+   try {
+     const tasks = await fallbackDb.find('tasks', {});
+     const projects = await fallbackDb.find('projects', {});
+     const users = await fallbackDb.find('users', {});
+     
+     const populated = tasks.map(task => {
+       const project = projects.find(p => p.id === task.projectId || p._id === task.projectId);
+       const user = users.find(u => u.id === task.assignedTo || u._id === task.assignedTo);
+       return { 
+         ...task, 
+         project: project || { title: 'No Project', sector: 'General' },
+         assignedUser: user || { name: 'Unknown Specialist', avatar: '' }
+       };
+     });
+     res.json(populated);
+   } catch (err) {
+     res.status(500).json({ message: 'Failed to retrieve global task queue' });
+   }
+ });
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -123,6 +145,21 @@ router.post('/', upload.array('attachments'), async (req, res) => {
     };
     
     const saved = await fallbackDb.save('tasks', newTask);
+    
+    // Trigger Notification for the assigned specialist
+    try {
+      await fallbackDb.save('notifications', {
+        id: `nt_${Date.now()}_task`,
+        userId: newTask.assignedTo,
+        title: 'New Mission Assigned',
+        message: `You have been assigned a new mission: ${newTask.title}`,
+        type: 'info',
+        link: '/tasks',
+        read: false,
+        createdAt: new Date().toISOString()
+      });
+    } catch (nErr) { console.error('Notification trigger failed:', nErr); }
+
     res.status(201).json(saved);
   } catch (err) {
     console.error('❌ MISSION_FAILURE: Task deployment failed:', err);

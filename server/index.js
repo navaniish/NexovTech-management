@@ -41,6 +41,9 @@ app.use('/api/leave', require('./routes/leaveRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/recruitment', require('./routes/recruitmentRoutes'));
 app.use('/api/audit', require('./routes/auditRoutes'));
+app.use('/api/communication', require('./routes/communicationRoutes'));
+app.use('/api/mail', require('./routes/mailRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 // Health check
 app.get('/', (req, res) => {
@@ -70,6 +73,7 @@ seedAdmin().catch(err => console.error('❌ SEEDING FAILED:', err.message));
 if (!IS_SERVERLESS) {
   const http = require('http');
   const { Server } = require('socket.io');
+  const fallbackDb = require('./utils/fallbackDb');
 
   const server = http.createServer(app);
   const io = new Server(server, {
@@ -77,18 +81,56 @@ if (!IS_SERVERLESS) {
   });
 
   io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
-    socket.on('join-project', (projectId) => {
-      socket.join(projectId);
-      console.log(`User ${socket.id} joined project ${projectId}`);
+    console.log('🚀 COMMUNICATION_HUB: User connected:', socket.id);
+
+    // Join specialized rooms
+    socket.on('join-room', (roomId) => {
+      socket.join(roomId);
+      console.log(`🔗 ROOM_JOIN: Socket ${socket.id} joined ${roomId}`);
     });
+
+    // Handle Real-time Chat
+    socket.on('send-message', async (data) => {
+      try {
+        const { room, sender, content, type } = data;
+        const message = {
+          room,
+          sender,
+          content,
+          type: type || 'text',
+          timestamp: new Date()
+        };
+        // Persist to DB
+        await fallbackDb.save('messages', message);
+        // Broadcast to room
+        io.to(room).emit('new-message', message);
+      } catch (err) {
+        console.error('🔥 CHAT_ERROR:', err.message);
+      }
+    });
+
+    // Typing Indicators
+    socket.on('typing', ({ room, user }) => {
+      socket.to(room).emit('user-typing', { user });
+    });
+
+    // Announcements
+    socket.on('broadcast-announcement', async (data) => {
+      try {
+        await fallbackDb.save('announcements', { ...data, timestamp: new Date() });
+        io.emit('new-announcement', data);
+      } catch (err) {
+        console.error('🔥 BROADCAST_ERROR:', err.message);
+      }
+    });
+
     socket.on('disconnect', () => {
-      console.log('User disconnected');
+      console.log('📡 COMMUNICATION_HUB: User disconnected');
     });
   });
 
-  const PORT = process.env.PORT || 5000;
-  server.listen(PORT, () => {
+  const PORT = process.env.PORT || 5006;
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
   });
 }

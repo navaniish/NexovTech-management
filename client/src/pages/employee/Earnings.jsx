@@ -42,7 +42,7 @@ const Earnings = () => {
   if (error) return (
     <div className="text-center py-20 glass rounded-[40px] border border-rose-500/20">
        <AlertTriangle size={64} className="text-rose-500 mx-auto mb-6" />
-       <h3 className="text-2xl font-black text-white">Ledger Sync Failed</h3>
+       <h3 className="text-2xl font-black text-gray-900">Ledger Sync Failed</h3>
        <p className="text-surface-500 mt-2">{error}</p>
        <button onClick={fetchEarnings} className="mt-8 px-8 py-3 bg-brand-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-500 transition-all">Retry Link</button>
     </div>
@@ -55,7 +55,7 @@ const Earnings = () => {
           <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Earnings & Payouts</h1>
           <p className="text-sm font-medium mt-1" style={{ color: 'var(--text-secondary)' }}>Track your earnings and automated payment history.</p>
         </div>
-        <button className="px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all hover:bg-brand-600 hover:text-white"
+        <button className="px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all hover:bg-brand-600 hover:text-gray-900"
           style={{ background: 'var(--card-hover-bg)', border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}>
           <Download size={14} /> Annual Statement
         </button>
@@ -80,13 +80,13 @@ const Earnings = () => {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="rounded-2xl p-6 bg-gradient-to-br from-brand-600 to-brand-800 text-white relative overflow-hidden">
+          className="rounded-2xl p-6 bg-gradient-to-br from-brand-600 to-brand-800 text-gray-900 relative overflow-hidden">
           <div className="absolute -right-6 -top-6 opacity-10"><CreditCard size={100} /></div>
           <div className="relative z-10">
             <h3 className="text-base font-black mb-1">Payment Hub</h3>
-            <p className="text-xs font-medium text-white/60">Verified Primary Method</p>
+            <p className="text-xs font-medium text-gray-600">Verified Primary Method</p>
             <div className="mt-6">
-              <p className="text-[9px] font-black uppercase tracking-widest text-white/50">Designated Bank</p>
+              <p className="text-[9px] font-black uppercase tracking-widest text-gray-500">Designated Bank</p>
               <p className="text-lg font-mono font-black mt-0.5">**** **** **** 8492</p>
             </div>
           </div>
@@ -104,7 +104,7 @@ const Earnings = () => {
           {data.history.length === 0 ? (
              <p className="text-center py-20 text-xs font-black uppercase tracking-widest text-surface-700">No Historical Disbursements Detected</p>
           ) : data.history.map((p, i) => (
-            <div key={p._id} className="px-6 py-4 flex items-center justify-between transition-colors hover:bg-white/5">
+            <div key={p._id} className="px-6 py-4 flex items-center justify-between transition-colors hover:bg-gray-50">
               <div>
                 <p className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>{p.description}</p>
                 <p className="text-[10px] font-bold theme-text-secondary mt-0.5">{new Date(p.date).toLocaleDateString()}</p>
@@ -124,3 +124,5 @@ const Earnings = () => {
 };
 
 export default Earnings;
+
+

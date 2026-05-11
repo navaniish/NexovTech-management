@@ -72,7 +72,7 @@ const Timesheet = () => {
   if (error) return (
     <div className="text-center py-20 glass rounded-[40px] border border-rose-500/20">
        <AlertTriangle size={64} className="text-rose-500 mx-auto mb-6" />
-       <h3 className="text-2xl font-black text-white">Temporal Link Failed</h3>
+       <h3 className="text-2xl font-black text-gray-900">Temporal Link Failed</h3>
        <p className="text-surface-500 mt-2">{error}</p>
        <button onClick={fetchTimesheets} className="mt-8 px-8 py-3 bg-brand-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-500 transition-all">Retry Link</button>
     </div>
@@ -130,7 +130,7 @@ const Timesheet = () => {
           {entries.length === 0 ? (
              <p className="text-center py-20 text-xs font-black uppercase tracking-widest text-surface-700">No Temporal Logs Detected</p>
           ) : entries.map((entry) => (
-            <div key={entry._id} className="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+            <div key={entry._id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-4">
                 <div className="p-2 rounded-xl" style={{ background: `${statusColor(entry.status)}15` }}>
                   {entry.status === 'Approved' ? <CheckCircle2 size={16} style={{ color: statusColor(entry.status) }} /> : <Clock size={16} style={{ color: statusColor(entry.status) }} />}
@@ -154,3 +154,5 @@ const Timesheet = () => {
 };
 
 export default Timesheet;
+
+

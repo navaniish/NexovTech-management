@@ -71,6 +71,18 @@ router.post('/register', async (req, res) => {
   res.json(savedUser);
 });
 
+// GET Discover Real Email from Virtual Identity
+router.get('/discovery/:companyEmail', async (req, res) => {
+  try {
+    const { companyEmail } = req.params;
+    const user = await fallbackDb.findOne('users', { companyEmail: companyEmail.toLowerCase() });
+    if (!user) return res.status(404).json({ message: 'Virtual identity not found' });
+    res.json({ email: user.email });
+  } catch (err) {
+    res.status(500).json({ message: 'Discovery service offline' });
+  }
+});
+
 // POST /auth/login — Secure Identity Verification & Session Initialization
 router.post('/login', async (req, res) => {
   const { email, firebaseToken, token } = req.body; // 'token' here is the 2FA MFA token
@@ -97,15 +109,28 @@ router.post('/login', async (req, res) => {
     const lookupEmail = firebaseUser.email || email.toLowerCase();
     let user = await fallbackDb.findOne('users', { email: lookupEmail });
     
+    // Virtual Email Generator
+    const generateCompanyEmail = (name) => `${name.toLowerCase().replace(/[^a-z0-9]/g, '.')}@nexovtech.com`;
+
     if (!user) {
-       console.log(`🚀 AUTO_SYNC: New identity detected [${lookupEmail}]. Provisioning roster profile...`);
+       console.log(`🚀 ENTERPRISE_SYNC: New identity detected [${lookupEmail}]. Provisioning virtual workspace profile...`);
+       const name = firebaseUser.name || lookupEmail.split('@')[0];
        user = await fallbackDb.save('users', {
          email: lookupEmail,
+         companyEmail: generateCompanyEmail(name),
          firebaseUid: firebaseUser.uid,
-         name: firebaseUser.name || lookupEmail.split('@')[0],
-         role: lookupEmail === 'nexovtech@myyahoo.com' ? 'Admin' : 'Employee',
+         name: name,
+         role: lookupEmail === 'nexovtech@myyahoo.com' ? 'Super Admin' : 'Employee',
+         department: lookupEmail === 'nexovtech@myyahoo.com' ? 'Executive' : 'General',
+         status: 'Active',
          avatar: firebaseUser.picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${lookupEmail}`,
+         lastActive: new Date(),
          createdAt: new Date()
+       });
+    } else {
+       // Update lastActive on every login/sync
+       user = await fallbackDb.update('users', user.id || user._id, {
+         lastActive: new Date()
        });
     }
 
@@ -196,12 +221,17 @@ router.post('/grant-access', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(tempPassword, salt);
 
+    const generateCompanyEmail = (name) => `${name.toLowerCase().replace(/[^a-z0-9]/g, '.')}@nexovtech.com`;
+
     const userData = {
       name,
       email: email.trim().toLowerCase(),
+      companyEmail: generateCompanyEmail(name),
       firebaseUid: firebaseUser.uid,
       password: hashedPassword,
       role: role || 'Employee',
+      department: role === 'Admin' ? 'Executive' : (req.body.department || 'General'),
+      status: 'Active',
       bankName,
       accountNumber,
       ifscCode,

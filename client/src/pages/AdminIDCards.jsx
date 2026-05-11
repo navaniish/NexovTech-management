@@ -20,7 +20,7 @@ const AdminIDCards = () => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [generatingId, setGeneratingId] = useState(null);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', role: '', phone: '', avatar: '', issueDate: '', expiryDate: '' });
+  const [editForm, setEditForm] = useState({ name: '', role: '', phone: '', avatar: '', issueDate: '', expiryDate: '', address: '', authorizedSign: '', teamSign: '' });
   const [savingDetails, setSavingDetails] = useState(false);
   
   // Mobile UI state
@@ -159,46 +159,92 @@ const AdminIDCards = () => {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-6 pb-24 md:pb-12 px-1 md:px-0">
-      {/* Dynamic Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#020617]/40 p-4 md:p-6 rounded-[32px] border border-white/5 backdrop-blur-md">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-brand-500/10 rounded-2xl flex items-center justify-center text-brand-500 shadow-lg shadow-brand-500/10">
-            <Shield size={28} />
-          </div>
-          <div>
-            <h1 className="text-xl md:text-3xl font-black tracking-tight text-white leading-none">E-ID Hub</h1>
-            <p className="mt-1.5 text-[10px] md:text-xs font-bold text-white/40 uppercase tracking-widest">Identity Command Center</p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 md:flex-none">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/20" size={14} />
-            <input 
-              placeholder="Search personnel..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full md:w-64 pl-10 pr-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-white text-xs outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
-            />
-          </div>
-          <button className="p-2.5 bg-white/5 border border-white/10 rounded-2xl text-white/40 hover:text-white transition-all">
-            <Filter size={18} />
-          </button>
-        </div>
-      </div>
+    <div className="max-w-[1400px] mx-auto space-y-6 pb-24 md:pb-12">
+      {/* 1. HIGH-FIDELITY OFFICE HEADER */}
+      <section className="relative w-full overflow-hidden rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[220px] group">
+         <div 
+           className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+           style={{ backgroundImage: "url('/assets/office-bg.png')" }}
+         />
+         <div className="absolute inset-0 bg-white/70 backdrop-blur-[4px]" />
+         
+         <div className="relative z-10 flex-1 p-6 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2">
+               <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none flex items-center gap-3">
+                  E-ID Command Hub <span className="animate-bounce-slow">🪪</span>
+               </h1>
+               <p className="text-slate-500 text-[15px] font-medium">
+                  Identity lifecycle, digital credentialing & secure registry.
+               </p>
+            </div>
 
-      {/* Mobile Tab Switcher */}
-      <div className="lg:hidden flex p-1 bg-white/5 border border-white/10 rounded-2xl">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <input 
+                  placeholder="Personnel lookup..." 
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full md:w-72 pl-12 pr-6 py-4 rounded-[20px] bg-white/60 border border-white text-slate-900 text-sm font-bold shadow-xl backdrop-blur-md outline-none focus:ring-4 focus:ring-brand-500/10 transition-all"
+                />
+              </div>
+              <button className="p-4 bg-white/60 border border-white rounded-[20px] text-slate-400 hover:text-slate-900 shadow-xl backdrop-blur-md transition-all">
+                <Filter size={20} />
+              </button>
+            </div>
+         </div>
+      </section>
+
+      {/* 2. CORPORATE IDENTITY STANDARD (MOCKUP REFERENCE) */}
+      <section className="relative overflow-hidden rounded-[40px] bg-slate-950 p-1 md:p-2 group">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-transparent to-red-500/20 opacity-30" />
+        <div className="relative z-10 glass-card !bg-slate-900/40 rounded-[38px] p-8 md:p-12 border-slate-800 flex flex-col lg:flex-row items-center gap-12">
+          <div className="flex-1 space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20">
+               <Sparkles size={14} className="text-red-400" />
+               <span className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em]">Gold Standard Reference</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter leading-tight italic">
+              The <span className="text-red-500">Ultimate</span> Identity Platform.
+            </h2>
+            <p className="text-slate-400 text-lg font-medium max-w-xl">
+              High-fidelity digital credentials engineered for the modern enterprise. Our ID system combines biometric security with industrial-grade aesthetics.
+            </p>
+            <div className="flex items-center gap-6 pt-4">
+              <div className="flex flex-col">
+                <span className="text-2xl font-black text-white italic">4K</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Resolution</span>
+              </div>
+              <div className="w-[1px] h-10 bg-slate-800" />
+              <div className="flex flex-col">
+                <span className="text-2xl font-black text-white italic">AES-256</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Encryption</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative shrink-0 group-hover:scale-[1.02] transition-transform duration-700">
+             <div className="absolute inset-0 bg-red-500/20 blur-[100px] rounded-full" />
+             <img 
+               src="/id_standard.png" 
+               alt="ID Standard" 
+               className="relative z-10 w-full max-w-2xl rounded-[32px] shadow-[0_40px_100px_rgba(0,0,0,0.8)] border border-white/10" 
+             />
+          </div>
+        </div>
+      </section>
+
+      {/* Tab Switcher - Now with premium styling */}
+      <div className="lg:hidden flex p-2 bg-white/10 backdrop-blur-md border border-white/5 rounded-[24px]">
         <button 
           onClick={() => setActiveTab('registry')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'registry' ? 'bg-brand-600 text-white shadow-lg' : 'text-white/40'}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'registry' ? 'bg-white text-slate-900 shadow-xl' : 'text-white/40 hover:text-white'}`}
         >
-          <ClipboardList size={14} /> Personnel
+          <UserCheck size={14} /> Registry
         </button>
         <button 
           onClick={() => setActiveTab('preview')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'preview' ? 'bg-brand-600 text-white shadow-lg' : 'text-white/40'}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'preview' ? 'bg-white text-slate-900 shadow-xl' : 'text-white/40 hover:text-white'}`}
         >
           <Eye size={14} /> Preview
         </button>
@@ -210,24 +256,32 @@ const AdminIDCards = () => {
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="theme-card rounded-[32px] overflow-hidden"
+            className="glass-card !p-0 rounded-[40px] overflow-hidden border-slate-100 shadow-2xl"
           >
-             <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-                <div className="flex items-center gap-3">
-                  <UserCheck size={16} className="text-brand-400" />
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-white/60">Personnel Registry</h3>
+             <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-white/40 backdrop-blur-xl">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
+                    <UserCheck size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-900">Personnel Registry</h3>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase mt-1">Biometric Database</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/5">
-                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
-                   <span className="text-[9px] font-black text-white/50 uppercase">{employees.length} Secured Profiles</span>
+                <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/60 border border-white shadow-sm">
+                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10b981]" />
+                   <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{employees.length} Secured</span>
                 </div>
              </div>
 
-             <div className="divide-y divide-white/5 max-h-[70vh] overflow-y-auto custom-scrollbar">
+             <div className="divide-y divide-slate-50 max-h-[70vh] overflow-y-auto custom-scrollbar bg-white/20">
                 {loading ? (
-                  <div className="py-20 flex flex-col items-center gap-4">
-                    <Loader2 size={32} className="text-brand-500 animate-spin" />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Synchronizing Biometrics...</p>
+                  <div className="py-24 flex flex-col items-center gap-6">
+                    <div className="relative">
+                      <Loader2 size={40} className="text-slate-900 animate-spin" />
+                      <div className="absolute inset-0 bg-brand-500 blur-[20px] opacity-20" />
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Synchronizing Biometrics...</p>
                   </div>
                 ) : filteredEmployees.map((emp) => {
                   const card = getCardForEmployee(emp._id || emp.id);
@@ -237,46 +291,54 @@ const AdminIDCards = () => {
                     <div 
                       key={emp._id || emp.id} 
                       onClick={() => selectEmployeeForPreview(emp, card)}
-                      className={`p-4 flex items-center justify-between group transition-all cursor-pointer ${isSelected ? 'bg-brand-500/10 border-l-4 border-brand-500' : 'hover:bg-white/[0.03] border-l-4 border-transparent'}`}
+                      className={`p-4 md:p-6 flex items-center justify-between group transition-all cursor-pointer ${isSelected ? 'bg-white/80 border-l-4 border-slate-900' : 'hover:bg-white/40 border-l-4 border-transparent'}`}
                     >
-                       <div className="flex items-center gap-3 min-w-0">
+                       <div className="flex items-center gap-5 min-w-0">
                           <div className="relative shrink-0">
-                            <img src={emp.avatar} className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl object-cover" alt="" />
+                            <div className={`p-1 rounded-[20px] transition-all ${isSelected ? 'bg-slate-900 shadow-xl' : 'bg-slate-100 group-hover:bg-white'}`}>
+                              <img src={emp.avatar} className="w-12 h-12 md:w-14 md:h-14 rounded-[18px] object-cover" alt="" />
+                            </div>
                             {card?.status === 'Active' && (
-                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900" />
+                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-[3px] border-white shadow-lg" />
                             )}
                           </div>
                           <div className="min-w-0">
-                             <p className="text-xs md:text-sm font-black text-white leading-none truncate">{emp.name}</p>
-                             <p className="text-[9px] md:text-[10px] text-white/40 font-bold mt-1 truncate">{emp.email}</p>
+                             <p className="text-sm md:text-base font-black text-slate-900 tracking-tighter leading-none truncate">{emp.name}</p>
+                             <div className="flex items-center gap-2 mt-2">
+                               <p className="text-[10px] text-slate-400 font-bold truncate uppercase tracking-widest">{emp.role}</p>
+                               <span className="w-1 h-1 rounded-full bg-slate-200" />
+                               <p className="text-[9px] text-slate-300 font-bold truncate">{emp.email}</p>
+                             </div>
                           </div>
                        </div>
 
-                       <div className="flex items-center gap-3 md:gap-6 shrink-0">
+                       <div className="flex items-center gap-4 md:gap-8 shrink-0">
                           <div className="hidden sm:block text-right">
-                             <p className="text-[8px] font-black uppercase text-white/30 mb-1">Status</p>
+                             <p className="text-[9px] font-black uppercase text-slate-300 tracking-widest mb-1.5">Status</p>
                              {card ? (
-                               <span className={`text-[9px] font-black uppercase tracking-tighter ${card.status === 'Active' ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                 {card.status}
-                               </span>
+                               <div className="flex items-center justify-end gap-2">
+                                  <span className={`text-[10px] font-black uppercase tracking-widest ${card.status === 'Active' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                    {card.status}
+                                  </span>
+                               </div>
                              ) : (
-                               <span className="text-[9px] font-black text-white/10 uppercase">Pending</span>
+                               <span className="text-[10px] font-black text-slate-200 uppercase tracking-widest italic">Pending Issue</span>
                              )}
                           </div>
 
                           <div className="flex items-center gap-2">
                              {card ? (
-                               <div className="p-2 md:p-2.5 bg-white/5 border border-white/10 rounded-xl text-white/40 group-hover:text-brand-400 transition-all">
-                                 <ChevronRight size={18} />
+                               <div className={`p-3 rounded-2xl transition-all ${isSelected ? 'bg-slate-900 text-white shadow-xl' : 'bg-slate-50 text-slate-400 group-hover:bg-white group-hover:text-slate-900'}`}>
+                                 <ChevronRight size={20} />
                                </div>
                              ) : (
                                <button 
                                  onClick={(e) => { e.stopPropagation(); handleGenerate(emp._id || emp.id); }}
                                  disabled={generatingId === (emp._id || emp.id)}
-                                 className="p-2 md:px-4 md:py-2 bg-brand-600/20 border border-brand-500/30 text-brand-400 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-brand-600 hover:text-white transition-all flex items-center gap-2 shadow-lg shadow-brand-900/10"
+                                 className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center gap-3 shadow-xl disabled:opacity-50"
                                >
-                                 {generatingId === (emp._id || emp.id) ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                                 <span className="hidden md:inline">Issue Card</span>
+                                 {generatingId === (emp._id || emp.id) ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                                 <span className="hidden md:inline">Authorize E-ID</span>
                                </button>
                              )}
                           </div>
@@ -301,20 +363,18 @@ const AdminIDCards = () => {
                 >
                   {/* Card Container with Responsive Scaling */}
                   <div className="flex justify-center w-full overflow-hidden py-4">
-                    <div className="scale-[0.75] md:scale-[0.85] lg:scale-100 origin-center">
-                      <DigitalIDCard 
-                        employee={isEditingDetails ? { ...selectedEmployee, ...editForm } : selectedEmployee} 
-                        cardData={selectedEmployee.card} 
-                        isAdmin={true}
-                      />
-                    </div>
+                    <DigitalIDCard 
+                      employee={isEditingDetails ? { ...selectedEmployee, ...editForm } : selectedEmployee} 
+                      cardData={selectedEmployee.card} 
+                      isAdmin={true}
+                    />
                   </div>
                   
                   {/* Action Suite */}
-                  <div className="theme-card rounded-[32px] p-6 border border-white/5 bg-white/[0.02]">
+                  <div className="theme-card rounded-[32px] p-6 border border-gray-100 bg-white/[0.02]">
                     <div className="flex items-center gap-3 mb-6">
                       <Settings2 size={16} className="text-brand-400" />
-                      <h4 className="text-[10px] font-black uppercase tracking-widest text-white/60">Verification Suite</h4>
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-600">Verification Suite</h4>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
@@ -322,8 +382,8 @@ const AdminIDCards = () => {
                         onClick={() => handleUpdateStatus(selectedEmployee.card.id || selectedEmployee.card._id, selectedEmployee.card.status === 'Active' ? 'Inactive' : 'Active')}
                         className={`group py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
                           selectedEmployee.card.status === 'Active' 
-                          ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 border border-rose-500/20 hover:text-white' 
-                          : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 border border-emerald-500/20 hover:text-white'
+                          ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 border border-rose-500/20 hover:text-gray-900' 
+                          : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 border border-emerald-500/20 hover:text-gray-900'
                         }`}
                       >
                         {selectedEmployee.card.status === 'Active' ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
@@ -333,7 +393,7 @@ const AdminIDCards = () => {
                       <button 
                         onClick={() => handleGenerate(selectedEmployee._id || selectedEmployee.id)}
                         disabled={generatingId === (selectedEmployee._id || selectedEmployee.id)}
-                        className="py-3.5 rounded-2xl bg-brand-500/10 text-brand-500 text-[10px] font-black uppercase tracking-widest hover:bg-brand-500 hover:text-white border border-brand-500/20 transition-all flex items-center justify-center gap-2"
+                        className="py-3.5 rounded-2xl bg-brand-500/10 text-brand-500 text-[10px] font-black uppercase tracking-widest hover:bg-brand-500 hover:text-gray-900 border border-brand-500/20 transition-all flex items-center justify-center gap-2"
                       >
                         {generatingId === (selectedEmployee._id || selectedEmployee.id) ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
                         Reissue
@@ -348,11 +408,14 @@ const AdminIDCards = () => {
                               phone: selectedEmployee.phone || '',
                               avatar: selectedEmployee.avatar || '',
                               issueDate: selectedEmployee.card.issueDate ? selectedEmployee.card.issueDate.split('T')[0] : '',
-                              expiryDate: selectedEmployee.card.expiryDate ? selectedEmployee.card.expiryDate.split('T')[0] : ''
+                              expiryDate: selectedEmployee.card.expiryDate ? selectedEmployee.card.expiryDate.split('T')[0] : '',
+                              address: selectedEmployee.address || '',
+                              authorizedSign: selectedEmployee.authorizedSign || '',
+                              teamSign: selectedEmployee.teamSign || ''
                             });
                             setIsEditingDetails(true);
                           }}
-                          className="col-span-2 py-3.5 rounded-2xl bg-white/5 text-white/60 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 hover:text-white border border-white/10 transition-all"
+                          className="col-span-2 py-3.5 rounded-2xl bg-gray-50 text-gray-600 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 hover:text-gray-900 border border-gray-200 transition-all"
                         >
                           Modify Credentials
                         </button>
@@ -361,13 +424,13 @@ const AdminIDCards = () => {
                   </div>
                 </motion.div>
               ) : (
-                <div className="theme-card rounded-[40px] p-12 flex flex-col items-center text-center space-y-6 border-2 border-dashed border-white/5 bg-white/[0.01]">
-                   <div className="w-20 h-20 rounded-[28px] bg-white/5 flex items-center justify-center text-white/20">
+                <div className="theme-card rounded-[40px] p-12 flex flex-col items-center text-center space-y-6 border-2 border-dashed border-gray-100 bg-white/[0.01]">
+                   <div className="w-20 h-20 rounded-[28px] bg-gray-50 flex items-center justify-center text-gray-300">
                       <CreditCard size={40} />
                    </div>
                    <div className="space-y-2">
-                      <h4 className="text-sm font-black text-white uppercase tracking-widest">Awaiting Identity</h4>
-                      <p className="text-[10px] text-white/30 font-bold leading-relaxed max-w-[200px]">Select a profile from the registry to engage the E-ID verification suite.</p>
+                      <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest">Awaiting Identity</h4>
+                      <p className="text-[10px] text-gray-400 font-bold leading-relaxed max-w-[200px]">Select a profile from the registry to engage the E-ID verification suite.</p>
                    </div>
                 </div>
               )}
@@ -386,16 +449,16 @@ const AdminIDCards = () => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg bg-[#020617] rounded-[40px] p-6 md:p-8 shadow-2xl z-10 border border-white/10 max-h-[90vh] overflow-y-auto custom-scrollbar"
+              className="relative w-full max-w-lg bg-white rounded-[40px] p-6 md:p-8 shadow-2xl z-10 border border-gray-200 max-h-[90vh] overflow-y-auto custom-scrollbar"
             >
               <div className="flex justify-between items-center mb-8">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-brand-500/10 rounded-xl text-brand-500">
                     <Settings2 size={20} />
                   </div>
-                  <h3 className="text-xl font-black text-white tracking-tight">Modify Identity</h3>
+                  <h3 className="text-xl font-black text-gray-900 tracking-tight">Modify Identity</h3>
                 </div>
-                <button onClick={() => setIsEditingDetails(false)} className="p-2 text-white/20 hover:text-white hover:bg-white/5 rounded-full transition-all">
+                <button onClick={() => setIsEditingDetails(false)} className="p-2 text-gray-300 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-all">
                   <XCircle size={24} />
                 </button>
               </div>
@@ -403,35 +466,35 @@ const AdminIDCards = () => {
               <form onSubmit={handleSaveDetails} className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Full Name</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Full Name</label>
                     <input 
                       value={editForm.name} 
                       onChange={e => setEditForm({...editForm, name: e.target.value})} 
-                      className="w-full px-5 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all" 
+                      className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all" 
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Designation</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Designation</label>
                     <input 
                       value={editForm.role} 
                       onChange={e => setEditForm({...editForm, role: e.target.value})} 
-                      className="w-full px-5 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all" 
+                      className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all" 
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Contact Protocol (Phone)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Contact Protocol (Phone)</label>
                   <input 
                     value={editForm.phone} 
                     onChange={e => setEditForm({...editForm, phone: e.target.value})} 
-                    className="w-full px-5 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all" 
+                    className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all" 
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Portrait Sync</label>
-                  <div className="p-4 rounded-3xl bg-white/5 border border-white/10 space-y-4">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Portrait Sync</label>
+                  <div className="p-4 rounded-3xl bg-gray-50 border border-gray-200 space-y-4">
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 rounded-2xl border-2 border-brand-500/30 overflow-hidden shrink-0">
                         <img src={editForm.avatar} className="w-full h-full object-cover" alt="Preview" />
@@ -441,7 +504,7 @@ const AdminIDCards = () => {
                           type="file" 
                           accept="image/*"
                           onChange={handleImageUpload}
-                          className="block w-full text-[10px] text-white/40 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-brand-500 file:text-white hover:file:bg-brand-400 transition-all cursor-pointer"
+                          className="block w-full text-[10px] text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-brand-500 file:text-gray-900 hover:file:bg-brand-400 transition-all cursor-pointer"
                         />
                         <button 
                           type="button"
@@ -455,23 +518,55 @@ const AdminIDCards = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Issue Timestamp</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Issue Timestamp</label>
                     <input 
                       type="date" 
                       value={editForm.issueDate} 
                       onChange={e => setEditForm({...editForm, issueDate: e.target.value})} 
-                      className="w-full px-5 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all" 
+                      className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all" 
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Deactivation Date</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Deactivation Date</label>
                     <input 
                       type="date" 
                       value={editForm.expiryDate} 
                       onChange={e => setEditForm({...editForm, expiryDate: e.target.value})} 
-                      className="w-full px-5 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all" 
+                      className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all" 
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Employee Address</label>
+                  <textarea 
+                    value={editForm.address} 
+                    onChange={e => setEditForm({...editForm, address: e.target.value})} 
+                    rows={2}
+                    className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all resize-none" 
+                    placeholder="Enter employee address..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Authorized Sign</label>
+                    <input 
+                      value={editForm.authorizedSign} 
+                      onChange={e => setEditForm({...editForm, authorizedSign: e.target.value})} 
+                      className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all" 
+                      placeholder="e.g. NexovTech"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Team Sign</label>
+                    <input 
+                      value={editForm.teamSign} 
+                      onChange={e => setEditForm({...editForm, teamSign: e.target.value})} 
+                      className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all" 
+                      placeholder="e.g. Team"
                     />
                   </div>
                 </div>
@@ -480,7 +575,7 @@ const AdminIDCards = () => {
                   <button 
                     type="button" 
                     onClick={() => setIsEditingDetails(false)} 
-                    className="flex-1 py-4 rounded-2xl bg-white/5 text-white/40 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all"
+                    className="flex-1 py-4 rounded-2xl bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 hover:text-gray-900 transition-all"
                   >
                     Abort
                   </button>
@@ -503,4 +598,6 @@ const AdminIDCards = () => {
 };
 
 export default AdminIDCards;
+
+
 

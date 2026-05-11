@@ -25,7 +25,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [require2FA, setRequire2FA] = useState(false);
-  
+
   const { login, resetPassword } = useAuth();
   const navigate = useNavigate();
 
@@ -59,81 +59,122 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
-      {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-64 bg-brand-600/20 blur-[120px] rounded-full -translate-y-1/2 pointer-events-none" />
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
+      {/* Cinematic Office Background */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] scale-110"
+        style={{ backgroundImage: "url('/assets/office-bg.png')" }}
+      />
+      {/* Dark Glass Overlay */}
+      <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-[2px]" />
 
-      {/* Desktop View Logo (Top) */}
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <motion.div 
-          animate={{ 
-            boxShadow: ["0 0 30px rgba(139,92,246,0.1)", "0 0 60px rgba(139,92,246,0.3)", "0 0 30px rgba(139,92,246,0.1)"],
-            borderColor: ["rgba(139,92,246,0.1)", "rgba(139,92,246,0.4)", "rgba(139,92,246,0.1)"]
+      {/* Premium Circular Login Logo */}
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10 relative z-10">
+        <motion.div
+          animate={{
+            boxShadow: ["0 0 50px rgba(139,92,246,0.2)", "0 0 100px rgba(139,92,246,0.4)", "0 0 50px rgba(139,92,246,0.2)"],
+            borderColor: ["rgba(255,255,255,0.1)", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.1)"]
           }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          className="w-40 h-28 bg-black border rounded-[32px] p-5 flex items-center justify-center shadow-2xl"
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="w-48 h-48 bg-white/5 backdrop-blur-[30px] border border-white/20 rounded-full p-0 flex items-center justify-center shadow-2xl overflow-hidden group"
         >
-          <img src="/logo.jpg" alt="NexovGen SaaS" className="w-full h-auto object-contain" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/10 to-transparent opacity-50" />
+          <img 
+            src="/assets/logo_nexo.jpeg" 
+            alt="Nexov" 
+            className="w-full h-full object-cover relative z-10 filter brightness-110" 
+          />
         </motion.div>
       </motion.div>
 
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="relative z-10 w-full max-w-[480px]">
-        <div className="bg-[#12121a] rounded-[40px] p-8 md:p-12 border border-white/5 shadow-2xl relative overflow-hidden">
-          
+        {/* Soft Glow Behind Card */}
+        <div className="absolute inset-0 bg-brand-500/20 blur-[100px] rounded-[40px] -z-10" />
+        
+        <div className="bg-white/5 backdrop-blur-[40px] rounded-[48px] p-10 md:p-14 border border-white/10 shadow-2xl relative overflow-hidden group">
+          {/* Subtle Inner Mesh */}
+          <div className="absolute inset-0 bg-mesh-glow opacity-5 pointer-events-none" />
+
           <AnimatePresence mode="wait">
             {!require2FA ? (
               <motion.div key="login" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl font-black text-white tracking-tight mb-2">Access Portal</h2>
-                  <p className="text-surface-500 text-sm font-medium">Verify your operational credentials.</p>
+                <div className="text-center mb-10">
+                  <h2 className="text-4xl font-black text-white tracking-tighter mb-3 uppercase italic">Access Portal</h2>
+                  <p className="text-slate-400 text-[13px] font-bold uppercase tracking-[0.2em] opacity-60">Identity & Security Node</p>
                 </div>
 
                 {error && (
-                  <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl flex items-center gap-3 text-rose-500 text-xs font-bold mb-6">
-                    <AlertTriangle size={16} />
+                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+                    className="bg-rose-500/10 border border-rose-500/20 p-5 rounded-2xl flex items-center gap-4 text-rose-400 text-[11px] font-black uppercase tracking-widest mb-8"
+                  >
+                    <AlertTriangle size={18} className="shrink-0" />
                     {error}
-                  </div>
+                  </motion.div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-8">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-white/70 ml-1">Email Identifier</label>
-                    <div className="relative group">
-                      <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-600 group-focus-within:text-brand-500 transition-colors" />
-                      <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="sarah@nexov.tech"
-                        className="w-full bg-[#181824] border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-white placeholder:text-surface-700 focus:outline-none focus:border-brand-500/50 transition-all" />
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-2">Email Identifier</label>
+                    <div className="relative group/input">
+                      <div className="absolute inset-y-0 left-5 flex items-center text-slate-500 group-focus-within/input:text-brand-400 transition-colors">
+                        <Mail size={18} />
+                      </div>
+                      <input 
+                        required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@nexov.tech"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4.5 pl-14 pr-6 text-white placeholder:text-slate-600 focus:outline-none focus:bg-white/10 focus:border-brand-500/50 transition-all duration-300" 
+                      />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-white/70 ml-1">Auth Key</label>
-                    <div className="relative group">
-                      <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-600 group-focus-within:text-brand-500 transition-colors" />
-                      <input required type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
-                        className="w-full bg-[#181824] border border-white/5 rounded-2xl py-4 pl-12 pr-12 text-white placeholder:text-surface-700 focus:outline-none focus:border-brand-500/50 transition-all" />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-surface-600 hover:text-brand-500">
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-2">Auth Key</label>
+                    <div className="relative group/input">
+                      <div className="absolute inset-y-0 left-5 flex items-center text-slate-500 group-focus-within/input:text-brand-400 transition-colors">
+                        <Lock size={18} />
+                      </div>
+                      <input 
+                        required type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4.5 pl-14 pr-14 text-white placeholder:text-slate-600 focus:outline-none focus:bg-white/10 focus:border-brand-500/50 transition-all duration-300" 
+                      />
+                      <button 
+                        type="button" onClick={() => setShowPassword(!showPassword)} 
+                        className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
                   </div>
 
-                  <button type="submit" disabled={loading} className="w-full bg-brand-600 hover:bg-brand-500 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-brand-600/10 flex items-center justify-center gap-3 disabled:opacity-50">
-                    {loading ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <>Initiate Access <ArrowRight size={18} /></>}
+                  <button 
+                    type="submit" disabled={loading} 
+                    className="w-full relative overflow-hidden bg-slate-900 group/btn h-16 rounded-2xl transition-all shadow-2xl hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-brand-600 to-indigo-600 opacity-90 group-hover/btn:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+                    <div className="relative z-10 flex items-center justify-center gap-4 text-white font-black text-[12px] uppercase tracking-[0.4em]">
+                      {loading ? (
+                        <div className="w-6 h-6 border-3 border-white/20 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <>Initiate Access <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" /></>
+                      )}
+                    </div>
+                    {/* Shimmer Effect */}
+                    <div className="absolute top-0 -inset-full h-full w-1/2 z-20 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white/10 opacity-40 group-hover/btn:animate-shimmer" />
                   </button>
                 </form>
               </motion.div>
             ) : (
               <motion.div key="2fa" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-                <button onClick={handleBackToLogin} className="mb-6 flex items-center gap-2 text-surface-500 hover:text-white transition-colors text-xs font-black uppercase tracking-widest">
-                  <ChevronLeft size={16} /> Back to Login
+                <button onClick={handleBackToLogin} className="mb-10 flex items-center gap-3 text-slate-500 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.3em]">
+                  <ChevronLeft size={18} /> Return to Gateway
                 </button>
-                
-                <div className="text-center mb-8">
-                  <div className="w-16 h-16 bg-brand-500/10 rounded-2xl flex items-center justify-center text-brand-500 mx-auto mb-4 shadow-2xl border border-brand-500/20">
-                     <ShieldCheck size={32} />
+
+                <div className="text-center mb-10">
+                  <div className="w-20 h-20 bg-brand-500/10 rounded-[28px] flex items-center justify-center text-brand-500 mx-auto mb-6 shadow-2xl border border-brand-500/20 animate-pulse">
+                    <ShieldCheck size={40} />
                   </div>
-                  <h2 className="text-2xl font-black text-white tracking-tight mb-2">2FA Verification</h2>
-                  <p className="text-surface-500 text-sm font-medium px-4">Enter the synchronization code from your authenticator device.</p>
+                  <h2 className="text-3xl font-black text-white tracking-tighter mb-2 uppercase italic">2FA Shield</h2>
+                  <p className="text-slate-400 text-[13px] font-medium px-4">Synchronizing temporal auth node. Enter your secure key.</p>
                 </div>
 
                 {error && (
@@ -144,13 +185,13 @@ const Login = () => {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                   <div className="space-y-4 text-center">
-                      <input required type="text" maxLength="6" value={otpToken} onChange={(e) => setOtpToken(e.target.value)} placeholder="0 0 0 0 0 0"
-                        className="w-full bg-[#181824] border border-white/5 rounded-2xl py-6 text-center text-3xl font-black tracking-[0.5em] text-brand-400 placeholder:text-surface-800 focus:outline-none focus:border-brand-500/50 transition-all" />
-                      <p className="text-[10px] text-surface-700 font-bold uppercase tracking-widest">Identity Shield Active</p>
-                   </div>
+                  <div className="space-y-4 text-center">
+                    <input required type="text" maxLength="6" value={otpToken} onChange={(e) => setOtpToken(e.target.value)} placeholder="0 0 0 0 0 0"
+                      className="w-full bg-[#181824] border border-white/5 rounded-2xl py-6 text-center text-3xl font-black tracking-[0.5em] text-brand-400 placeholder:text-surface-800 focus:outline-none focus:border-brand-500/50 transition-all" />
+                    <p className="text-[10px] text-surface-700 font-bold uppercase tracking-widest">Identity Shield Active</p>
+                  </div>
 
-                   <button type="submit" disabled={loading || otpToken.length < 6} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-emerald-600/10 flex items-center justify-center gap-3 disabled:opacity-20">
+                  <button type="submit" disabled={loading || otpToken.length < 6} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-emerald-600/10 flex items-center justify-center gap-3 disabled:opacity-20">
                     {loading ? <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : <>Verify Identity <CheckCircle2 size={18} /></>}
                   </button>
                 </form>
@@ -165,3 +206,5 @@ const Login = () => {
 };
 
 export default Login;
+
+

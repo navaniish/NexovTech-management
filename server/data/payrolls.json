@@ -1,1 +1,36 @@
-[]
+[
+  {
+    "id": "pr_3Nrcp0hlh1e04bQwjAnrwzQvodD2_5_2026",
+    "createdAt": {
+      "_seconds": 1778507836,
+      "_nanoseconds": 742000000
+    },
+    "employeeName": "MANI CHARAN TEJA",
+    "metadata": {
+      "service": "video editing",
+      "projectName": "hellohii"
+    },
+    "month": 5,
+    "calculatedSalary": {
+      "total": 99969,
+      "bonus": -1,
+      "breakdown": {
+        "systems": 0,
+        "web": 0,
+        "ai": 0,
+        "video": 99970
+      },
+      "deductions": 0,
+      "base": 99970
+    },
+    "year": 2026,
+    "employeeId": "3Nrcp0hlh1e04bQwjAnrwzQvodD2",
+    "attendanceSummary": {
+      "overtimeHours": 0,
+      "presentDays": 22,
+      "absentDays": 0
+    },
+    "paymentStatus": "Paid",
+    "paymentDate": "2026-05-11T14:04:12.767Z"
+  }
+]

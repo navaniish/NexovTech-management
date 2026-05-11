@@ -25,8 +25,8 @@ const MobileNav = () => {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-6 left-6 right-6 z-[40]">
-      <div className="relative h-16 backdrop-blur-xl bg-black/40 border border-white/10 rounded-[28px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-around px-4">
+    <div className="md:hidden fixed bottom-4 left-4 right-4 z-[40]">
+      <div className="relative h-14 backdrop-blur-xl bg-black/50 border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center justify-around px-3">
         {navItems.map((item) => (
           <NavLink
             key={item.path}

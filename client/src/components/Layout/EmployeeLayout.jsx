@@ -6,21 +6,35 @@ import TopBar from './TopBar';
 const EmployeeLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const closeMenu = () => {
-    setMobileMenuOpen(false);
-  };
   return (
-    <div className="min-h-screen theme-bg flex overflow-hidden" style={{ color: 'var(--text-primary)' }}>
-      <EmployeeSidebar mobileOpen={mobileMenuOpen} setMobileOpen={closeMenu} />
-      <div className="flex-1 flex flex-col min-h-screen h-screen overflow-hidden w-full">
+    <div className="flex flex-col h-screen w-screen overflow-hidden relative">
+      {/* 1. FIXED OFFICE BACKGROUND LAYER */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center z-0 opacity-40 grayscale-[0.5]"
+        style={{ backgroundImage: "url('/assets/office-bg.png')" }}
+      />
+      
+      {/* 2. GLASS OVERLAY */}
+      <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-0" />
+
+      {/* 3. CONTENT STRUCTURE */}
+      <div className="relative z-10 flex flex-col h-full w-full">
         <TopBar onMenuToggle={() => setMobileMenuOpen(true)} />
-        <main className="flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto custom-scrollbar pb-8">
-          <div className="max-w-[1600px] mx-auto backdrop-blur-sm bg-white/5 rounded-3xl p-4 md:p-6 border border-white/10">
-            <Outlet />
+        
+        <div className="flex flex-1 overflow-hidden">
+          <EmployeeSidebar mobileOpen={mobileMenuOpen} setMobileOpen={setMobileMenuOpen} />
+          
+          <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar scroll-smooth">
+             <main className="min-h-full flex flex-col p-6 md:p-10">
+                <div className="w-full max-w-[1440px] mx-auto">
+                   <Outlet />
+                </div>
+             </main>
           </div>
-        </main>
+        </div>
       </div>
     </div>
+
   );
 };
 

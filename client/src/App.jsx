@@ -2,6 +2,7 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { ChatProvider } from './context/ChatContext';
 import FuturisticBackground from './components/Common/FuturisticBackground';
 import DashboardLayout from './components/Layout/DashboardLayout';
 import EmployeeLayout from './components/Layout/EmployeeLayout';
@@ -23,8 +24,12 @@ import AdminPayroll from './pages/AdminPayroll';
 import AdminHR from './pages/AdminHR';
 import AdminAttendance from './pages/AdminAttendance';
 import AdminLeaves from './pages/AdminLeaves';
-import AdminRecruitment from './pages/AdminRecruitment';
 import AIAuditEngine from './pages/AIAuditEngine';
+import NexovTechMail from './pages/NexovTechMail';
+import CommunicationAnalytics from './pages/CommunicationAnalytics';
+import AdminTimesheets from './pages/AdminTimesheets';
+import TeamAccess from './pages/TeamAccess';
+import AdminTasks from './pages/AdminTasks';
 
 // Employee Pages
 import EmployeeDashboard from './pages/employee/Dashboard';
@@ -39,10 +44,17 @@ import AdminIDCards from './pages/AdminIDCards';
 import MyIDCard from './pages/employee/MyIDCard';
 import VerifyID from './pages/VerifyID';
 
+import { Loader2 } from 'lucide-react';
+
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
 
-  if (loading) return null;
+  if (loading) return (
+    <div className="min-h-screen theme-bg flex flex-col items-center justify-center gap-4">
+      <Loader2 size={48} className="text-brand-500 animate-spin" />
+      <p className="text-surface-500 font-black uppercase tracking-widest text-xs">Synchronizing Identity...</p>
+    </div>
+  );
   if (!user) return <Navigate to="/login" />;
   if (allowedRoles && !allowedRoles.some(r => r.toLowerCase() === (user.role || '').toLowerCase())) {
     return <Navigate to={user?.role?.toLowerCase() === 'admin' ? '/' : '/employee/dashboard'} />;
@@ -57,7 +69,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={!user ? <Login /> : <Navigate to={user.role === 'Admin' ? '/' : '/employee/dashboard'} />} />
-      
+
       {/* Admin/Manager Routes */}
       <Route element={
         <ProtectedRoute allowedRoles={['Admin', 'Manager']}>
@@ -76,11 +88,14 @@ function AppRoutes() {
         <Route path="/invoice-forge" element={<InvoiceGenerator />} />
         <Route path="/payroll" element={<AdminPayroll />} />
         <Route path="/hr" element={<AdminHR />} />
+        <Route path="/tasks" element={<AdminTasks />} />
         <Route path="/attendance" element={<AdminAttendance />} />
+        <Route path="/timesheets" element={<AdminTimesheets />} />
         <Route path="/leaves" element={<AdminLeaves />} />
-        <Route path="/recruitment" element={<AdminRecruitment />} />
         <Route path="/audit" element={<AIAuditEngine />} />
         <Route path="/id-cards" element={<AdminIDCards />} />
+        <Route path="/nexus-mail" element={<NexovTechMail />} />
+        <Route path="/comm-intelligence" element={<CommunicationAnalytics />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
 
@@ -99,23 +114,30 @@ function AppRoutes() {
         <Route path="/employee/attendance" element={<MyAttendance />} />
         <Route path="/employee/leaves" element={<MyLeaves />} />
         <Route path="/employee/id-card" element={<MyIDCard />} />
+        <Route path="/employee/mail" element={<NexovTechMail />} />
         <Route path="/employee/settings" element={<Settings />} />
       </Route>
 
       <Route path="/verify/:qrToken" element={<VerifyID />} />
+      <Route path="/team-access" element={<TeamAccess />} />
 
       <Route path="*" element={<Navigate to={user ? (user.role === 'Admin' || user.role === 'Manager' ? '/' : '/employee/dashboard') : '/login'} />} />
     </Routes>
   );
 }
 
+import AIAssistant from './components/AI/AIAssistant';
+
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <Router>
-          <FuturisticBackground />
-          <AppRoutes />
+          <ChatProvider>
+            <FuturisticBackground />
+            <AIAssistant />
+            <AppRoutes />
+          </ChatProvider>
         </Router>
       </AuthProvider>
     </ThemeProvider>

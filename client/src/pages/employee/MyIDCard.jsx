@@ -40,27 +40,38 @@ const MyIDCard = () => {
   );
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-20">
-      <div className="flex flex-col items-center text-center space-y-4">
-        <div className="p-3 bg-brand-600/10 rounded-3xl border border-brand-500/20">
-          <Shield className="text-brand-400" size={32} />
-        </div>
-        <div>
-          <h1 className="text-4xl font-black tracking-tighter theme-text-primary">My Digital Identity</h1>
-          <p className="mt-2 text-sm font-medium theme-text-secondary">Official E-ID credentials for NexovTech personnel.</p>
-        </div>
-      </div>
+    <div className="max-w-[1400px] mx-auto space-y-6 md:space-y-8 pb-24 md:pb-12 animate-in fade-in duration-1000">
+      {/* 1. HIGH-FIDELITY OFFICE HEADER */}
+      <section className="relative w-full overflow-hidden rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[200px] group">
+         <div 
+           className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+           style={{ backgroundImage: "url('/assets/office-bg.png')" }}
+         />
+         <div className="absolute inset-0 bg-white/70 backdrop-blur-[4px]" />
+         
+         <div className="relative z-10 flex-1 p-6 md:p-12 flex flex-col justify-center">
+            <div className="space-y-2">
+               <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none flex items-center gap-3">
+                  Digital Identity <span className="animate-pulse">🛡️</span>
+               </h1>
+               <p className="text-slate-500 text-[15px] font-medium">
+                  Official E-ID credentials for NexovTech personnel.
+               </p>
+            </div>
+         </div>
+      </section>
 
       {error ? (
-        <div className="max-w-md mx-auto theme-card rounded-[32px] p-12 text-center border border-rose-500/10">
-           <AlertTriangle size={48} className="text-rose-500 mx-auto mb-6" />
-           <p className="text-sm font-bold theme-text-primary leading-relaxed">{error}</p>
+        <div className="max-w-md mx-auto theme-card rounded-2xl md:rounded-[32px] p-6 md:p-12 text-center border border-rose-500/10">
+           <AlertTriangle size={32} className="md:hidden text-rose-500 mx-auto mb-4" />
+           <AlertTriangle size={48} className="hidden md:block text-rose-500 mx-auto mb-6" />
+           <p className="text-[11px] md:text-sm font-bold theme-text-primary leading-relaxed">{error}</p>
         </div>
       ) : (
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex justify-center"
+          className="flex justify-center w-full"
         >
           <DigitalIDCard 
             employee={{ ...user, avatar: cardData.userAvatar || user.avatar }} 
@@ -69,10 +80,10 @@ const MyIDCard = () => {
         </motion.div>
       )}
 
-      <div className="max-w-md mx-auto mt-12 p-6 rounded-3xl bg-white/5 border border-white/10 text-center">
-         <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-4">Verification Policy</p>
-         <p className="text-xs text-white/50 leading-relaxed">
-            This card is a cryptographically signed digital credential. Scanning the QR code will provide instant verification of your current employment status and role within the organization.
+      <div className="max-w-md mx-auto mt-8 md:mt-12 p-4 md:p-6 rounded-2xl md:rounded-3xl bg-gray-50 border border-gray-200 text-center">
+         <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 md:mb-4">Verification Policy</p>
+         <p className="text-[10px] md:text-xs text-gray-500 leading-relaxed font-medium">
+            This card is a cryptographically signed digital credential. Scanning the QR code will provide instant verification of your current status.
          </p>
       </div>
     </div>
@@ -80,3 +91,5 @@ const MyIDCard = () => {
 };
 
 export default MyIDCard;
+
+

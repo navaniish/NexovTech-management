@@ -62,7 +62,18 @@ router.get('/employee/:employeeId', async (req, res) => {
 router.post('/generate', async (req, res) => {
   const { month, year } = req.body;
   try {
-    const team = await fallbackDb.find('team', {});
+    const users = await fallbackDb.find('users', {});
+    // Deduplicate by email to match organization roster
+    const team = (users || []).reduce((acc, curr) => {
+      const email = curr.email?.toLowerCase();
+      if (email && !acc.find(item => item.email?.toLowerCase() === email)) {
+        acc.push({ ...curr, email });
+      } else if (!email) {
+        acc.push(curr);
+      }
+      return acc;
+    }, []);
+
     const salaries = await fallbackDb.find('salaries', {});
     const timesheets = await fallbackDb.find('timesheets', {});
     const existingPayrolls = await fallbackDb.find('payrolls', {}); 
@@ -103,7 +114,10 @@ router.post('/generate', async (req, res) => {
         breakdown: salaryConfig.breakdown || { web: 0, ai: 0, video: 0, systems: 0 }
       };
 
+      const recordId = `pr_${employeeId}_${month}_${year}`;
+      
       const payrollRecord = {
+        id: recordId,
         month: Number(month),
         year: Number(year),
         employeeId: employeeId,
@@ -178,7 +192,7 @@ router.get('/:id/pdf', async (req, res) => {
     // Prepare Logo Base64
     let logoBase64 = '';
     try {
-      const logoPath = path.join(__dirname, '../../client/public/logo.jpg');
+      const logoPath = path.join(__dirname, '../statement-logo.jpeg');
       if (fs.existsSync(logoPath)) {
         const logoBuffer = fs.readFileSync(logoPath);
         logoBase64 = `data:image/jpeg;base64,${logoBuffer.toString('base64')}`;

@@ -1,0 +1,13 @@
+[
+  {
+    "id": "QQC5bXGwkbm3QZ7fsvAw",
+    "details": "Dispatched internal mail: hgello to manicharanteja1234@gmail.com",
+    "priority": "High",
+    "type": "MAIL_DISPATCH",
+    "user": "nexovtech@myyahoo.com",
+    "timestamp": {
+      "_seconds": 1778435175,
+      "_nanoseconds": 401000000
+    }
+  }
+]

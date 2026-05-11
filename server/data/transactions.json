@@ -88,5 +88,20 @@
     "description": "Payroll Settlement - MANI CHARAN TEJA (5/2026)",
     "type": "Expense",
     "status": "Paid"
+  },
+  {
+    "id": "txn_pr_1778508252954",
+    "date": {
+      "_seconds": 1778508252,
+      "_nanoseconds": 954000000
+    },
+    "createdAt": {
+      "_seconds": 1778508252,
+      "_nanoseconds": 954000000
+    },
+    "amount": 99969,
+    "description": "Payroll Settlement - MANI CHARAN TEJA (5/2026)",
+    "type": "Expense",
+    "status": "Paid"
   }
 ]

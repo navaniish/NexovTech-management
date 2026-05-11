@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Globe, MapPin, Wallet, Sparkles, CheckCircle2, Heart } from 'lucide-react';
+import statementLogo from '../../assets/statement-logo.jpeg';
 
-const DigitalPayslip = ({ data, onClose }) => {
+const DigitalPayslip = ({ data, onClose, onDownload }) => {
   if (!data) return null;
 
   // Format currency
@@ -53,10 +54,16 @@ const DigitalPayslip = ({ data, onClose }) => {
         </div>
         <div className="flex gap-3">
           <button 
+            onClick={onDownload}
+            className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 transition-all shadow-lg flex items-center gap-2"
+          >
+            Download PDF
+          </button>
+          <button 
             onClick={() => window.print()}
             className="px-5 py-2.5 bg-white text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-500 hover:text-white transition-all shadow-lg"
           >
-            Print Statement
+            Print
           </button>
           <button 
             onClick={onClose}
@@ -80,7 +87,7 @@ const DigitalPayslip = ({ data, onClose }) => {
           <div className="flex flex-col md:flex-row justify-between items-start mb-6">
             <div className="flex items-center gap-4">
               <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center overflow-hidden border-2 border-slate-900/10 shadow-lg">
-                 <img src="/logo.jpg" alt="Nexov Logo" className="w-full h-full object-contain scale-110" />
+                 <img src={statementLogo} alt="Nexov Logo" className="w-full h-full object-contain scale-110" />
               </div>
               <div>
                 <h1 className="text-3xl font-[1000] tracking-tighter uppercase leading-none" style={{ color: '#000000' }}>

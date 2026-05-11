@@ -35,12 +35,12 @@ const VideoModule = () => {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass-light rounded-[40px] border border-white/5 overflow-hidden relative group"
+            className="glass-light rounded-[40px] border border-gray-100 overflow-hidden relative group"
           >
             <div className="aspect-video bg-surface-950 flex items-center justify-center relative overflow-hidden">
                <img src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&q=80&w=1200" alt="Preview" className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000" />
                <div className="absolute inset-0 flex items-center justify-center">
-                  <button className="w-20 h-20 bg-brand-600/90 rounded-full flex items-center justify-center text-white shadow-2xl backdrop-blur-sm hover:scale-110 transition-transform">
+                  <button className="w-20 h-20 bg-brand-600/90 rounded-full flex items-center justify-center text-gray-900 shadow-2xl backdrop-blur-sm hover:scale-110 transition-transform">
                      <Play size={32} className="ml-1" />
                   </button>
                </div>
@@ -65,8 +65,8 @@ const VideoModule = () => {
                { label: 'Total Storage', value: '4.2 TB', icon: Monitor, color: 'text-neon-blue' },
                { label: 'Avg Render Time', value: '14m', icon: Clock, color: 'text-emerald-400' },
              ].map((stat, i) => (
-               <div key={i} className="glass-light p-6 rounded-3xl border border-white/5 flex items-center gap-5">
-                  <div className={`p-3 bg-white/5 rounded-xl ${stat.color} shadow-xl border border-white/5`}><stat.icon size={20} /></div>
+               <div key={i} className="glass-light p-6 rounded-3xl border border-gray-100 flex items-center gap-5">
+                  <div className={`p-3 bg-gray-50 rounded-xl ${stat.color} shadow-xl border border-gray-100`}><stat.icon size={20} /></div>
                   <div>
                      <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest leading-none mb-1">{stat.label}</p>
                      <p className="text-xl font-black theme-text-primary">{stat.value}</p>
@@ -77,7 +77,7 @@ const VideoModule = () => {
         </div>
 
         {/* Revision History */}
-        <div className="glass-light p-10 rounded-[40px] border border-white/5 flex flex-col h-full shadow-2xl">
+        <div className="glass-light p-10 rounded-[40px] border border-gray-100 flex flex-col h-full shadow-2xl">
            <div className="flex items-center gap-3 mb-10">
               <History size={24} className="text-brand-500" />
               <h2 className="text-2xl font-black theme-text-primary tracking-tight">Revision History</h2>
@@ -88,7 +88,7 @@ const VideoModule = () => {
                 { version: 'v2.0', author: 'David Smith', date: '5h ago', status: 'Feedback', comment: 'Audio levels need adjustment.' },
                 { version: 'v1.2', author: 'Sarah Miller', date: '1d ago', status: 'Completed', comment: 'Initial export with motion graphics.' },
               ].map((rev, i) => (
-                <div key={i} className="p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-white/10 transition-all space-y-4 group">
+                <div key={i} className="p-6 bg-gray-50 rounded-3xl border border-gray-100 hover:border-gray-200 transition-all space-y-4 group">
                    <div className="flex justify-between items-center">
                       <div className="flex items-center gap-3">
                          <span className="text-sm font-black theme-text-primary">{rev.version}</span>
@@ -116,3 +116,5 @@ const VideoModule = () => {
 };
 
 export default VideoModule;
+
+

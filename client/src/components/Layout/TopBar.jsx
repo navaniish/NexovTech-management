@@ -1,302 +1,275 @@
-import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Menu, Search, Bell, MessageSquare, Sun, Moon, Command, ChevronDown, LogOut, User, Settings as SettingsIcon, CheckCircle2, AlertTriangle, Info, Check } from 'lucide-react';
+import API_URL from '../../config';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import API_URL from '../../config';
-import { Search, Bell, HelpCircle, Sparkles, Command, ChevronDown, Menu, IndianRupee, FileText, LogOut, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const TopBar = ({ onMenuToggle }) => {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const navigate = useNavigate();
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
-  const [showMobileSearch, setShowMobileSearch] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Identity Synced', desc: 'Specialist ID #442 synchronized successfully.', time: '2m ago', type: 'system', icon: Sparkles, color: '#22d3ee', path: '/id-cards' },
-    { id: 2, title: 'Payroll Processed', desc: 'Monthly cycle for May 2024 finalized.', time: '1h ago', type: 'finance', icon: IndianRupee, color: '#10b981', path: '/payroll' },
-    { id: 3, title: 'New Specialist Joined', desc: 'Sarah Jenkins added to the roster.', time: '3h ago', type: 'team', icon: Menu, color: '#8b5cf6', path: '/team' },
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
-  const clearNotifications = () => setNotifications([]);
-  const handleNotifyClick = (path) => {
-    setShowNotifications(false);
-    navigate(path);
+  const fetchNotifications = async () => {
+    if (!user) return;
+    try {
+      const res = await fetch(`${API_URL}/notifications?userId=${user.id || user._id}&role=${user.role}`);
+      if (res.ok) {
+        setNotifications(await res.json());
+      }
+    } catch (err) {
+      console.error('Failed to fetch notifications', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const markAsRead = async (id) => {
+    try {
+      await fetch(`${API_URL}/notifications/${id}/read`, { method: 'PUT' });
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    } catch (err) { console.error(err); }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await fetch(`${API_URL}/notifications/read-all`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user?.id || user?._id })
+      });
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (err) { console.error(err); }
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleLogout = async () => {
+    if (window.confirm('Terminate secure session?')) {
+      await logout();
+      navigate('/login');
+    }
   };
 
   return (
-    <>
-    <header className="backdrop-blur-xl bg-[#020617]/60 h-20 flex items-center justify-between px-4 md:px-10 sticky top-0 z-[60] border-b border-white/10 shadow-2xl">
-      <div className="flex items-center gap-2 md:gap-4 flex-1">
+    <header className="h-[70px] md:h-[80px] w-full glass-panel border-b border-white/20 px-4 md:px-8 flex items-center justify-between relative z-[100] shrink-0">
+      
+      {/* LEFT AREA - BRAND LOGO */}
+      <div className="flex items-center gap-4 md:w-[260px]">
         <button 
-          className="md:hidden p-2 rounded-lg text-brand-500 hover:bg-brand-500/10 transition-colors"
           onClick={onMenuToggle}
+          className="md:hidden p-2 text-slate-500 hover:bg-white/50 rounded-xl"
         >
-          <Menu size={24} />
+          <Menu size={22} />
         </button>
-        {/* Mobile Search Trigger */}
-        <button 
-          onClick={() => setShowMobileSearch(true)}
-          className="sm:hidden p-2.5 rounded-xl bg-white/5 text-surface-400 active:bg-brand-500/10 active:text-brand-400 transition-all"
-        >
-          <Search size={20} />
-        </button>
+        
+        <div className="flex items-center group cursor-pointer" onClick={() => navigate('/')}>
+           <div className="h-[40px] md:h-[60px] bg-white rounded-lg p-1 px-2 flex items-center justify-center transition-all duration-300 group-hover:scale-105 shadow-sm">
+              <img src="/assets/company-logo.jpeg" alt="Logo" className="h-full w-auto object-contain" />
+           </div>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2 md:gap-6">
-        <div className="flex items-center gap-2">
-          {/* Notifications */}
-          <div className="relative">
-            <motion.button
-              onClick={() => {
-                setShowNotifications(!showNotifications);
-                setShowHelp(false);
-                setShowProfileMenu(false);
-              }}
-              whileTap={{ scale: 0.9 }}
-              className={`p-3 rounded-2xl transition-all relative group ${showNotifications ? 'bg-cyan-500/10' : 'hover:bg-white/5'}`}
-              style={{ color: showNotifications ? '#22d3ee' : 'var(--text-secondary)' }}
-            >
-              <Bell size={22} className={showNotifications ? 'animate-pulse' : ''} />
-              {notifications.length > 0 && !showNotifications && (
-                <span className="absolute top-3.5 right-3.5 w-2.5 h-2.5 bg-cyan-500 rounded-full border-2 border-[#020617] shadow-[0_0_10px_#06b6d4]"></span>
-              )}
-            </motion.button>
-            
-            <AnimatePresence>
-              {showNotifications && (
-                <>
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    onClick={() => setShowNotifications(false)} className="fixed inset-0 bg-black/40 z-[90] md:hidden" />
-                  <motion.div
-                    initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                    className="fixed md:absolute top-20 right-4 left-4 md:left-auto md:w-80 bg-white rounded-[28px] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.5)] z-[100]"
-                  >
-                  <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Mission Control</h3>
-                    <button onClick={clearNotifications} className="text-[10px] font-bold text-brand-600 hover:text-brand-700 transition-colors uppercase tracking-widest">Clear All</button>
-                  </div>
-                  <div className="max-h-[380px] overflow-y-auto custom-scrollbar bg-white">
-                    {notifications.length > 0 ? (
-                      notifications.map((n) => (
-                        <div 
-                          key={n.id} 
-                          onClick={() => handleNotifyClick(n.path)}
-                          className="p-5 flex items-start gap-4 hover:bg-gray-50 transition-all cursor-pointer border-b border-gray-50 active:scale-[0.98]"
-                        >
-                          <div className="p-2.5 rounded-xl flex-shrink-0" style={{ background: `${n.color}15`, border: `1px solid ${n.color}25` }}>
-                            <n.icon size={18} style={{ color: n.color }} />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between gap-2">
-                              <p className="text-xs font-black text-gray-900 uppercase tracking-wide">{n.title}</p>
-                              <span className="text-[9px] font-bold text-gray-400 whitespace-nowrap">{n.time}</span>
-                            </div>
-                            <p className="text-[11px] text-gray-600 mt-1.5 leading-relaxed font-medium">{n.desc}</p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="py-12 px-6 text-center">
-                        <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                           <Bell size={20} className="text-gray-300" />
-                        </div>
-                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest">No Active Missions</p>
-                      </div>
-                    )}
-                  </div>
-                  {notifications.length > 0 && (
-                    <div className="p-4 bg-gray-50 text-center border-t border-gray-100">
-                      <button className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-600 hover:text-brand-700 transition-colors">Audit Full Activity Log</button>
-                    </div>
-                  )}
-                 </motion.div>
-               </>
-              )}
-            </AnimatePresence>
+      {/* WIDE SEARCH BAR - GLASSMORPHIC */}
+      <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-full max-w-[600px]">
+        <div className="relative w-full group">
+          <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+            <Search size={18} />
           </div>
-
-          {/* Help */}
-          <div className="relative">
-            <motion.button
-              onClick={() => {
-                setShowHelp(!showHelp);
-                setShowNotifications(false);
-                setShowProfileMenu(false);
-              }}
-              whileTap={{ scale: 0.9 }}
-              className={`p-3 rounded-2xl transition-all relative group ${showHelp ? 'bg-violet-500/10' : 'hover:bg-white/5'}`}
-              style={{ color: showHelp ? '#a78bfa' : 'var(--text-secondary)' }}
-            >
-              <HelpCircle size={22} />
-            </motion.button>
-            
-            <AnimatePresence>
-              {showHelp && (
-                <>
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    onClick={() => setShowHelp(false)} className="fixed inset-0 bg-black/40 z-[90] md:hidden" />
-                  <motion.div
-                    initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                    className="fixed md:absolute top-20 right-4 left-4 md:left-auto md:w-80 bg-white rounded-[32px] p-1 shadow-[0_40px_80px_rgba(0,0,0,0.5)] z-[100]"
-                  >
-                  <div className="p-6 bg-white rounded-[31px]">
-                    <div className="flex items-center gap-4 mb-6">
-                      <div className="p-3 bg-violet-100 rounded-2xl">
-                        <Sparkles size={24} className="text-violet-600" />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">NexovTech Support</h3>
-                        <p className="text-[10px] font-bold text-violet-600 uppercase tracking-widest mt-1">24/7 Agentic Help</p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-3 mb-6">
-                       {[
-                         { label: 'Platform Documentation', icon: FileText },
-                         { label: 'Video Walkthroughs', icon: Command },
-                         { label: 'API Reference', icon: Sparkles }
-                       ].map(item => (
-                         <button key={item.label} className="w-full flex items-center gap-3 p-3 rounded-2xl bg-gray-50 border border-transparent hover:border-gray-200 transition-all group/item">
-                            <item.icon size={16} className="text-gray-400 group-hover/item:text-brand-600 transition-colors" />
-                            <span className="text-[11px] font-bold text-gray-600 group-hover/item:text-gray-900 transition-colors">{item.label}</span>
-                         </button>
-                       ))}
-                    </div>
-
-                    <button 
-                      onClick={() => window.open('mailto:support@nexovtech.com')}
-                      className="w-full py-4 rounded-2xl bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black active:scale-[0.98] transition-all shadow-xl"
-                    >
-                      Summon Specialist
-                    </button>
-                  </div>
-                 </motion.div>
-               </>
-              )}
-            </AnimatePresence>
+          <input 
+            type="text" 
+            placeholder="Search for employees, projects, tasks..." 
+            className="w-full h-12 pl-12 pr-16 bg-white/40 border border-white/60 rounded-2xl text-[14px] font-bold focus:outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all"
+          />
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-white border border-slate-200 rounded-lg shadow-sm">
+            <Command size={10} className="text-slate-400" />
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">K</span>
           </div>
         </div>
+      </div>
 
-        <div className="h-8 w-[1px] mx-2" style={{ background: 'var(--border-default)' }}></div>
-
-        {/* Profile */}
+      {/* RIGHT UTILITIES */}
+      <div className="flex items-center gap-3">
+        <button onClick={toggleTheme} className="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-2xl transition-all">
+          <Sun size={20} />
+        </button>
         <div className="relative">
-          <button
-            onClick={() => {
-              setShowProfileMenu(!showProfileMenu);
-              setShowNotifications(false);
-              setShowHelp(false);
-            }}
-            className="flex items-center gap-4 p-2 pl-4 rounded-[20px] hover:opacity-80 transition-all group border"
-            style={{ borderColor: 'transparent' }}
+          <button 
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="relative w-11 h-11 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-2xl transition-all"
           >
-            <div className="text-right hidden md:block">
-              <p className="text-sm font-black leading-none" style={{ color: 'var(--text-primary)' }}>{user?.name || 'User'}</p>
-              <p className="text-[10px] text-brand-500 font-black uppercase tracking-widest mt-1.5 flex items-center justify-end gap-1 group-hover:text-neon-blue transition-colors">
-                <Sparkles size={10} /> {user?.role || 'Guest'}
-              </p>
-            </div>
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-neon-blue p-[2px] shadow-2xl shadow-brand-600/20 group-hover:rotate-6 transition-transform">
-              <div className="w-full h-full rounded-[14px] flex items-center justify-center overflow-hidden"
-                style={{ background: 'var(--bg-base)' }}>
-                <img
-                  src={user?.role === 'Admin' ? '/assets/admin_dp.jpg' : 
-                    (user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL}${user.avatar}`) : 
-                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`)}
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`;
-                  }}
-                />
-              </div>
-            </div>
-            <ChevronDown size={16} className={`transition-transform duration-300 ${showProfileMenu ? 'rotate-180' : ''}`}
-              style={{ color: 'var(--text-secondary)' }} />
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span className="absolute top-2.5 right-2.5 w-4 h-4 bg-rose-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white shadow-lg animate-pulse">
+                {unreadCount}
+              </span>
+            )}
           </button>
 
           <AnimatePresence>
-            {showProfileMenu && (
-              <motion.div
-                initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                className="absolute right-0 mt-4 w-56 glass-panel rounded-[24px] p-2 shadow-2xl overflow-hidden z-[50]"
-              >
-                <div className="p-3 border-b border-white/5">
-                  <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>Switch Role</p>
-                </div>
-                <button className="w-full flex items-center gap-3 p-3 rounded-xl text-sm font-bold transition-colors"
-                  style={{ color: 'var(--text-primary)' }}>
-                  <div className="w-2 h-2 rounded-full bg-brand-500"></div> Admin Mode
-                </button>
-                <button className="w-full flex items-center gap-3 p-3 rounded-xl text-sm font-bold transition-colors"
-                  style={{ color: 'var(--text-secondary)' }}>
-                  <div className="w-2 h-2 rounded-full" style={{ background: 'var(--border-hover)' }}></div> Team Mode
-                </button>
-                <div className="mt-2 pt-2 border-t border-white/5">
-                   <button 
-                    onClick={() => { setShowProfileMenu(false); navigate('/settings'); }}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl text-sm font-bold text-white/60 hover:text-white transition-colors">
-                     Settings
-                   </button>
-                   <button 
-                    onClick={() => { setShowProfileMenu(false); logout(); navigate('/login'); }}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl text-sm font-bold text-rose-400 hover:text-rose-300 transition-colors">
-                     <LogOut size={16} /> Logout
-                   </button>
-                </div>
-              </motion.div>
+            {showNotifications && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowNotifications(false)} />
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute right-0 mt-4 w-[340px] bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-20 backdrop-blur-xl"
+                >
+                  <div className="p-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+                    <div>
+                      <p className="text-[12px] font-black text-slate-900 uppercase tracking-widest">Alerts</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{unreadCount} Unread</p>
+                    </div>
+                    {unreadCount > 0 && (
+                      <button onClick={markAllAsRead} className="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-700 transition-colors flex items-center gap-1">
+                        <Check size={12} /> Mark All Read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-[360px] overflow-y-auto custom-scrollbar">
+                    {notifications.length === 0 ? (
+                      <div className="p-8 text-center flex flex-col items-center justify-center text-slate-400">
+                        <Bell size={24} className="mb-2 opacity-50" />
+                        <p className="text-[10px] font-black uppercase tracking-widest">No Active Alerts</p>
+                      </div>
+                    ) : (
+                      notifications.map(n => (
+                        <div 
+                          key={n.id} 
+                          className={`p-4 border-b border-slate-50 flex gap-3 hover:bg-slate-50 transition-colors group cursor-pointer ${!n.read ? 'bg-indigo-50/30' : ''}`}
+                          onClick={() => {
+                            if (!n.read) markAsRead(n.id);
+                            if (n.link) {
+                              navigate(n.link);
+                              setShowNotifications(false);
+                            }
+                          }}
+                        >
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
+                            n.type === 'error' ? 'bg-rose-100 text-rose-500' :
+                            n.type === 'warning' ? 'bg-amber-100 text-amber-500' :
+                            n.type === 'success' ? 'bg-emerald-100 text-emerald-500' :
+                            'bg-indigo-100 text-indigo-600'
+                          }`}>
+                            {n.type === 'error' ? <AlertTriangle size={14} /> :
+                             n.type === 'warning' ? <AlertTriangle size={14} /> :
+                             n.type === 'success' ? <CheckCircle2 size={14} /> :
+                             <Info size={14} />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-0.5">
+                              <p className={`text-[11px] font-black truncate uppercase tracking-widest ${!n.read ? 'text-slate-900' : 'text-slate-500'}`}>
+                                {n.title}
+                              </p>
+                              {!n.read && <div className="w-1.5 h-1.5 rounded-full bg-indigo-600 shrink-0" />}
+                            </div>
+                            <p className="text-[11px] font-medium text-slate-500 leading-tight line-clamp-2">{n.message}</p>
+                            <p className="text-[9px] font-bold text-slate-400 mt-1.5 uppercase tracking-widest">
+                              {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </motion.div>
+              </>
             )}
           </AnimatePresence>
         </div>
+        <button className="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-2xl transition-all">
+          <MessageSquare size={20} />
+        </button>
+        
+        <div className="w-px h-8 bg-white/40 mx-2" />
+
+        <div className="relative">
+           <div 
+             onClick={() => setShowUserMenu(!showUserMenu)}
+             className="flex items-center gap-3 pl-2 group cursor-pointer"
+           >
+              <div className="text-right hidden lg:block">
+                <p className="text-[13px] font-black text-slate-900 leading-tight uppercase tracking-tighter">
+                  {user?.name || 'Navaneeswar'}
+                </p>
+                <p className={`text-[9px] font-black uppercase tracking-[0.1em] ${
+                  user?.role === 'Admin' ? 'text-indigo-600' : 
+                  user?.role === 'Editor' ? 'text-purple-500' : 
+                  user?.role === 'Manager' ? 'text-emerald-600' : 
+                  'text-slate-400'
+                }`}>
+                  {user?.role || 'Super Admin'}
+                </p>
+              </div>
+              <div className="w-11 h-11 rounded-2xl overflow-hidden border-2 border-white shadow-xl group-hover:scale-105 transition-all duration-300">
+                 <img src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=Admin`} alt="" className="w-full h-full object-cover" />
+              </div>
+              <ChevronDown size={14} className={`text-slate-400 transition-transform duration-300 ${showUserMenu ? 'rotate-180' : ''}`} />
+           </div>
+
+           <AnimatePresence>
+             {showUserMenu && (
+               <>
+                 <div className="fixed inset-0 z-10" onClick={() => setShowUserMenu(false)} />
+                 <motion.div
+                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                   animate={{ opacity: 1, y: 0, scale: 1 }}
+                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                   className="absolute right-0 mt-4 w-64 bg-white rounded-3xl shadow-2xl border border-slate-100 p-3 z-20 backdrop-blur-xl"
+                 >
+                    <div className="p-4 border-b border-slate-50 mb-2">
+                       <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Authenticated Unit</p>
+                       <p className="text-sm font-black text-slate-900 truncate">{user?.companyEmail || user?.email || 'admin@nexovtech.com'}</p>
+                    </div>
+
+                    <button 
+                      onClick={() => { navigate('/settings'); setShowUserMenu(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-all group"
+                    >
+                       <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
+                          <User size={16} />
+                       </div>
+                       <span className="text-xs font-black uppercase tracking-widest">Command Profile</span>
+                    </button>
+
+                    <button 
+                      onClick={() => { navigate('/settings'); setShowUserMenu(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-all group"
+                    >
+                       <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
+                          <SettingsIcon size={16} />
+                       </div>
+                       <span className="text-xs font-black uppercase tracking-widest">System Settings</span>
+                    </button>
+
+                    <div className="my-2 border-t border-slate-50" />
+
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all group"
+                    >
+                       <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center group-hover:bg-rose-100 transition-colors">
+                          <LogOut size={16} />
+                       </div>
+                       <span className="text-xs font-black uppercase tracking-widest">Terminate Session</span>
+                    </button>
+                 </motion.div>
+               </>
+             )}
+           </AnimatePresence>
+        </div>
       </div>
     </header>
-
-    {/* Mobile Search Overlay */}
-    <AnimatePresence>
-      {showMobileSearch && (
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="fixed inset-0 z-[200] bg-[#020617] p-4 flex flex-col gap-6"
-        >
-          <div className="flex items-center justify-between">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-500">Secure Search</p>
-            <button onClick={() => setShowMobileSearch(false)} className="p-2 text-white/40 hover:text-white"><X size={24} /></button>
-          </div>
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
-            <input 
-              autoFocus
-              placeholder="Search specialists or missions..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white text-sm outline-none focus:ring-2 focus:ring-brand-500/30 transition-all"
-            />
-          </div>
-          <div className="flex-1 overflow-y-auto space-y-4">
-             <p className="text-[9px] font-black text-white/20 uppercase tracking-widest px-2">Recent Queries</p>
-             <div className="space-y-2">
-                {['Database Optimization', 'Security Audit 2024', 'Sarah Jenkins'].map(q => (
-                  <button key={q} className="w-full flex items-center justify-between p-4 bg-white/[0.02] rounded-2xl text-xs text-white/60 hover:bg-white/5 transition-all">
-                    <span>{q}</span>
-                    <Command size={12} className="text-white/10" />
-                  </button>
-                ))}
-             </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-    </>
   );
 };
 

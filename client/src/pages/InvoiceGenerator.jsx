@@ -96,9 +96,9 @@ const InvoiceGenerator = () => {
          <div className="flex h-[calc(100vh-120px)] gap-0 -m-4 overflow-hidden bg-[#0f172a]/5">
 
          {/* SIDEBAR EDITOR */}
-         <div className="w-[450px] bg-[#0f172a] flex flex-col border-r border-white/10 shadow-2xl print:hidden">
-            <div className="p-8 border-b border-white/10 bg-[#1e293b] shrink-0">
-               <h2 className="text-xl font-black text-white flex items-center gap-3">
+         <div className="w-[450px] bg-[#0f172a] flex flex-col border-r border-gray-200 shadow-2xl print:hidden">
+            <div className="p-8 border-b border-gray-200 bg-[#1e293b] shrink-0">
+               <h2 className="text-xl font-black text-gray-900 flex items-center gap-3">
                   <Settings className="text-brand-500" size={22} /> Forge Control
                </h2>
             </div>
@@ -109,8 +109,8 @@ const InvoiceGenerator = () => {
                      <Hash size={12} /> Document Setup
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
-                     <input value={invoice.id} onChange={(e) => setInvoice({ ...invoice, id: e.target.value })} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-none focus:border-brand-500" placeholder="Invoice ID" />
-                     <input value={invoice.date} onChange={(e) => setInvoice({ ...invoice, date: e.target.value })} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-none focus:border-brand-500" placeholder="Date" />
+                     <input value={invoice.id} onChange={(e) => setInvoice({ ...invoice, id: e.target.value })} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-xs outline-none focus:border-brand-500" placeholder="Invoice ID" />
+                     <input value={invoice.date} onChange={(e) => setInvoice({ ...invoice, date: e.target.value })} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-xs outline-none focus:border-brand-500" placeholder="Date" />
                   </div>
                </section>
 
@@ -119,10 +119,10 @@ const InvoiceGenerator = () => {
                      <User size={12} /> Recipient Intelligence
                   </h3>
                   <div className="space-y-3">
-                     <input value={invoice.client.name} onChange={(e) => setInvoice({ ...invoice, client: { ...invoice.client, name: e.target.value } })} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-none focus:border-brand-500" placeholder="Client Name" />
-                     <input value={invoice.client.company} onChange={(e) => setInvoice({ ...invoice, client: { ...invoice.client, company: e.target.value } })} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-none focus:border-brand-500" placeholder="Client Company" />
-                     <input value={invoice.client.phone} onChange={(e) => setInvoice({ ...invoice, client: { ...invoice.client, phone: e.target.value } })} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-none focus:border-brand-500" placeholder="Client Phone" />
-                     <textarea value={invoice.client.address} onChange={(e) => setInvoice({ ...invoice, client: { ...invoice.client, address: e.target.value } })} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-none focus:border-brand-500 h-20 resize-none" placeholder="Client Address" />
+                     <input value={invoice.client.name} onChange={(e) => setInvoice({ ...invoice, client: { ...invoice.client, name: e.target.value } })} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-xs outline-none focus:border-brand-500" placeholder="Client Name" />
+                     <input value={invoice.client.company} onChange={(e) => setInvoice({ ...invoice, client: { ...invoice.client, company: e.target.value } })} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-xs outline-none focus:border-brand-500" placeholder="Client Company" />
+                     <input value={invoice.client.phone} onChange={(e) => setInvoice({ ...invoice, client: { ...invoice.client, phone: e.target.value } })} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-xs outline-none focus:border-brand-500" placeholder="Client Phone" />
+                     <textarea value={invoice.client.address} onChange={(e) => setInvoice({ ...invoice, client: { ...invoice.client, address: e.target.value } })} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-xs outline-none focus:border-brand-500 h-20 resize-none" placeholder="Client Address" />
                   </div>
                </section>
 
@@ -131,12 +131,12 @@ const InvoiceGenerator = () => {
                      <Briefcase size={12} /> Origin Identity
                   </h3>
                   <div className="space-y-3">
-                     <input value={invoice.from.company} onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, company: e.target.value } })} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-none focus:border-brand-500" placeholder="Your Company" />
+                     <input value={invoice.from.company} onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, company: e.target.value } })} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-xs outline-none focus:border-brand-500" placeholder="Your Company" />
                      <div className="grid grid-cols-2 gap-3">
-                        <input value={invoice.from.phone} onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, phone: e.target.value } })} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-none focus:border-brand-500" placeholder="Phone" />
-                        <input value={invoice.from.web} onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, web: e.target.value } })} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-none focus:border-brand-500" placeholder="Website" />
+                        <input value={invoice.from.phone} onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, phone: e.target.value } })} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-xs outline-none focus:border-brand-500" placeholder="Phone" />
+                        <input value={invoice.from.web} onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, web: e.target.value } })} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-xs outline-none focus:border-brand-500" placeholder="Website" />
                      </div>
-                     <input value={invoice.from.email} onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, email: e.target.value } })} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-none focus:border-brand-500" placeholder="Email" />
+                     <input value={invoice.from.email} onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, email: e.target.value } })} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-xs outline-none focus:border-brand-500" placeholder="Email" />
                   </div>
                </section>
 
@@ -145,24 +145,24 @@ const InvoiceGenerator = () => {
                      <CreditCard size={12} /> Settlement Gateway
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
-                     <input value={invoice.paymentMethod.bank} onChange={(e) => setInvoice({ ...invoice, paymentMethod: { ...invoice.paymentMethod, bank: e.target.value } })} className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded text-white text-[11px] outline-none focus:border-brand-500" placeholder="Bank" />
-                     <input value={invoice.paymentMethod.accountNo} onChange={(e) => setInvoice({ ...invoice, paymentMethod: { ...invoice.paymentMethod, accountNo: e.target.value } })} className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded text-white text-[11px] outline-none focus:border-brand-500" placeholder="Acc No" />
+                     <input value={invoice.paymentMethod.bank} onChange={(e) => setInvoice({ ...invoice, paymentMethod: { ...invoice.paymentMethod, bank: e.target.value } })} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded text-gray-900 text-[11px] outline-none focus:border-brand-500" placeholder="Bank" />
+                     <input value={invoice.paymentMethod.accountNo} onChange={(e) => setInvoice({ ...invoice, paymentMethod: { ...invoice.paymentMethod, accountNo: e.target.value } })} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded text-gray-900 text-[11px] outline-none focus:border-brand-500" placeholder="Acc No" />
                   </div>
                </section>
 
                <section className="space-y-4">
-                  <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                  <div className="flex justify-between items-center border-b border-gray-200 pb-2">
                      <h3 className="text-[10px] font-black text-brand-500 uppercase tracking-widest">Billable Items</h3>
                      <button onClick={addNewItem} className="p-1 bg-brand-600 text-white rounded hover:bg-brand-500 transition-all"><Plus size={14} /></button>
                   </div>
                   <div className="space-y-3">
                      {invoice.items.map(item => (
-                        <div key={item.id} className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-3 group relative">
+                        <div key={item.id} className="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3 group relative">
                            <button onClick={() => removeItem(item.id)} className="absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
-                           <input value={item.service} onChange={(e) => handleUpdateItem(item.id, 'service', e.target.value)} className="w-full bg-transparent border-b border-white/10 text-white text-xs font-bold outline-none focus:border-brand-500 pb-1" />
+                           <input value={item.service} onChange={(e) => handleUpdateItem(item.id, 'service', e.target.value)} className="w-full bg-transparent border-b border-gray-200 text-gray-900 text-xs font-bold outline-none focus:border-brand-500 pb-1" />
                            <div className="grid grid-cols-2 gap-4">
-                              <input type="number" value={item.qty} onChange={(e) => handleUpdateItem(item.id, 'qty', Number(e.target.value))} className="bg-white/10 border border-white/10 rounded px-3 py-1.5 text-xs text-white outline-none" />
-                              <input type="number" value={item.unitPrice} onChange={(e) => handleUpdateItem(item.id, 'unitPrice', Number(e.target.value))} className="bg-white/10 border border-white/10 rounded px-3 py-1.5 text-xs text-white outline-none" />
+                              <input type="number" value={item.qty} onChange={(e) => handleUpdateItem(item.id, 'qty', Number(e.target.value))} className="bg-white/10 border border-gray-200 rounded px-3 py-1.5 text-xs text-gray-900 outline-none" />
+                              <input type="number" value={item.unitPrice} onChange={(e) => handleUpdateItem(item.id, 'unitPrice', Number(e.target.value))} className="bg-white/10 border border-gray-200 rounded px-3 py-1.5 text-xs text-gray-900 outline-none" />
                            </div>
                         </div>
                      ))}
@@ -172,13 +172,13 @@ const InvoiceGenerator = () => {
                <section className="space-y-4">
                   <h3 className="text-[10px] font-black text-brand-500 uppercase tracking-widest">Adjustments</h3>
                   <div className="grid grid-cols-2 gap-4">
-                     <input type="number" value={invoice.tax} onChange={(e) => setInvoice({ ...invoice, tax: Number(e.target.value) })} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-none focus:border-brand-500" placeholder="Tax" />
-                     <input type="number" value={invoice.discount} onChange={(e) => setInvoice({ ...invoice, discount: Number(e.target.value) })} className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-xs outline-none focus:border-brand-500" placeholder="Discount" />
+                     <input type="number" value={invoice.tax} onChange={(e) => setInvoice({ ...invoice, tax: Number(e.target.value) })} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-xs outline-none focus:border-brand-500" placeholder="Tax" />
+                     <input type="number" value={invoice.discount} onChange={(e) => setInvoice({ ...invoice, discount: Number(e.target.value) })} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-xs outline-none focus:border-brand-500" placeholder="Discount" />
                   </div>
                </section>
             </div>
 
-            <div className="p-8 border-t border-white/10 shrink-0">
+            <div className="p-8 border-t border-gray-200 shrink-0">
                <button onClick={() => window.print()} className="w-full py-4 bg-brand-600 text-white rounded font-black uppercase tracking-widest text-xs hover:bg-brand-500 transition-all shadow-xl shadow-brand-600/20">Finalize & Print A4</button>
             </div>
          </div>
@@ -206,7 +206,7 @@ const InvoiceGenerator = () => {
                            <img src={logoSilver} alt="Logo" className="w-full h-full object-contain" />
                         </div>
                         <div className="space-y-0">
-                           <h1 className="text-6xl font-black text-white leading-none tracking-tighter uppercase">Nexov</h1>
+                           <h1 className="text-6xl font-black text-gray-900 leading-none tracking-tighter uppercase">Nexov</h1>
                            <div className="flex items-center gap-4 mt-3">
                               <div className="h-[2px] w-8 bg-brand-500" />
                               <span className="text-2xl font-light text-slate-300 tracking-[0.5em] uppercase">TECH</span>
@@ -226,7 +226,7 @@ const InvoiceGenerator = () => {
                   <div className="space-y-8 mb-8 shrink-0">
                      <div className="grid grid-cols-2 gap-20">
                         <div className="space-y-4">
-                           <div className="bg-[#0f172a] text-white px-5 py-2 inline-flex items-center gap-3 font-black uppercase text-[10px] tracking-widest">
+                           <div className="bg-[#0f172a] text-gray-900 px-5 py-2 inline-flex items-center gap-3 font-black uppercase text-[10px] tracking-widest">
                               Invoice To <div className="w-2 h-2 bg-brand-600" />
                            </div>
                            <div className="pl-1 space-y-1.5 text-[11px] font-bold text-slate-600">
@@ -238,7 +238,7 @@ const InvoiceGenerator = () => {
                         </div>
 
                         <div className="space-y-4">
-                           <div className="bg-[#0f172a] text-white px-5 py-2 inline-flex items-center gap-3 font-black uppercase text-[10px] tracking-widest">
+                           <div className="bg-[#0f172a] text-gray-900 px-5 py-2 inline-flex items-center gap-3 font-black uppercase text-[10px] tracking-widest">
                               Invoice From <div className="w-2 h-2 bg-brand-600" />
                            </div>
                            <div className="pl-1 space-y-1.5 text-[11px] font-bold text-slate-600">
@@ -283,7 +283,7 @@ const InvoiceGenerator = () => {
                      </div>
 
                      <div className="space-y-5 relative z-10">
-                        <div className="bg-[#0f172a] text-white px-5 py-2 inline-flex items-center gap-3 font-black uppercase text-[9px] tracking-widest border-none">
+                        <div className="bg-[#0f172a] text-gray-900 px-5 py-2 inline-flex items-center gap-3 font-black uppercase text-[9px] tracking-widest border-none">
                            PAYMENT METHOD <div className="w-2 h-2 bg-brand-600" />
                         </div>
                         <div className="text-[10px] font-black text-slate-600 space-y-1.5 pl-1 uppercase tracking-tight">
@@ -304,7 +304,7 @@ const InvoiceGenerator = () => {
                         </div>
                         <div className="bg-brand-600 h-14 flex items-center relative overflow-hidden px-8 shadow-none border-none">
                            <div className="absolute top-0 left-[60%] w-[4px] h-full bg-white/20 skew-x-[45deg]" />
-                           <div className="flex justify-between w-full font-black text-white text-xl tracking-tighter relative z-10 italic uppercase"><span>TOTAL</span><span>{formatCurrency(totalAmount)}</span></div>
+                           <div className="flex justify-between w-full font-black text-gray-900 text-xl tracking-tighter relative z-10 italic uppercase"><span>TOTAL</span><span>{formatCurrency(totalAmount)}</span></div>
                         </div>
                         <div className="pt-10 text-right">
                            <div className="w-full h-[1px] bg-slate-200 mb-2" />
@@ -367,3 +367,5 @@ const InvoiceGenerator = () => {
 };
 
 export default InvoiceGenerator;
+
+

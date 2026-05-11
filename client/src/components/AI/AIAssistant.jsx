@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Sparkles, 
-  Send, 
-  X, 
-  Minus, 
-  Bot, 
-  User, 
-  Terminal, 
+import {
+  Sparkles,
+  Send,
+  X,
+  Minus,
+  Bot,
+  User,
+  Terminal,
   Zap,
   IndianRupee,
   Users,
@@ -20,8 +20,8 @@ const AIAssistant = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([
-    { 
-      role: 'assistant', 
+    {
+      role: 'assistant',
       content: 'Welcome to the NexovTech Command Center. I am your AI Orchestrator. How can I assist your operations today?',
       type: 'text'
     }
@@ -42,7 +42,7 @@ const AIAssistant = () => {
 
   const processCommand = async (text) => {
     if (!text.trim()) return;
-    
+
     const userMsg = { role: 'user', content: text };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
@@ -53,7 +53,7 @@ const AIAssistant = () => {
       const response = await fetch(`${API_URL}/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           messages: [...messages, userMsg].map(m => ({ role: m.role, content: m.content }))
         })
       });
@@ -63,13 +63,13 @@ const AIAssistant = () => {
         throw new Error(errorData.content || 'Neural link severed');
       }
       const data = await response.json();
-      
+
       setMessages(prev => [...prev, { role: 'assistant', content: data.content, type: 'text' }]);
     } catch (err) {
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: `Uplink Failure: ${err.message}`, 
-        type: 'text' 
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: `Uplink Failure: ${err.message}`,
+        type: 'text'
       }]);
     } finally {
       setIsTyping(false);
@@ -85,15 +85,15 @@ const AIAssistant = () => {
         onClick={() => setIsOpen(true)}
         className="fixed bottom-8 right-8 w-16 h-16 rounded-full shadow-[0_20px_50px_rgba(139,92,246,0.3)] flex items-center justify-center z-[100] border-2 border-brand-500/50 group overflow-hidden bg-[#020617]"
       >
-        <img 
-          src="/assets/logo.png" 
-          alt="Nexov AI" 
+        <img
+          src="/assets/logo.png"
+          alt="Nexov AI"
           className="w-10 h-10 object-contain group-hover:scale-110 transition-transform"
         />
-        <motion.div 
-          animate={{ scale: [1, 1.2, 1] }} 
+        <motion.div
+          animate={{ scale: [1, 1.2, 1] }}
           transition={{ repeat: Infinity, duration: 2 }}
-          className="absolute top-1 right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-[#020617]" 
+          className="absolute top-1 right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-[#020617]"
         />
       </motion.button>
 
@@ -130,7 +130,7 @@ const AIAssistant = () => {
             </div>
 
             {/* Messages */}
-            <div 
+            <div
               ref={scrollRef}
               className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar bg-[#0f172a]"
             >
@@ -165,7 +165,7 @@ const AIAssistant = () => {
                 { label: 'Attendance', icon: Clock, cmd: 'Find late check-ins' },
                 { label: 'Finance', icon: TrendingUp, cmd: 'Show financial projections' },
               ].map((chip, idx) => (
-                <button 
+                <button
                   key={idx}
                   onClick={() => handleCommand(chip.cmd)}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/5 rounded-lg whitespace-nowrap text-[9px] font-black text-white/50 uppercase tracking-widest hover:bg-brand-600 hover:text-white hover:border-brand-500 transition-all"
@@ -177,23 +177,24 @@ const AIAssistant = () => {
             </div>
 
             {/* Input */}
-            <div className="p-4 bg-[#020617]">
-              <form 
+            <div className="p-4 bg-[#020617] border-t border-white/10">
+              <form
                 onSubmit={(e) => { e.preventDefault(); processCommand(input); }}
                 className="relative"
               >
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Execute..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pr-10 text-[11px] font-bold text-white outline-none focus:border-brand-500 transition-all placeholder:text-white/10"
+                  placeholder="Type a command or ask a question..."
+                  className="w-full bg-slate-800/80 border border-slate-600/50 rounded-xl py-3.5 pl-4 pr-12 text-[13px] font-bold text-white outline-none focus:border-brand-500 focus:bg-slate-800 focus:ring-4 focus:ring-brand-500/20 transition-all placeholder:text-slate-400 shadow-inner"
                 />
-                <button 
+                <button
                   type="submit"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-brand-400 hover:text-brand-300 transition-colors"
+                  disabled={!input.trim()}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-brand-600 rounded-lg text-white hover:bg-brand-500 transition-all shadow-md disabled:opacity-0 disabled:scale-90"
                 >
-                  <Send size={16} />
+                  <Send size={14} className="ml-0.5" />
                 </button>
               </form>
             </div>

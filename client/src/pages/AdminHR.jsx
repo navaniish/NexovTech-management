@@ -78,67 +78,96 @@ const AdminHR = () => {
   );
 
   return (
-    <div className="space-y-8 pb-20 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-4xl font-black tracking-tighter" style={{ color: 'var(--text-primary)' }}>HR Command Center</h1>
-          <p className="mt-2 font-medium" style={{ color: 'var(--text-primary)' }}>Workforce management, attendance tracking & leave operations.</p>
-        </div>
+    <div className="w-full flex flex-col p-4 md:p-6 space-y-6 animate-in fade-in duration-1000 overflow-y-auto custom-scrollbar">
+      {/* 1. HIGH-FIDELITY OFFICE HEADER */}
+      <section className="relative w-full overflow-hidden rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[220px] group">
+         <div 
+           className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+           style={{ backgroundImage: "url('/assets/office-bg.png')" }}
+         />
+         <div className="absolute inset-0 bg-white/70 backdrop-blur-[4px]" />
+         
+         <div className="relative z-10 flex-1 p-10 md:p-12 flex flex-col justify-center">
+            <div className="space-y-2 mb-8">
+               <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none flex items-center gap-3">
+                  HR Command Center <span className="animate-bounce-slow">🏢</span>
+               </h1>
+               <p className="text-slate-500 text-[15px] font-medium">
+                  Workforce management, attendance tracking & leave operations.
+               </p>
+            </div>
+         </div>
+      </section>
+
+      {/* 2. KPI NODES */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title="Present Today" value={presentCount} icon={CheckCircle2} accent="#10b981" delay={0.1} />
+        <StatCard title="Late Arrivals" value={lateCount} icon={AlertCircle} accent="#f59e0b" delay={0.2} />
+        <StatCard title="Absent" value={absentCount} icon={XCircle} accent="#ef4444" delay={0.3} />
+        <StatCard title="Pending Leaves" value={pendingLeaves} icon={Calendar} accent="#8b5cf6" delay={0.4} />
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Present Today" value={presentCount} icon={CheckCircle2} accent="#10b981" />
-        <StatCard title="Late Arrivals" value={lateCount} icon={AlertCircle} accent="#f59e0b" />
-        <StatCard title="Absent" value={absentCount} icon={XCircle} accent="#ef4444" />
-        <StatCard title="Pending Leaves" value={pendingLeaves} icon={Calendar} accent="#8b5cf6" />
-      </div>
+      {/* 3. CORE CONTENT HUB */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="lg:col-span-3 space-y-4">
+           {/* Snapshot Card */}
+           <div className="glass-card !p-6 border-slate-100">
+              <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-6">Daily Snapshot</h4>
+              <div className="h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData}>
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 8, fontWeight: 900 }} />
+                    <Tooltip 
+                      cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                      contentStyle={{ background: '#fff', border: 'none', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }} 
+                    />
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                      {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+           </div>
 
-      {/* Chart + Tab Nav */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="theme-card rounded-2xl p-6">
-          <h3 className="text-sm font-black mb-4" style={{ color: 'var(--text-primary)' }}>Today's Snapshot</h3>
-          <div className="h-[180px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#ffffff', fontSize: 9, fontWeight: 900 }} />
-                <Tooltip contentStyle={{ background: '#fff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '12px' }} />
-                <Bar dataKey="value" radius={[8, 8, 0, 0]}>
-                  {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+           {/* Slim Nav Switcher */}
+           <div className="flex lg:flex-col gap-2 p-2 bg-white/40 border border-slate-100 rounded-[32px] shadow-lg backdrop-blur-xl">
+             {tabs.map(t => (
+               <button
+                 key={t.id}
+                 onClick={() => setTab(t.id)}
+                 className={`flex items-center gap-4 px-6 h-12 rounded-2xl font-black text-[10px] transition-all uppercase tracking-widest lg:w-full group ${
+                     tab === t.id
+                     ? 'bg-slate-900 text-white shadow-xl translate-x-1'
+                     : 'text-slate-400 hover:text-slate-900 hover:bg-white'
+                   }`}
+               >
+                 <t.icon size={16} className={tab === t.id ? 'text-brand-400' : 'opacity-40 group-hover:opacity-100'} />
+                 {t.label}
+               </button>
+             ))}
+           </div>
         </div>
 
-        <div className="lg:col-span-3">
-          {/* Tab Switcher */}
-          <div className="flex gap-2 mb-6">
-            {tabs.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                  tab === t.id ? 'bg-brand-600 text-white shadow-lg shadow-brand-600/20' : 'theme-card'
-                }`}
-                style={tab !== t.id ? { color: 'var(--text-primary)' } : {}}
-              >
-                <t.icon size={16} /> {t.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Tab Content */}
-          {tab === 'attendance' && (
-            <AttendanceTab attendance={attendance} dateFilter={dateFilter} setDateFilter={setDateFilter} search={search} setSearch={setSearch} team={team} onRefresh={fetchAll} />
-          )}
-          {tab === 'leaves' && (
-            <LeaveTab leaves={leaves} onAction={handleLeaveAction} />
-          )}
-          {tab === 'directory' && (
-            <DirectoryTab team={team} search={search} setSearch={setSearch} onTeamUpdated={fetchAll} />
-          )}
+        <div className="lg:col-span-9">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tab}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="glass-card !p-8 md:!p-10 min-h-[600px] border-slate-100 rounded-[40px] shadow-2xl"
+            >
+              {tab === 'attendance' && (
+                <AttendanceTab attendance={attendance} dateFilter={dateFilter} setDateFilter={setDateFilter} search={search} setSearch={setSearch} team={team} onRefresh={fetchAll} />
+              )}
+              {tab === 'leaves' && (
+                <LeaveTab leaves={leaves} onAction={handleLeaveAction} />
+              )}
+              {tab === 'directory' && (
+                <DirectoryTab team={team} search={search} setSearch={setSearch} onTeamUpdated={fetchAll} />
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>
@@ -146,13 +175,22 @@ const AdminHR = () => {
 };
 
 /* ── Stat Card ── */
-const StatCard = ({ title, value, icon: Icon, accent }) => (
-  <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="theme-card rounded-2xl p-5">
-    <div className="flex items-center justify-between mb-3">
-      <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-primary)' }}>{title}</span>
-      <div className="p-2 rounded-xl" style={{ background: `${accent}18` }}><Icon size={16} style={{ color: accent }} /></div>
+const StatCard = ({ title, value, icon: Icon, accent, delay }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }} 
+    animate={{ opacity: 1, y: 0 }} 
+    transition={{ delay }}
+    className="glass-card !p-6 flex flex-col relative overflow-hidden group border-slate-100 hover:scale-[1.02] transition-all"
+  >
+    <div className="flex items-center gap-4 mb-4 relative z-10">
+      <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm" style={{ backgroundColor: `${accent}10`, color: accent }}>
+        <Icon size={24} strokeWidth={2.5} />
+      </div>
+      <div className="flex flex-col min-w-0">
+        <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-0.5">{title}</span>
+        <h3 className="text-2xl font-black text-slate-900 leading-none">{value}</h3>
+      </div>
     </div>
-    <p className="text-3xl font-black" style={{ color: 'var(--text-primary)' }}>{value}</p>
   </motion.div>
 );
 /* ── Attendance Tab ── */
@@ -227,10 +265,10 @@ const AttendanceTab = ({ attendance, dateFilter, setDateFilter, search, setSearc
           <tbody className="divide-y" style={{ borderColor: 'var(--border-default)' }}>
             {filtered.map(a => (
               <tr key={a.id} className="hover:bg-black/[0.02] transition-colors">
-                <td className="py-3 px-2 text-sm font-bold text-white">{getName(a.employeeId)}</td>
-                <td className="py-3 px-2 text-sm text-white/60">{a.checkIn ? new Date(a.checkIn).toLocaleTimeString() : '—'}</td>
-                <td className="py-3 px-2 text-sm text-white/60">{a.checkOut ? new Date(a.checkOut).toLocaleTimeString() : '—'}</td>
-                <td className="py-3 px-2 text-sm font-bold text-white">{a.totalHours || 0}h</td>
+                <td className="py-3 px-2 text-sm font-bold text-gray-900">{getName(a.employeeId)}</td>
+                <td className="py-3 px-2 text-sm text-gray-600">{a.checkIn ? new Date(a.checkIn).toLocaleTimeString() : '—'}</td>
+                <td className="py-3 px-2 text-sm text-gray-600">{a.checkOut ? new Date(a.checkOut).toLocaleTimeString() : '—'}</td>
+                <td className="py-3 px-2 text-sm font-bold text-gray-900">{a.totalHours || 0}h</td>
                 <td className="py-3 px-2">
                   <StatusBadge status={a.attendanceStatus} />
                 </td>
@@ -296,7 +334,7 @@ const AttendanceTab = ({ attendance, dateFilter, setDateFilter, search, setSearc
                   </select>
                 </div>
                 <button type="submit" disabled={marking}
-                  className="w-full py-4 bg-brand-600 rounded-xl text-xs font-black uppercase tracking-widest text-white hover:bg-brand-500 transition-all flex items-center justify-center gap-2">
+                  className="w-full py-4 bg-brand-600 rounded-xl text-xs font-black uppercase tracking-widest text-gray-900 hover:bg-brand-500 transition-all flex items-center justify-center gap-2">
                   {marking ? <Loader2 className="animate-spin" size={16} /> : <CheckCircle2 size={16} />} Confirm Check-In
                 </button>
               </form>
@@ -332,11 +370,11 @@ const LeaveTab = ({ leaves, onAction }) => (
             {l.status === 'Pending' ? (
               <>
                 <button onClick={() => onAction(l.id, 'Approved')}
-                  className="px-3 py-1.5 bg-emerald-500/10 text-emerald-600 rounded-lg text-[10px] font-black uppercase hover:bg-emerald-500 hover:text-white transition-all">
+                  className="px-3 py-1.5 bg-emerald-500/10 text-emerald-600 rounded-lg text-[10px] font-black uppercase hover:bg-emerald-500 hover:text-gray-900 transition-all">
                   Approve
                 </button>
                 <button onClick={() => onAction(l.id, 'Rejected')}
-                  className="px-3 py-1.5 bg-rose-500/10 text-rose-600 rounded-lg text-[10px] font-black uppercase hover:bg-rose-500 hover:text-white transition-all">
+                  className="px-3 py-1.5 bg-rose-500/10 text-rose-600 rounded-lg text-[10px] font-black uppercase hover:bg-rose-500 hover:text-gray-900 transition-all">
                   Reject
                 </button>
               </>
@@ -414,8 +452,8 @@ const DirectoryTab = ({ team, search, setSearch, onTeamUpdated }) => {
               <div key={emp.id || emp._id} className="flex items-center gap-4 p-4 rounded-2xl border transition-all hover:shadow-md" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-default)' }}>
                 <img src={emp.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${emp.name}`} className="w-12 h-12 rounded-xl" alt="" />
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm truncate text-white">{emp.name}</p>
-                  <p className="text-[10px] font-bold text-white/40">{emp.email}</p>
+                  <p className="font-bold text-sm truncate text-gray-900">{emp.name}</p>
+                  <p className="text-[10px] font-bold text-gray-400">{emp.email}</p>
                 </div>
                 <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">Active</span>
                 <button onClick={() => handleDelete(emp.id || emp._id)} className="p-1.5 rounded-lg hover:bg-rose-500/10 text-rose-500 transition-colors">
@@ -484,7 +522,7 @@ const DirectoryTab = ({ team, search, setSearch, onTeamUpdated }) => {
                     className="w-full p-3 rounded-xl text-sm font-bold outline-none border" style={{ background: 'var(--input-bg)', borderColor: 'var(--border-default)', color: 'var(--text-primary)' }} />
                 </div>
                 <button type="submit" disabled={submitting}
-                  className="w-full py-4 bg-brand-600 rounded-xl text-xs font-black uppercase tracking-widest text-white hover:bg-brand-500 transition-all flex items-center justify-center gap-2">
+                  className="w-full py-4 bg-brand-600 rounded-xl text-xs font-black uppercase tracking-widest text-gray-900 hover:bg-brand-500 transition-all flex items-center justify-center gap-2">
                   {submitting ? <Loader2 className="animate-spin" size={16} /> : <UserPlus size={16} />} Register Employee
                 </button>
               </form>
@@ -516,3 +554,5 @@ const StatusBadge = ({ status }) => {
 };
 
 export default AdminHR;
+
+

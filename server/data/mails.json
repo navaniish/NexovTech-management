@@ -1,0 +1,30 @@
+[
+  {
+    "id": "1778435175026",
+    "senderName": "NexovTech Administrator",
+    "subject": "hgello",
+    "from": "nexovtech@myyahoo.com",
+    "to": "manicharanteja1234@gmail.com",
+    "priority": "High",
+    "content": "hii\n",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1778435175,
+      "_nanoseconds": 26000000
+    }
+  },
+  {
+    "id": "1778435603866",
+    "senderName": "MANI CHARAN TEJA",
+    "subject": "",
+    "from": "mani.charan.teja@nexovtech.com",
+    "to": "",
+    "priority": "Normal",
+    "content": "",
+    "status": "Draft",
+    "timestamp": {
+      "_seconds": 1778435603,
+      "_nanoseconds": 866000000
+    }
+  }
+]

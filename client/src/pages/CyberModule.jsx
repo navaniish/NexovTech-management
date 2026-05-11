@@ -21,7 +21,7 @@ const CyberModule = () => {
     <div className="space-y-12 pb-20 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter">Security Command</h1>
+          <h1 className="text-4xl font-black text-gray-900 tracking-tighter">Security Command</h1>
           <p className="text-surface-500 mt-2 font-medium">Monitor threats and enforce zero-trust policies.</p>
         </div>
         <div className="flex gap-4">
@@ -50,15 +50,15 @@ const CyberModule = () => {
                <stat.icon size={26} />
             </div>
             <p className="text-[10px] font-black text-surface-500 uppercase tracking-widest mb-1">{stat.label}</p>
-            <p className="text-3xl font-black text-white tracking-tight">{stat.value}</p>
+            <p className="text-3xl font-black text-gray-900 tracking-tight">{stat.value}</p>
           </motion.div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Security Checklist */}
-        <div className="glass-light p-10 rounded-[40px] border border-white/5 shadow-2xl">
-           <h2 className="text-2xl font-black text-white tracking-tight mb-10 flex items-center gap-4">
+        <div className="glass-light p-10 rounded-[40px] border border-gray-100 shadow-2xl">
+           <h2 className="text-2xl font-black text-gray-900 tracking-tight mb-10 flex items-center gap-4">
               <Lock size={24} className="text-brand-500" /> Compliance Checklist
            </h2>
            <div className="space-y-4">
@@ -69,13 +69,13 @@ const CyberModule = () => {
                 { title: 'API Rate Limiting', status: 'Active', type: 'Network' },
                 { title: 'Firewall Config', status: 'Optimal', type: 'System' },
               ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-brand-500/30 transition-all group">
+                <div key={i} className="flex items-center justify-between p-6 bg-gray-50 rounded-3xl border border-gray-100 hover:border-brand-500/30 transition-all group">
                    <div className="flex items-center gap-5">
                       <div className="w-10 h-10 bg-emerald-500/10 text-emerald-500 rounded-xl flex items-center justify-center">
                          <ShieldCheck size={20} />
                       </div>
                       <div>
-                         <p className="font-bold text-white text-base">{item.title}</p>
+                         <p className="font-bold text-gray-900 text-base">{item.title}</p>
                          <p className="text-[10px] text-surface-600 font-black uppercase tracking-widest mt-1">{item.type}</p>
                       </div>
                    </div>
@@ -86,14 +86,14 @@ const CyberModule = () => {
         </div>
 
         {/* Live Attack Map Simulation */}
-        <div className="glass-light p-10 rounded-[40px] border border-white/5 shadow-2xl relative overflow-hidden flex flex-col">
-           <h2 className="text-2xl font-black text-white tracking-tight mb-10 flex items-center gap-4">
+        <div className="glass-light p-10 rounded-[40px] border border-gray-100 shadow-2xl relative overflow-hidden flex flex-col">
+           <h2 className="text-2xl font-black text-gray-900 tracking-tight mb-10 flex items-center gap-4">
               <Globe size={24} className="text-neon-blue" /> Traffic Matrix
            </h2>
            <div className="flex-1 flex flex-col items-center justify-center relative">
-              <div className="w-full aspect-square max-w-[300px] border-2 border-white/5 rounded-full flex items-center justify-center relative">
-                 <div className="w-[80%] h-[80%] border border-white/5 rounded-full flex items-center justify-center relative">
-                    <div className="w-[60%] h-[60%] border border-white/10 rounded-full flex items-center justify-center">
+              <div className="w-full aspect-square max-w-[300px] border-2 border-gray-100 rounded-full flex items-center justify-center relative">
+                 <div className="w-[80%] h-[80%] border border-gray-100 rounded-full flex items-center justify-center relative">
+                    <div className="w-[60%] h-[60%] border border-gray-200 rounded-full flex items-center justify-center">
                        <Zap size={40} className="text-brand-500 animate-pulse" />
                     </div>
                     {/* Simulated Pulse Rings */}
@@ -109,7 +109,7 @@ const CyberModule = () => {
                  </motion.div>
               </div>
               <div className="mt-12 w-full space-y-4">
-                 <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-surface-500 border-b border-white/5 pb-2">
+                 <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-surface-500 border-b border-gray-100 pb-2">
                     <span>Source</span>
                     <span>Method</span>
                     <span>Status</span>
@@ -126,7 +126,7 @@ const CyberModule = () => {
                  ))}
               </div>
            </div>
-           <button className="w-full mt-10 py-4 bg-white/5 rounded-2xl text-[11px] font-black uppercase tracking-widest text-surface-500 hover:text-white transition-all flex items-center justify-center gap-3 border border-white/5">
+           <button className="w-full mt-10 py-4 bg-gray-50 rounded-2xl text-[11px] font-black uppercase tracking-widest text-surface-500 hover:text-gray-900 transition-all flex items-center justify-center gap-3 border border-gray-100">
               Generate Report <Download size={14} />
            </button>
         </div>
@@ -136,3 +136,5 @@ const CyberModule = () => {
 };
 
 export default CyberModule;
+
+

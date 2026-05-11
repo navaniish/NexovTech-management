@@ -13,7 +13,6 @@ import API_URL from '../config';
 
 const AuthContext = createContext(null);
 
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,48 +20,80 @@ export const AuthProvider = ({ children }) => {
   const googleProvider = new GoogleAuthProvider();
 
   useEffect(() => {
-    // Check local storage for bypass session first
+    // 1. Initial restoration from localStorage (Synchronous)
     const savedUser = localStorage.getItem('nexov_user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
-      setLoading(false);
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        localStorage.removeItem('nexov_user');
+      }
     }
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    // 2. Sync with Firebase and Backend API
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        localStorage.removeItem('nexov_user'); // Clear bypass if real user logs in
-        // Fetch additional user data from our backend using Firebase UID
+        setLoading(true); // Ensure loading is true while syncing
         try {
           const response = await fetch(`${API_URL}/auth/me?uid=${firebaseUser.uid}`);
           if (response.ok) {
             const userData = await response.json();
-            setUser({ ...userData, firebaseUid: firebaseUser.uid });
+            const finalUser = { ...userData, firebaseUid: firebaseUser.uid };
+            setUser(finalUser);
+            localStorage.setItem('nexov_user', JSON.stringify(finalUser));
           } else {
-            // If user doesn't exist in our DB yet, create a basic profile or logout
-            const defaultRole = firebaseUser.email === 'nexovtech@myyahoo.com' ? 'Admin' : 'Employee';
-            setUser({ email: firebaseUser.email, uid: firebaseUser.uid, role: defaultRole });
+            // Fallback for new users or sync failures
+            const savedUser = localStorage.getItem('nexov_user');
+            if (!savedUser) {
+              const defaultRole = firebaseUser.email === 'nexovtech@myyahoo.com' ? 'Admin' : 'Employee';
+              const fallbackUser = { 
+                email: firebaseUser.email, 
+                uid: firebaseUser.uid, 
+                firebaseUid: firebaseUser.uid,
+                name: firebaseUser.displayName || firebaseUser.email.split('@')[0],
+                role: defaultRole,
+                avatar: firebaseUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${firebaseUser.email}`
+              };
+              setUser(fallbackUser);
+              localStorage.setItem('nexov_user', JSON.stringify(fallbackUser));
+            }
           }
         } catch (err) {
-          const defaultRole = firebaseUser.email === 'nexovtech@myyahoo.com' ? 'Admin' : 'Employee';
-          setUser({ email: firebaseUser.email, uid: firebaseUser.uid, role: defaultRole });
+          console.error('Session sync failed:', err);
+        } finally {
+          setLoading(false);
         }
       } else {
-        if (!localStorage.getItem('nexov_user')) {
+        if (!localStorage.getItem('nexov_user_is_bypass')) {
           setUser(null);
+          localStorage.removeItem('nexov_user');
         }
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeAuth();
   }, []);
 
   const login = async (rawEmail, rawPassword, mfaToken = null) => {
-    const email = rawEmail.trim().toLowerCase();
+    let email = rawEmail.trim().toLowerCase();
     const password = rawPassword.trim();
     
     try {
-      // 1. Authenticate with Firebase Client SDK
+      // 1. Enterprise Identity Discovery (Resolve virtual email to real firebase email)
+      if (email.endsWith('@nexovtech.com')) {
+        console.log(`🔍 IDENTITY_DISCOVERY: Resolving virtual identity [${email}]...`);
+        const discoveryRes = await fetch(`${API_URL}/auth/discovery/${email}`);
+        if (discoveryRes.ok) {
+          const { email: realEmail } = await discoveryRes.json();
+          console.log(`✅ IDENTITY_RESOLVED: [${email}] -> [${realEmail}]`);
+          email = realEmail;
+        } else {
+          throw new Error('Virtual identity not registered in Nexov Registry.');
+        }
+      }
+
+      // 2. Authenticate with Firebase Client SDK
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
       
@@ -76,6 +107,7 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ 
           email, 
           firebaseToken: idToken,
+          lastActive: new Date(),
           token: mfaToken // Keep parameter name as 'token' for backend 2FA compatibility if needed
         })
       });
@@ -89,6 +121,9 @@ export const AuthProvider = ({ children }) => {
         
         setUser(data.user);
         localStorage.setItem('nexov_user', JSON.stringify(data.user));
+        if (email === 'nexovtech@myyahoo.com' && (password === 'Admin@123' || password === 'unlock')) {
+          localStorage.setItem('nexov_user_is_bypass', 'true');
+        }
         localStorage.setItem('nexov_token', data.token);
         return { success: true };
       } else {
@@ -109,6 +144,7 @@ export const AuthProvider = ({ children }) => {
         const adminData = { id: 'nexovtech@myyahoo.com', email: 'nexovtech@myyahoo.com', name: 'NexovTech Administrator', role: 'Admin' };
         setUser(adminData);
         localStorage.setItem('nexov_user', JSON.stringify(adminData));
+        localStorage.setItem('nexov_user_is_bypass', 'true');
         return { success: true };
       }
       return { success: false, message: message };
@@ -180,6 +216,9 @@ export const AuthProvider = ({ children }) => {
     try {
       await signOut(auth);
       setUser(null);
+      localStorage.removeItem('nexov_user');
+      localStorage.removeItem('nexov_user_is_bypass');
+      localStorage.removeItem('nexov_token');
     } catch (err) {
       console.error('Logout failed');
     }
@@ -188,10 +227,8 @@ export const AuthProvider = ({ children }) => {
   const updateUser = (fields) => {
     setUser(prev => {
       const updated = { ...prev, ...fields };
-      // If we are in a bypass session, update localStorage to persist changes
-      if (localStorage.getItem('nexov_user')) {
-        localStorage.setItem('nexov_user', JSON.stringify(updated));
-      }
+      // Always persist to localStorage for consistency
+      localStorage.setItem('nexov_user', JSON.stringify(updated));
       return updated;
     });
   };

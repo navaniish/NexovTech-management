@@ -22,7 +22,7 @@ const AIModule = () => {
     <div className="space-y-12 pb-20 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter">AI Orchestrator</h1>
+          <h1 className="text-4xl font-black text-gray-900 tracking-tighter">AI Orchestrator</h1>
           <p className="text-surface-500 mt-2 font-medium">Build, train, and deploy autonomous workflows.</p>
         </div>
         <div className="flex gap-4">
@@ -34,18 +34,18 @@ const AIModule = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         {/* Workflow Canvas Mockup */}
-        <div className="lg:col-span-2 glass-light rounded-[40px] border border-white/5 p-10 h-[600px] relative overflow-hidden group shadow-2xl">
+        <div className="lg:col-span-2 glass-light rounded-[40px] border border-gray-100 p-10 h-[600px] relative overflow-hidden group shadow-2xl">
            <div className="absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] bg-[size:40px_40px]"></div>
            
            <div className="relative z-10 flex flex-col h-full">
               <div className="flex justify-between items-center mb-12">
                  <div className="flex items-center gap-4">
                     <div className="p-3 bg-brand-600/10 text-brand-400 rounded-xl border border-brand-500/20"><Workflow size={24} /></div>
-                    <h2 className="text-2xl font-black text-white tracking-tight">Workflow Builder</h2>
+                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">Workflow Builder</h2>
                  </div>
                  <div className="flex gap-3">
-                    <button className="p-2.5 bg-white/5 rounded-xl text-surface-500 hover:text-white transition-all"><Settings size={18} /></button>
-                    <button className="p-2.5 bg-white/5 rounded-xl text-surface-500 hover:text-white transition-all"><Share2 size={18} /></button>
+                    <button className="p-2.5 bg-gray-50 rounded-xl text-surface-500 hover:text-gray-900 transition-all"><Settings size={18} /></button>
+                    <button className="p-2.5 bg-gray-50 rounded-xl text-surface-500 hover:text-gray-900 transition-all"><Share2 size={18} /></button>
                  </div>
               </div>
 
@@ -59,7 +59,7 @@ const AIModule = () => {
                     <div className="flex items-center gap-2 mb-4 text-brand-400">
                        <Database size={16} /> <span className="text-[10px] font-black uppercase tracking-widest">Input Node</span>
                     </div>
-                    <p className="text-xs font-bold text-white">Client_Data_Stream</p>
+                    <p className="text-xs font-bold text-gray-900">Client_Data_Stream</p>
                  </motion.div>
 
                  <div className="absolute top-[120px] left-[130px] w-[100px] h-[2px] bg-gradient-to-r from-brand-500 to-neon-blue opacity-50"></div>
@@ -73,7 +73,7 @@ const AIModule = () => {
                     <div className="flex items-center gap-2 mb-4 text-neon-blue">
                        <Cpu size={16} /> <span className="text-[10px] font-black uppercase tracking-widest">Processing Node</span>
                     </div>
-                    <p className="text-xs font-bold text-white">GPT-4o Vision Engine</p>
+                    <p className="text-xs font-bold text-gray-900">GPT-4o Vision Engine</p>
                     <div className="mt-4 flex items-center gap-2">
                        <div className="h-1.5 flex-1 bg-white/10 rounded-full overflow-hidden">
                           <div className="h-full w-2/3 bg-neon-blue shadow-[0_0_10px_#00d2ff]"></div>
@@ -82,7 +82,7 @@ const AIModule = () => {
                     </div>
                  </motion.div>
 
-                 <div className="absolute top-[250px] left-[350px] w-[100px] h-[100px] border-b-2 border-r-2 border-white/10 rounded-br-3xl"></div>
+                 <div className="absolute top-[250px] left-[350px] w-[100px] h-[100px] border-b-2 border-r-2 border-gray-200 rounded-br-3xl"></div>
 
                  <motion.div 
                    initial={{ opacity: 0, scale: 0.9 }}
@@ -93,7 +93,7 @@ const AIModule = () => {
                     <div className="flex items-center gap-2 mb-4 text-emerald-400">
                        <Layers size={16} /> <span className="text-[10px] font-black uppercase tracking-widest">Output Node</span>
                     </div>
-                    <p className="text-xs font-bold text-white">Slack_Final_Report</p>
+                    <p className="text-xs font-bold text-gray-900">Slack_Final_Report</p>
                  </motion.div>
               </div>
            </div>
@@ -101,12 +101,12 @@ const AIModule = () => {
 
         {/* Sidebar Controls */}
         <div className="space-y-10">
-           <div className="glass-light p-10 rounded-[40px] border border-white/5 shadow-2xl">
-              <h3 className="text-xl font-black text-white tracking-tight mb-8">Model Config</h3>
+           <div className="glass-light p-10 rounded-[40px] border border-gray-100 shadow-2xl">
+              <h3 className="text-xl font-black text-gray-900 tracking-tight mb-8">Model Config</h3>
               <div className="space-y-6">
                  <div className="space-y-3">
                     <label className="text-[10px] font-black text-surface-500 uppercase tracking-widest ml-1">Inference Engine</label>
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-white font-bold text-sm flex justify-between items-center">
+                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200 text-gray-900 font-bold text-sm flex justify-between items-center">
                        <span>Claude 3.5 Sonnet</span>
                        <ChevronDown size={16} className="text-surface-600" />
                     </div>
@@ -122,15 +122,15 @@ const AIModule = () => {
               </div>
            </div>
 
-           <div className="glass-light p-10 rounded-[40px] border border-white/5 shadow-2xl">
-              <h3 className="text-xl font-black text-white tracking-tight mb-8">System Health</h3>
+           <div className="glass-light p-10 rounded-[40px] border border-gray-100 shadow-2xl">
+              <h3 className="text-xl font-black text-gray-900 tracking-tight mb-8">System Health</h3>
               <div className="space-y-6">
                  {[
                    { label: 'Latency', value: '142ms', color: 'text-emerald-400' },
                    { label: 'Uptime', value: '99.99%', color: 'text-brand-400' },
-                   { label: 'Cost YTD', value: '$2.4k', color: 'text-white' },
+                   { label: 'Cost YTD', value: '$2.4k', color: 'text-gray-900' },
                  ].map((stat, i) => (
-                   <div key={i} className="flex justify-between items-end border-b border-white/5 pb-4">
+                   <div key={i} className="flex justify-between items-end border-b border-gray-100 pb-4">
                       <span className="text-[10px] font-black text-surface-500 uppercase tracking-widest">{stat.label}</span>
                       <span className={`text-lg font-black ${stat.color}`}>{stat.value}</span>
                    </div>
@@ -160,3 +160,5 @@ const ChevronDown = ({ size, className }) => (
 );
 
 export default AIModule;
+
+
