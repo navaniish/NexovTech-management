@@ -11,17 +11,22 @@ router.post('/generate', async (req, res) => {
 
   try {
     // 1. Find user with flexibility (Try ID, Firebase UID, then Email)
+    console.log(`🪪 ID_GEN: Request for userId=[${userId}]`);
     const user = (await fallbackDb.findById('users', userId)) || 
                  (await fallbackDb.findOne('users', { firebaseUid: userId })) ||
                  (await fallbackDb.findOne('users', { email: userId }));
 
-    if (!user) return res.status(404).json({ message: 'Employee profile not recognized in registry' });
+    if (!user) {
+      console.warn(`❌ ID_GEN: User [${userId}] not found in registry`);
+      return res.status(404).json({ message: 'Employee profile not recognized in registry' });
+    }
 
     const employeeId = (user.id || user._id || user.email).toString().slice(-8).toUpperCase();
     const qrToken = crypto.randomBytes(16).toString('hex');
 
-    // Canonical User ID from database (Prefer Email for absolute cross-portal sync)
-    const canonicalUserId = user.email || user.id || user._id;
+    // Canonical User ID from database (Prefer Firebase UID for absolute cross-portal sync)
+    const canonicalUserId = user.firebaseUid || user.id || user._id;
+    console.log(`✅ ID_GEN: Resolved user=[${user.email}] canonicalId=[${canonicalUserId}]`);
 
     const cardData = {
       userId: canonicalUserId,

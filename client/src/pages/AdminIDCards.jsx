@@ -11,6 +11,14 @@ import DigitalIDCard from '../components/IDCard/DigitalIDCard';
 import API_URL from '../config';
 import { useAuth } from '../context/AuthContext';
 
+// Resolve avatar URLs: local paths need the backend server prefix
+const SERVER_BASE = API_URL.replace('/api', '');
+const getAvatarUrl = (avatar) => {
+  if (!avatar) return 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
+  if (avatar.startsWith('http')) return avatar;
+  return `${SERVER_BASE}${avatar}`;
+};
+
 const AdminIDCards = () => {
   const { user: currentUser } = useAuth();
   const [employees, setEmployees] = useState([]);
@@ -94,26 +102,37 @@ const AdminIDCards = () => {
       await fetch(`${API_URL}/auth/update-profile/${selectedEmployee._id || selectedEmployee.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editForm.name, role: editForm.role, phone: editForm.phone, avatar: editForm.avatar })
+        body: JSON.stringify({ 
+          name: editForm.name, 
+          role: editForm.role, 
+          phone: editForm.phone, 
+          avatar: editForm.avatar,
+          address: editForm.address,
+          authorizedSign: editForm.authorizedSign,
+          teamSign: editForm.teamSign
+        })
       });
+      let updatedCard = selectedEmployee.card;
       if (selectedEmployee.card) {
+        const newIssueDate = editForm.issueDate ? new Date(editForm.issueDate).toISOString() : selectedEmployee.card.issueDate;
+        const newExpiryDate = editForm.expiryDate ? new Date(editForm.expiryDate).toISOString() : selectedEmployee.card.expiryDate;
+        
         await fetch(`${API_URL}/idcard/update-details/${selectedEmployee.card.id || selectedEmployee.card._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            issueDate: editForm.issueDate ? new Date(editForm.issueDate).toISOString() : selectedEmployee.card.issueDate,
-            expiryDate: editForm.expiryDate ? new Date(editForm.expiryDate).toISOString() : selectedEmployee.card.expiryDate
-          })
+          body: JSON.stringify({ issueDate: newIssueDate, expiryDate: newExpiryDate })
         });
+        
+        updatedCard = { ...selectedEmployee.card, issueDate: newIssueDate, expiryDate: newExpiryDate };
       }
       setIsEditingDetails(false);
       
-      const updatedEmployee = { ...selectedEmployee, ...editForm };
+      const updatedEmployee = { ...selectedEmployee, ...editForm, card: updatedCard };
       setSelectedEmployee(updatedEmployee);
       
       setEmployees(prev => prev.map(emp => 
         (emp._id || emp.id) === (selectedEmployee._id || selectedEmployee.id) 
-        ? { ...emp, ...editForm } 
+        ? { ...emp, ...editForm, card: updatedCard } 
         : emp
       ));
 
@@ -153,7 +172,7 @@ const AdminIDCards = () => {
 
   const selectEmployeeForPreview = (emp, card) => {
     setSelectedEmployee({ ...emp, card });
-    if (window.innerWidth < 1024) {
+    if (window.innerWidth < 1280) {
       setActiveTab('preview');
     }
   };
@@ -235,7 +254,7 @@ const AdminIDCards = () => {
       </section>
 
       {/* Tab Switcher - Now with premium styling */}
-      <div className="lg:hidden flex p-2 bg-white/10 backdrop-blur-md border border-white/5 rounded-[24px]">
+      <div className="xl:hidden flex p-2 bg-white/10 backdrop-blur-md border border-white/5 rounded-[24px]">
         <button 
           onClick={() => setActiveTab('registry')}
           className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'registry' ? 'bg-white text-slate-900 shadow-xl' : 'text-white/40 hover:text-white'}`}
@@ -250,9 +269,9 @@ const AdminIDCards = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
         {/* Registry Section */}
-        <div className={`lg:col-span-7 space-y-4 ${activeTab !== 'registry' && 'hidden lg:block'}`}>
+        <div className={`xl:col-span-7 space-y-4 ${activeTab !== 'registry' && 'hidden xl:block'}`}>
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -296,7 +315,7 @@ const AdminIDCards = () => {
                        <div className="flex items-center gap-5 min-w-0">
                           <div className="relative shrink-0">
                             <div className={`p-1 rounded-[20px] transition-all ${isSelected ? 'bg-slate-900 shadow-xl' : 'bg-slate-100 group-hover:bg-white'}`}>
-                              <img src={emp.avatar} className="w-12 h-12 md:w-14 md:h-14 rounded-[18px] object-cover" alt="" />
+                              <img src={getAvatarUrl(emp.avatar)} className="w-12 h-12 md:w-14 md:h-14 rounded-[18px] object-cover" alt="" />
                             </div>
                             {card?.status === 'Active' && (
                               <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-[3px] border-white shadow-lg" />
@@ -351,7 +370,7 @@ const AdminIDCards = () => {
         </div>
 
         {/* Preview Panel */}
-        <div className={`lg:col-span-5 ${activeTab !== 'preview' && 'hidden lg:block'}`}>
+        <div className={`xl:col-span-5 ${activeTab !== 'preview' && 'hidden xl:block'}`}>
           <div className="sticky top-28 space-y-6">
             <AnimatePresence mode="wait">
               {selectedEmployee ? (
@@ -378,26 +397,39 @@ const AdminIDCards = () => {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <button 
-                        onClick={() => handleUpdateStatus(selectedEmployee.card.id || selectedEmployee.card._id, selectedEmployee.card.status === 'Active' ? 'Inactive' : 'Active')}
-                        className={`group py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-                          selectedEmployee.card.status === 'Active' 
-                          ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 border border-rose-500/20 hover:text-gray-900' 
-                          : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 border border-emerald-500/20 hover:text-gray-900'
-                        }`}
-                      >
-                        {selectedEmployee.card.status === 'Active' ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
-                        {selectedEmployee.card.status === 'Active' ? 'Suspend' : 'Authorize'}
-                      </button>
+                      {selectedEmployee.card ? (
+                        <>
+                          <button 
+                            onClick={() => handleUpdateStatus(selectedEmployee.card.id || selectedEmployee.card._id, selectedEmployee.card.status === 'Active' ? 'Inactive' : 'Active')}
+                            className={`group py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                              selectedEmployee.card.status === 'Active' 
+                              ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500 border border-rose-500/20 hover:text-gray-900' 
+                              : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 border border-emerald-500/20 hover:text-gray-900'
+                            }`}
+                          >
+                            {selectedEmployee.card.status === 'Active' ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
+                            {selectedEmployee.card.status === 'Active' ? 'Suspend' : 'Authorize'}
+                          </button>
                       
-                      <button 
-                        onClick={() => handleGenerate(selectedEmployee._id || selectedEmployee.id)}
-                        disabled={generatingId === (selectedEmployee._id || selectedEmployee.id)}
-                        className="py-3.5 rounded-2xl bg-brand-500/10 text-brand-500 text-[10px] font-black uppercase tracking-widest hover:bg-brand-500 hover:text-gray-900 border border-brand-500/20 transition-all flex items-center justify-center gap-2"
-                      >
-                        {generatingId === (selectedEmployee._id || selectedEmployee.id) ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-                        Reissue
-                      </button>
+                          <button 
+                            onClick={() => handleGenerate(selectedEmployee._id || selectedEmployee.id)}
+                            disabled={generatingId === (selectedEmployee._id || selectedEmployee.id)}
+                            className="py-3.5 rounded-2xl bg-brand-500/10 text-brand-500 text-[10px] font-black uppercase tracking-widest hover:bg-brand-500 hover:text-gray-900 border border-brand-500/20 transition-all flex items-center justify-center gap-2"
+                          >
+                            {generatingId === (selectedEmployee._id || selectedEmployee.id) ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                            Reissue
+                          </button>
+                        </>
+                      ) : (
+                        <button 
+                          onClick={() => handleGenerate(selectedEmployee._id || selectedEmployee.id)}
+                          disabled={generatingId === (selectedEmployee._id || selectedEmployee.id)}
+                          className="col-span-2 py-3.5 rounded-2xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-xl disabled:opacity-50"
+                        >
+                          {generatingId === (selectedEmployee._id || selectedEmployee.id) ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                          Generate E-ID Card
+                        </button>
+                      )}
 
                       {currentUser?.role === 'Admin' && (
                         <button 
@@ -407,8 +439,8 @@ const AdminIDCards = () => {
                               role: selectedEmployee.role,
                               phone: selectedEmployee.phone || '',
                               avatar: selectedEmployee.avatar || '',
-                              issueDate: selectedEmployee.card.issueDate ? selectedEmployee.card.issueDate.split('T')[0] : '',
-                              expiryDate: selectedEmployee.card.expiryDate ? selectedEmployee.card.expiryDate.split('T')[0] : '',
+                              issueDate: selectedEmployee.card?.issueDate ? selectedEmployee.card.issueDate.split('T')[0] : '',
+                              expiryDate: selectedEmployee.card?.expiryDate ? selectedEmployee.card.expiryDate.split('T')[0] : '',
                               address: selectedEmployee.address || '',
                               authorizedSign: selectedEmployee.authorizedSign || '',
                               teamSign: selectedEmployee.teamSign || ''
@@ -497,7 +529,7 @@ const AdminIDCards = () => {
                   <div className="p-4 rounded-3xl bg-gray-50 border border-gray-200 space-y-4">
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 rounded-2xl border-2 border-brand-500/30 overflow-hidden shrink-0">
-                        <img src={editForm.avatar} className="w-full h-full object-cover" alt="Preview" />
+                        <img src={getAvatarUrl(editForm.avatar)} className="w-full h-full object-cover" alt="Preview" />
                       </div>
                       <div className="flex-1 space-y-2">
                         <input 

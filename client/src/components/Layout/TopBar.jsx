@@ -212,7 +212,11 @@ const TopBar = ({ onMenuToggle }) => {
                 </p>
               </div>
               <div className="w-11 h-11 rounded-2xl overflow-hidden border-2 border-white shadow-xl group-hover:scale-105 transition-all duration-300">
-                 <img src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=Admin`} alt="" className="w-full h-full object-cover" />
+                 <img 
+                   src={user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL.replace('/api', '')}${user.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=Admin`} 
+                   alt="" 
+                   className="w-full h-full object-cover" 
+                 />
               </div>
               <ChevronDown size={14} className={`text-slate-400 transition-transform duration-300 ${showUserMenu ? 'rotate-180' : ''}`} />
            </div>

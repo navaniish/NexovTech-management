@@ -60,13 +60,25 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
-      {/* Cinematic Office Background */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-[10s] scale-110"
-        style={{ backgroundImage: "url('/assets/office-bg.png')" }}
-      />
-      {/* Dark Glass Overlay */}
-      <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-[2px]" />
+      {/* ── CINEMATIC AMBIENT BACKGROUND ── */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        {/* Base Office Texture */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-[20s] scale-110 motion-safe:animate-pulse-slow"
+          style={{ backgroundImage: "url('/assets/office-bg.png')" }}
+        />
+        
+        {/* Dark Tactical Overlay */}
+        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[3px]" />
+
+        {/* Dynamic Animated Glows (Cyber-Minimalist Mesh) */}
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/20 blur-[120px] rounded-full animate-drift-slow" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand-500/10 blur-[150px] rounded-full animate-drift-reverse" />
+        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-purple-600/10 blur-[100px] rounded-full animate-pulse-slow" />
+
+        {/* Tactical Grid Overlay (Subtle) */}
+        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:40px_40px]" />
+      </div>
 
       {/* Premium Circular Login Logo */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-10 relative z-10">
@@ -91,9 +103,8 @@ const Login = () => {
         {/* Soft Glow Behind Card */}
         <div className="absolute inset-0 bg-brand-500/20 blur-[100px] rounded-[40px] -z-10" />
         
-        <div className="bg-white/5 backdrop-blur-[40px] rounded-[48px] p-10 md:p-14 border border-white/10 shadow-2xl relative overflow-hidden group">
-          {/* Subtle Inner Mesh */}
-          <div className="absolute inset-0 bg-mesh-glow opacity-5 pointer-events-none" />
+        <div className="bg-white/5 backdrop-blur-[40px] rounded-[32px] sm:rounded-[48px] p-6 sm:p-10 md:p-14 border border-white/10 shadow-2xl relative overflow-hidden group">
+
 
           <AnimatePresence mode="wait">
             {!require2FA ? (

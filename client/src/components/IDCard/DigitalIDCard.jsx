@@ -33,7 +33,20 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
     if (side === 'front' && isFlipped) setIsFlipped(false);
     if (side === 'back' && !isFlipped) setIsFlipped(true);
     await new Promise(r => setTimeout(r, 200));
+    
+    // Temporarily un-mirror the back side for the canvas capture
+    const originalTransform = ref.current.style.transform;
+    if (side === 'back') {
+      ref.current.style.transform = 'none';
+    }
+
     const dataUrl = await toPng(ref.current, { cacheBust: true, pixelRatio: 3 });
+    
+    // Restore original transform
+    if (side === 'back') {
+      ref.current.style.transform = originalTransform;
+    }
+
     const link = document.createElement('a');
     link.download = `E-ID-${employee.name.replace(/\s+/g, '-')}-${side}.png`;
     link.href = dataUrl;
@@ -59,7 +72,7 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
   return (
     <div className="flex flex-col items-center gap-6 md:gap-10 w-full">
       <div
-        className="relative perspective-1000 cursor-pointer"
+        className="relative perspective-1000 cursor-pointer flex items-center justify-center"
         style={{ 
           width: 400 * scale, 
           height: 620 * scale,
@@ -73,7 +86,7 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
             width: 400, 
             height: 620,
             transform: `scale(${scale})`,
-            transformOrigin: 'top left'
+            transformOrigin: 'center'
           }}
           transition={{ duration: 0.9, type: 'spring', stiffness: 100, damping: 20 }}
           className="relative preserve-3d"
@@ -158,7 +171,7 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
                     overflow: 'hidden',
                   }}>
                     <img
-                      src={employee.avatar || '/assets/admin_dp.jpg'}
+                      src={employee.avatar ? (employee.avatar.startsWith('http') || employee.avatar.startsWith('data:') ? employee.avatar : `${API_URL.replace('/api', '')}${employee.avatar}`) : '/assets/admin_dp.jpg'}
                       alt={employee.name}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />

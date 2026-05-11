@@ -112,35 +112,37 @@ const AdminTasks = () => {
   );
 
   return (
-    <div className="w-full h-full flex flex-col p-6 md:p-10 space-y-8 animate-in fade-in duration-1000 overflow-y-auto custom-scrollbar">
+    <div className="w-full h-full flex flex-col p-4 md:p-10 space-y-6 md:space-y-8 animate-in fade-in duration-1000 overflow-y-auto custom-scrollbar">
       {/* 1. FUTURISTIC COMMAND HEADER */}
-      <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 bg-slate-950 p-8 md:p-12 rounded-[40px] relative overflow-hidden shadow-2xl border border-white/5">
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-600/10 blur-[100px] rounded-full -mr-40 -mt-40" />
+      <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8 bg-slate-950 p-6 md:p-12 rounded-[32px] md:rounded-[40px] relative overflow-hidden shadow-2xl border border-white/5">
+        <div className="absolute top-0 right-0 w-[300px] md:w-[400px] h-[300px] md:h-[400px] bg-indigo-600/10 blur-[80px] md:blur-[100px] rounded-full -mr-20 md:-mr-40 -mt-20 md:-mt-40" />
         
         <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-4">
-             <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-600/20">
-                <Target size={24} className="text-white" />
+          <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
+             <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-600 rounded-xl md:rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-600/20">
+                <Target size={20} className="text-white md:hidden" />
+                <Target size={24} className="text-white hidden md:block" />
              </div>
-             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">
+             <h1 className="text-2xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">
                 Work <span className="text-indigo-500">Assignment</span>
              </h1>
           </div>
-          <p className="text-slate-400 text-[14px] font-bold tracking-[0.05em] max-w-md">
+          <p className="text-slate-400 text-[12px] md:text-[14px] font-bold tracking-[0.05em] max-w-md">
              Global mission dispatch and tactical task management for the NexovTech specialist roster.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 relative z-10">
-           <div className="flex flex-col items-end pr-6 border-r border-white/10">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Queue Load</span>
-              <span className="text-2xl font-black text-white">{stats.total}</span>
+        <div className="flex flex-row items-center justify-between lg:justify-end gap-4 md:gap-4 relative z-10">
+           <div className="flex flex-col items-start lg:items-end pr-4 md:pr-6 border-r border-white/10">
+              <span className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Queue Load</span>
+              <span className="text-xl md:text-2xl font-black text-white">{stats.total}</span>
            </div>
            <button 
              onClick={() => setShowAssign(true)}
-             className="h-14 px-8 bg-white text-slate-950 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-indigo-500 hover:text-white transition-all shadow-2xl shadow-white/5 flex items-center gap-3 group"
+             className="h-12 md:h-14 px-6 md:px-8 bg-white text-slate-950 rounded-xl md:rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] hover:bg-indigo-500 hover:text-white transition-all shadow-2xl shadow-white/5 flex items-center gap-2 md:gap-3 group"
            >
-             <Zap size={18} className="group-hover:scale-110 transition-transform fill-current" /> 
+             <Zap size={16} className="md:hidden group-hover:scale-110 transition-transform fill-current" />
+             <Zap size={18} className="hidden md:block group-hover:scale-110 transition-transform fill-current" /> 
              <span>Dispatch Mission</span>
            </button>
         </div>
@@ -155,13 +157,13 @@ const AdminTasks = () => {
       </div>
 
       {/* 3. TASK CONTROLS */}
-      <section className="flex flex-col md:flex-row items-center justify-between gap-6 bg-white/40 backdrop-blur-xl p-4 rounded-[32px] border border-white shadow-xl shadow-slate-900/5">
-         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide w-full md:w-auto">
+      <section className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6 bg-white/40 backdrop-blur-xl p-3 md:p-4 rounded-[24px] md:rounded-[32px] border border-white shadow-xl shadow-slate-900/5">
+         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full md:w-auto pb-1 md:pb-0">
             {['all', 'todo', 'in progress', 'review', 'completed'].map((f) => (
               <button 
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                className={`px-4 md:px-6 py-2.5 md:py-3 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                   filter === f ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-900 hover:bg-white'
                 }`}
               >
@@ -170,7 +172,7 @@ const AdminTasks = () => {
             ))}
          </div>
 
-         <div className="flex items-center gap-4 w-full md:w-auto">
+         <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">
                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                <input 
@@ -178,12 +180,12 @@ const AdminTasks = () => {
                  placeholder="Search mission..." 
                  value={search}
                  onChange={(e) => setSearch(e.target.value)}
-                 className="w-full h-12 pl-10 pr-4 bg-white border border-slate-100 rounded-2xl text-[12px] font-bold focus:outline-none focus:border-indigo-500 transition-all"
+                 className="w-full h-11 md:h-12 pl-10 pr-4 bg-white border border-slate-100 rounded-xl md:rounded-2xl text-[12px] font-bold focus:outline-none focus:border-indigo-500 transition-all"
                />
             </div>
-            <div className="flex bg-white/60 p-1 rounded-xl border border-slate-100 shadow-sm">
-               <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400'}`}><LayoutGrid size={18} /></button>
-               <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400'}`}><List size={18} /></button>
+            <div className="flex bg-white/60 p-1 rounded-xl border border-slate-100 shadow-sm shrink-0">
+               <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400'}`}><LayoutGrid size={16} /></button>
+               <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400'}`}><List size={16} /></button>
             </div>
          </div>
       </section>
@@ -212,10 +214,10 @@ const AdminTasks = () => {
                initial={{ opacity: 0, scale: 0.95, y: 20 }} 
                animate={{ opacity: 1, scale: 1, y: 0 }} 
                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-               className="relative w-full max-w-lg glass-card !p-10 shadow-2xl z-10 max-h-[90vh] overflow-y-auto scrollbar-hide border-white"
+               className="relative w-full max-w-lg glass-card !p-6 md:!p-10 shadow-2xl z-10 max-h-[90vh] overflow-y-auto no-scrollbar border-white rounded-[32px] md:rounded-[40px]"
              >
-                <div className="flex justify-between items-center mb-8">
-                   <h2 className="text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">Dispatch Mission</h2>
+                <div className="flex justify-between items-center mb-6 md:mb-8">
+                   <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none">Dispatch Mission</h2>
                    <button onClick={() => setShowAssign(false)} className="w-10 h-10 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-xl transition-all flex items-center justify-center"><X size={20} /></button>
                 </div>
 
@@ -340,7 +342,7 @@ const AdminTasks = () => {
 
 /* ── KPI Node ── */
 const KPICard = ({ title, value, icon: Icon, accent }) => (
-  <div className="glass-card !p-6 flex items-center gap-6 group hover:scale-[1.02] transition-all border-white shadow-xl shadow-slate-900/5">
+  <div className="glass-card !p-4 md:!p-6 flex items-center gap-4 md:gap-6 group hover:scale-[1.02] transition-all border-white shadow-xl shadow-slate-900/5">
      <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform group-hover:rotate-6" style={{ backgroundColor: `${accent}15`, color: accent }}>
         <Icon size={28} strokeWidth={2.5} />
      </div>
@@ -412,7 +414,11 @@ const TaskItem = ({ task, onDelete, viewMode }) => {
           <div className="flex items-center justify-between">
              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl overflow-hidden border-2 border-white shadow-lg shrink-0">
-                   <img src={task.assignedUser?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${task.assignedUser?.name}`} alt="" />
+                 <img 
+                   src={task.assignedUser?.avatar ? (task.assignedUser.avatar.startsWith('http') ? task.assignedUser.avatar : `${API_URL.replace('/api', '')}${task.assignedUser.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${task.assignedUser?.name}`} 
+                   alt="" 
+                   className="w-full h-full object-cover"
+                 />
                 </div>
                 <div className="flex flex-col min-w-0">
                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Specialist</span>

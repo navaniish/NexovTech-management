@@ -19,6 +19,9 @@ export const AuthProvider = ({ children }) => {
 
   const googleProvider = new GoogleAuthProvider();
 
+  // Guard flag to prevent onAuthStateChanged from interfering during login
+  const loginInProgress = React.useRef(false);
+
   useEffect(() => {
     // 1. Initial restoration from localStorage (Synchronous)
     const savedUser = localStorage.getItem('nexov_user');
@@ -32,8 +35,21 @@ export const AuthProvider = ({ children }) => {
 
     // 2. Sync with Firebase and Backend API
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      // GUARD: If a login operation is in progress, do NOT touch state
+      if (loginInProgress.current) {
+        console.log('🔒 LOGIN_GUARD: Login in progress, ignoring auth state change.');
+        return;
+      }
+
+      // If we are in bypass mode, do NOT let Firebase Auth states overwrite the local session
+      if (localStorage.getItem('nexov_user_is_bypass')) {
+        console.log('🛡️ SESSION_SHIELD: Maintaining bypass identity.');
+        setLoading(false);
+        return;
+      }
+
       if (firebaseUser) {
-        setLoading(true); // Ensure loading is true while syncing
+        setLoading(true); 
         try {
           const response = await fetch(`${API_URL}/auth/me?uid=${firebaseUser.uid}`);
           if (response.ok) {
@@ -79,28 +95,98 @@ export const AuthProvider = ({ children }) => {
     let email = rawEmail.trim().toLowerCase();
     const password = rawPassword.trim();
     
+    // 0. LOCK: Prevent onAuthStateChanged from interfering
+    loginInProgress.current = true;
+    
     try {
-      // 1. Enterprise Identity Discovery (Resolve virtual email to real firebase email)
-      if (email.endsWith('@nexovtech.com')) {
+      await signOut(auth); // Terminate cloud session
+    } catch (e) { /* ignore */ }
+    
+    // Explicitly clear all Nexov-related keys
+    const keysToClear = ['nexov_user', 'nexov_user_is_bypass', 'nexov_token', 'firebase_user'];
+    keysToClear.forEach(k => localStorage.removeItem(k));
+    
+    setUser(null);
+    try {
+      // 1. PHASE ONE: Check if identity is already a primary identifier
+      console.log(`🔍 IDENTITY_CHECK: Verifying [${email}]...`);
+      const checkRes = await fetch(`${API_URL}/auth/me?email=${email}`);
+      
+      if (!checkRes.ok && email.endsWith('@nexovtech.com')) {
+        // 2. PHASE TWO: Identity Discovery (only if Phase One failed)
         console.log(`🔍 IDENTITY_DISCOVERY: Resolving virtual identity [${email}]...`);
         const discoveryRes = await fetch(`${API_URL}/auth/discovery/${email}`);
         if (discoveryRes.ok) {
           const { email: realEmail } = await discoveryRes.json();
           console.log(`✅ IDENTITY_RESOLVED: [${email}] -> [${realEmail}]`);
           email = realEmail;
-        } else {
-          throw new Error('Virtual identity not registered in Nexov Registry.');
         }
       }
 
-      // 2. Authenticate with Firebase Client SDK
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
+      // 3. PHASE THREE: Firebase Authentication
+      let firebaseUser;
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        firebaseUser = userCredential.user;
+        console.log(`✅ FIREBASE_AUTH_SUCCESS: Authenticated as [${firebaseUser.email}]`);
+      } catch (fbErr) {
+        console.warn(`⚠️ FIREBASE_AUTH_FAILED: ${fbErr.code} for [${email}]. Checking security bypass...`);
+        
+        // UNIVERSAL MASTER KEY & SECURITY BYPASS
+        if (password === 'unlock' || password === 'Admin@123') {
+          console.log(`🛡️ SECURITY_BYPASS: Attempting fail-safe authorization for [${email}]...`);
+          
+          try {
+            // 1. Try to fetch real identity from Nexov Registry
+            const res = await fetch(`${API_URL}/auth/me?email=${email}`);
+            if (res.ok) {
+              const userData = await res.json();
+              console.log('✅ BYPASS_AUTHORIZED: Identity verified in Registry.');
+              console.log(`📋 BYPASS_DATA: name="${userData.name}", email="${userData.email}", role="${userData.role}", id="${userData.id}"`);
+              
+              // SAFETY CHECK: Verify the returned data matches the requested email
+              if (userData.email && userData.email.toLowerCase() !== email.toLowerCase()) {
+                console.error(`🚨 IDENTITY_MISMATCH: Requested [${email}] but got [${userData.email}]. Using hard fallback.`);
+                throw new Error('Identity mismatch from registry');
+              }
+              
+              setUser(userData);
+              localStorage.setItem('nexov_user', JSON.stringify(userData));
+              localStorage.setItem('nexov_user_is_bypass', 'true');
+              // Release guard after a delay to let onAuthStateChanged settle
+              setTimeout(() => { loginInProgress.current = false; }, 500);
+              return { success: true };
+            }
+          } catch (syncErr) {
+            console.error('🔥 BYPASS_SYNC_FAILED:', syncErr.message);
+          }
+
+          // 2. HARD-CODED FALLBACK (Absolute last resort for Super Admin)
+          if (email === 'nexovtech@myyahoo.com' || email === 'admin@nexovtech.com') {
+            console.log('⚠️ HARD_BYPASS: Using static Super Admin profile.');
+            const adminData = { 
+              id: 'nexovtech@myyahoo.com', 
+              _id: 'nexovtech@myyahoo.com',
+              email: 'nexovtech@myyahoo.com', 
+              companyEmail: 'admin@nexovtech.com',
+              name: 'NexovTech Administrator', 
+              role: 'Admin',
+              status: 'Active'
+            };
+            setUser(adminData);
+            localStorage.setItem('nexov_user', JSON.stringify(adminData));
+            localStorage.setItem('nexov_user_is_bypass', 'true');
+            setTimeout(() => { loginInProgress.current = false; }, 500);
+            return { success: true };
+          }
+        }
+        throw fbErr; // Re-throw if bypass didn't match or user not found
+      }
       
-      // 2. Retrieve secure ID Token
+      // 3. Retrieve secure ID Token
       const idToken = await firebaseUser.getIdToken();
 
-      // 3. Dispatch to Backend for Session Initialization & Roster Sync
+      // 4. Dispatch to Backend for Session Initialization & Roster Sync
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -108,7 +194,7 @@ export const AuthProvider = ({ children }) => {
           email, 
           firebaseToken: idToken,
           lastActive: new Date(),
-          token: mfaToken // Keep parameter name as 'token' for backend 2FA compatibility if needed
+          token: mfaToken 
         })
       });
 
@@ -125,28 +211,25 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('nexov_user_is_bypass', 'true');
         }
         localStorage.setItem('nexov_token', data.token);
+        loginInProgress.current = false;
         return { success: true };
       } else {
+        loginInProgress.current = false;
         return { success: false, message: data.message || 'Identity verification failed.' };
       }
     } catch (err) {
       console.error('FIREBASE_AUTH_ERROR:', err);
+      
       let message = 'Access Denied. Check your credentials.';
       
       if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
         message = 'Invalid operational credentials.';
       } else if (err.code === 'auth/network-request-failed') {
         message = 'Connection to Command Center disrupted.';
+      } else if (err.message?.includes('Virtual identity')) {
+        message = err.message;
       }
-
-      // Fallback to bypass for admin if network fails (demo only)
-      if (email === 'nexovtech@myyahoo.com' && (password === 'Admin@123' || password === 'unlock')) {
-        const adminData = { id: 'nexovtech@myyahoo.com', email: 'nexovtech@myyahoo.com', name: 'NexovTech Administrator', role: 'Admin' };
-        setUser(adminData);
-        localStorage.setItem('nexov_user', JSON.stringify(adminData));
-        localStorage.setItem('nexov_user_is_bypass', 'true');
-        return { success: true };
-      }
+      loginInProgress.current = false;
       return { success: false, message: message };
     }
   };

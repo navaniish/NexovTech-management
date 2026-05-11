@@ -58,9 +58,14 @@ const fallbackDb = {
       // Simple query support for common fields
       if (!db) throw new Error('Firestore DB handle is missing');
       let ref = db.collection(collection);
-      if (query.email) ref = ref.where('email', '==', query.email);
-      if (query.firebaseUid) ref = ref.where('firebaseUid', '==', query.firebaseUid);
-      if (query.uid) ref = ref.where('firebaseUid', '==', query.uid);
+      let hasFilter = false;
+      if (query.email) { ref = ref.where('email', '==', query.email); hasFilter = true; }
+      if (query.firebaseUid) { ref = ref.where('firebaseUid', '==', query.firebaseUid); hasFilter = true; }
+      if (query.uid) { ref = ref.where('firebaseUid', '==', query.uid); hasFilter = true; }
+      if (query.companyEmail) { ref = ref.where('companyEmail', '==', query.companyEmail); hasFilter = true; }
+      
+      // SAFETY: Never query without a filter — it returns random documents
+      if (!hasFilter) throw new Error('No supported query filter provided');
       
       const snapshot = await ref.limit(1).get();
       if (!snapshot.empty) {
@@ -94,8 +99,9 @@ const fallbackDb = {
   // SAVE / UPDATE
   save: async (collection, item) => {
     try {
-      const id = item.firebaseUid || item.id || item.email || (db ? db.collection(collection).doc().id : `${Date.now()}_${Math.random().toString(36).substr(2, 5)}`);
-      if (!item.id && !item.firebaseUid && !item.email) item.id = id;
+      // CRITICAL: Never use email as Firestore document ID — it creates ghost duplicates
+      const id = item.firebaseUid || (item.id && !item.id.includes('@') ? item.id : null) || (db ? db.collection(collection).doc().id : `${Date.now()}_${Math.random().toString(36).substr(2, 5)}`);
+      if (!item.id) item.id = id;
       
       if (!db) throw new Error('DATABASE_OFFLINE: No Firestore handle found. Please check Netlify Environment Variables.');
       await db.collection(collection).doc(id).set(item, { merge: true });

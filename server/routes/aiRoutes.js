@@ -5,10 +5,15 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const client = new OpenAI({
-  baseURL: process.env.AI_BASE_URL || "https://api.nexovtech.ai/v1",
-  apiKey: process.env.AI_API_KEY
-});
+let client;
+try {
+  client = new OpenAI({
+    baseURL: process.env.AI_BASE_URL || "https://api.nexovtech.ai/v1",
+    apiKey: process.env.AI_API_KEY || 'placeholder'
+  });
+} catch (e) {
+  console.warn('⚠️ AI module offline: Missing API key.');
+}
 
 // SYSTEM PROMPT: Defining the NexovTech AI Persona
 // SYSTEM PROMPT: Defining the NexovTech AI Persona

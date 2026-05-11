@@ -568,7 +568,11 @@ const Settings = () => {
                               <div className="flex items-center gap-4">
                                  <div className="w-14 h-14 rounded-2xl bg-slate-900 p-0.5 shadow-md">
                                     <div className="w-full h-full rounded-[14px] overflow-hidden bg-slate-800">
-                                       <img src={member.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`} alt="" className="w-full h-full object-cover" />
+                                       <img 
+                                         src={member.avatar ? (member.avatar.startsWith('http') ? member.avatar : `${API_URL.replace('/api', '')}${member.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`} 
+                                         alt="" 
+                                         className="w-full h-full object-cover" 
+                                       />
                                     </div>
                                  </div>
                                  <div className="min-w-0">
@@ -611,11 +615,14 @@ const Settings = () => {
                className="relative w-full max-w-lg glass-card !p-0 shadow-2xl overflow-hidden rounded-[48px] border-none"
              >
                 <div className="p-10 bg-slate-900 text-white relative overflow-hidden">
-                   <div className="absolute inset-0 bg-mesh-glow opacity-20" />
+
                    <div className="relative z-10 flex items-center gap-6">
                       <div className="w-20 h-20 rounded-[28px] bg-white p-1 shadow-2xl">
                          <div className="w-full h-full rounded-[24px] overflow-hidden bg-slate-100">
-                            <img src={selectedMember.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedMember.name}`} className="w-full h-full object-cover" />
+                            <img 
+                              src={selectedMember.avatar ? (selectedMember.avatar.startsWith('http') ? selectedMember.avatar : `${API_URL.replace('/api', '')}${selectedMember.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedMember.name}`} 
+                              className="w-full h-full object-cover" 
+                            />
                          </div>
                       </div>
                       <div>

@@ -1,18 +1,15 @@
 [
   {
-    "id": "d.navaneeswar@gmail.com",
+    "id": "FFEqUxw4HLo1xkvSmGhU",
     "os": "Windows 10.0.0",
-    "browser": "Chrome 147.0.0",
-    "ipAddress": "::1",
-    "location": "Local Sync",
-    "loginStatus": "Failed",
+    "browser": "Chrome 148.0.0",
+    "ipAddress": "127.0.0.1",
+    "location": "Firebase Auth",
+    "loginStatus": "Success",
     "device": "Other 0.0.0",
-    "userId": "M9k04c1c5Mein3NcwqPRE5nVqOf2",
-    "email": "d.navaneeswar@gmail.com",
-    "timestamp": {
-      "_seconds": 1778342632,
-      "_nanoseconds": 598000000
-    }
+    "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "email": "nexovtech@myyahoo.com",
+    "timestamp": "2026-05-11T20:37:50.052Z"
   },
   {
     "id": "gundasaranya2006@gmail.com",

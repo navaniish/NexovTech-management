@@ -119,22 +119,23 @@ const MyTasks = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
         <div className="space-y-2">
            <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-2xl">
-                 <Target size={24} />
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-slate-900 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-2xl">
+                 <Target size={20} className="md:hidden" />
+                 <Target size={24} className="hidden md:block" />
               </div>
               <div>
-                 <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none italic">Mission Registry</h1>
-                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Specialist Assignment Management</p>
+                 <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none italic">Mission Registry</h1>
+                 <p className="text-[9px] md:text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Specialist Assignment Management</p>
               </div>
            </div>
         </div>
         
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-2 md:gap-4">
            {['All', 'Pending', 'In Progress', 'Completed'].map((tab) => (
              <button 
                key={tab}
                onClick={() => setActiveTab(tab)}
-               className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+               className={`px-4 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
                  activeTab === tab ? 'bg-slate-900 text-white shadow-xl' : 'bg-white/50 text-slate-400 hover:bg-white hover:text-slate-600'
                }`}
              >
@@ -180,14 +181,14 @@ const MyTasks = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="glass-card p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 border-slate-100 hover:border-brand-500/30 hover:shadow-2xl transition-all group"
               >
-                <div className="flex items-start gap-8 flex-1">
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shrink-0 transition-transform group-hover:scale-110 ${
+                <div className="flex items-start gap-4 md:gap-8 flex-1">
+                  <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shrink-0 transition-transform group-hover:scale-110 ${
                     task.status === 'Completed' ? 'bg-emerald-50 text-emerald-500' : 
                     task.status === 'In Progress' ? 'bg-brand-50 text-brand-600' : 'bg-amber-50 text-amber-500'
                   }`}>
-                    {updating === (task.id || task._id) ? <Loader2 size={24} className="animate-spin" /> : 
-                     task.status === 'Completed' ? <CheckCircle2 size={24} /> : 
-                     task.status === 'In Progress' ? <Zap size={24} /> : <Clock size={24} />}
+                    {updating === (task.id || task._id) ? <Loader2 size={20} className="animate-spin" /> : 
+                     task.status === 'Completed' ? <CheckCircle2 size={20} /> : 
+                     task.status === 'In Progress' ? <Zap size={20} /> : <Clock size={20} />}
                   </div>
                   
                   <div className="space-y-2 min-w-0">
@@ -236,7 +237,7 @@ const MyTasks = () => {
                     value={task.status} 
                     onChange={e => handleStatusChange(task.id || task._id, e.target.value)}
                     disabled={updating === (task.id || task._id)}
-                    className="flex-1 md:flex-none text-[11px] font-black px-4 py-3 rounded-2xl bg-slate-900 text-white outline-none cursor-pointer hover:bg-brand-600 transition-all disabled:opacity-50 appearance-none min-w-[140px] text-center"
+                    className="flex-1 md:flex-none text-[10px] md:text-[11px] font-black px-4 py-3 rounded-xl md:rounded-2xl bg-slate-900 text-white outline-none cursor-pointer hover:bg-brand-600 transition-all disabled:opacity-50 appearance-none min-w-[120px] md:min-w-[140px] text-center"
                   >
                     <option>Pending</option>
                     <option>In Progress</option>
@@ -283,7 +284,7 @@ const MyTasks = () => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-xl rounded-[40px] p-10 shadow-2xl z-10 bg-white border border-slate-100"
+              className="relative w-full max-w-xl rounded-[32px] md:rounded-[40px] p-6 md:p-10 shadow-2xl z-10 bg-white border border-slate-100"
             >
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">

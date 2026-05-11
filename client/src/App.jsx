@@ -134,7 +134,7 @@ function App() {
       <AuthProvider>
         <Router>
           <ChatProvider>
-            <FuturisticBackground />
+            {/* <FuturisticBackground /> */}
             <AIAssistant />
             <AppRoutes />
           </ChatProvider>

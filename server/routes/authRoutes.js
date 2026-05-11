@@ -40,7 +40,15 @@ router.post('/upload-avatar/:id', upload.single('avatar'), async (req, res) => {
 // GET /auth/me — Sync user data from UID
 router.get('/me', async (req, res) => {
   const { uid, email } = req.query;
-  const user = (await fallbackDb.findOne('users', { firebaseUid: uid })) || (await fallbackDb.findOne('users', { email: email?.toLowerCase() }));
+  
+  let user;
+  if (email) {
+    // 1. Explicit Email Lookup (High Priority for Bypass/Discovery)
+    user = await fallbackDb.findOne('users', { email: email.toLowerCase() });
+  } else if (uid) {
+    // 2. UID Lookup (Standard Auth Sync)
+    user = await fallbackDb.findOne('users', { firebaseUid: uid });
+  }
   
   if (user) {
     if (user.email === 'nexovtech@myyahoo.com') user.role = 'Admin';
@@ -75,8 +83,12 @@ router.post('/register', async (req, res) => {
 router.get('/discovery/:companyEmail', async (req, res) => {
   try {
     const { companyEmail } = req.params;
+    console.log(`🔍 DISCOVERY_QUERY: [${companyEmail}]`);
     const user = await fallbackDb.findOne('users', { companyEmail: companyEmail.toLowerCase() });
-    if (!user) return res.status(404).json({ message: 'Virtual identity not found' });
+    if (!user) {
+      console.warn(`⚠️ DISCOVERY_MISSING: No mapping found for [${companyEmail}]`);
+      return res.status(404).json({ message: 'Virtual identity not found' });
+    }
     res.json({ email: user.email });
   } catch (err) {
     res.status(500).json({ message: 'Discovery service offline' });
@@ -177,7 +189,11 @@ router.post('/login', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        phone: user.phone,
         avatar: user.avatar,
+        address: user.address,
+        authorizedSign: user.authorizedSign,
+        teamSign: user.teamSign,
         twoFactorEnabled: user.twoFactorEnabled
       }
     });
@@ -276,13 +292,16 @@ router.put('/update-financials/:id', async (req, res) => {
 
 // Update Profile (Admin)
 router.put('/update-profile/:id', async (req, res) => {
-  const { name, role, email, phone, avatar } = req.body;
+  const { name, role, email, phone, avatar, address, authorizedSign, teamSign } = req.body;
   const updates = {};
   if (name !== undefined) updates.name = name;
   if (role !== undefined) updates.role = role;
   if (email !== undefined) updates.email = email;
   if (phone !== undefined) updates.phone = phone;
   if (avatar !== undefined) updates.avatar = avatar;
+  if (address !== undefined) updates.address = address;
+  if (authorizedSign !== undefined) updates.authorizedSign = authorizedSign;
+  if (teamSign !== undefined) updates.teamSign = teamSign;
 
   try {
     const updated = await fallbackDb.update('users', req.params.id, updates);
