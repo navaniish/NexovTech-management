@@ -321,7 +321,7 @@ const Settings = () => {
                                  <Loader2 className="animate-spin text-brand-500" size={32} />
                                ) : (
                                  <img 
-                                   src={user?.avatar ? (user.avatar.startsWith('http') ? user.avatar : `${API_URL}${user.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`} 
+                                   src={user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL.replace('/api', '')}${user.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`} 
                                    alt="Avatar" 
                                    className="w-full h-full object-cover" 
                                  />
@@ -573,7 +573,7 @@ const Settings = () => {
                                  <div className="w-14 h-14 rounded-2xl bg-slate-900 p-0.5 shadow-md">
                                     <div className="w-full h-full rounded-[14px] overflow-hidden bg-slate-800">
                                        <img 
-                                         src={member.avatar ? (member.avatar.startsWith('http') ? member.avatar : `${API_URL.replace('/api', '')}${member.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`} 
+                                         src={member.avatar ? (member.avatar.startsWith('http') || member.avatar.startsWith('data:') ? member.avatar : `${API_URL.replace('/api', '')}${member.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`} 
                                          alt="" 
                                          className="w-full h-full object-cover" 
                                        />
@@ -624,7 +624,7 @@ const Settings = () => {
                       <div className="w-20 h-20 rounded-[28px] bg-white p-1 shadow-2xl">
                          <div className="w-full h-full rounded-[24px] overflow-hidden bg-slate-100">
                             <img 
-                              src={selectedMember.avatar ? (selectedMember.avatar.startsWith('http') ? selectedMember.avatar : `${API_URL.replace('/api', '')}${selectedMember.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedMember.name}`} 
+                              src={selectedMember.avatar ? (selectedMember.avatar.startsWith('http') || selectedMember.avatar.startsWith('data:') ? selectedMember.avatar : `${API_URL.replace('/api', '')}${selectedMember.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedMember.name}`} 
                               className="w-full h-full object-cover" 
                             />
                          </div>

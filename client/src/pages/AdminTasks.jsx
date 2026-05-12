@@ -415,7 +415,7 @@ const TaskItem = ({ task, onDelete, viewMode }) => {
              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl overflow-hidden border-2 border-white shadow-lg shrink-0">
                  <img 
-                   src={task.assignedUser?.avatar ? (task.assignedUser.avatar.startsWith('http') ? task.assignedUser.avatar : `${API_URL.replace('/api', '')}${task.assignedUser.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${task.assignedUser?.name}`} 
+                   src={task.assignedUser?.avatar ? (task.assignedUser.avatar.startsWith('http') || task.assignedUser.avatar.startsWith('data:') ? task.assignedUser.avatar : `${API_URL.replace('/api', '')}${task.assignedUser.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${task.assignedUser?.name}`} 
                    alt="" 
                    className="w-full h-full object-cover"
                  />

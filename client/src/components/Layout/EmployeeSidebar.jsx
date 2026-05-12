@@ -95,7 +95,7 @@ const EmployeeSidebar = ({ mobileOpen, setMobileOpen }) => {
           <div className={`flex items-center gap-4 ${isCollapsed ? 'justify-center' : 'px-4 py-3 rounded-2xl bg-white/5 border border-white/5'}`}>
             <div className="w-10 h-10 rounded-xl overflow-hidden bg-brand-600 shadow-xl relative group shrink-0 cursor-pointer">
               <img
-                src={user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL}${user.avatar}`) :
+                src={user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL.replace('/api', '')}${user.avatar}`) :
                   `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'Emp'}`}
                 alt="User"
                 className="w-full h-full object-cover"

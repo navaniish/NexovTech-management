@@ -155,7 +155,7 @@ const MyProjects = () => {
                     {(project.team || []).slice(0, 4).map((m, j) => (
                       <div key={j} className="w-10 h-10 rounded-full border-2 border-white bg-slate-100 overflow-hidden shadow-sm hover:scale-110 hover:z-10 transition-all">
                         <img 
-                          src={m.avatar ? (m.avatar.startsWith('http') || m.avatar.startsWith('data:') ? m.avatar : `${API_URL}${m.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${m.name || j}`} 
+                          src={m.avatar ? (m.avatar.startsWith('http') || m.avatar.startsWith('data:') ? m.avatar : `${API_URL.replace('/api', '')}${m.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${m.name || j}`} 
                           alt={m.name}
                           className="w-full h-full object-cover"
                         />

@@ -15,7 +15,7 @@ import { useAuth } from '../context/AuthContext';
 const SERVER_BASE = API_URL.replace('/api', '');
 const getAvatarUrl = (avatar) => {
   if (!avatar) return 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
-  if (avatar.startsWith('http')) return avatar;
+  if (avatar.startsWith('http') || avatar.startsWith('data:')) return avatar;
   return `${SERVER_BASE}${avatar}`;
 };
 
