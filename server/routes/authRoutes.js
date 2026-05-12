@@ -118,7 +118,10 @@ router.post('/login', async (req, res) => {
     }
 
     // 2. Fetch/Sync User from Registry
-    const lookupEmail = firebaseUser.email || email.toLowerCase();
+    const lookupEmail = firebaseUser.email || (email ? email.toLowerCase() : '');
+    if (!lookupEmail) {
+      return res.status(400).json({ message: 'Email identity required' });
+    }
     let user = await fallbackDb.findOne('users', { email: lookupEmail });
     
     // Virtual Email Generator
@@ -141,9 +144,14 @@ router.post('/login', async (req, res) => {
        });
     } else {
        // Update lastActive on every login/sync
-       user = await fallbackDb.update('users', user.id || user._id, {
+       const updatedUser = await fallbackDb.update('users', user.id || user._id, {
          lastActive: new Date()
        });
+       if (updatedUser) user = updatedUser;
+    }
+
+    if (!user) {
+      return res.status(500).json({ message: 'Failed to provision or retrieve user profile.' });
     }
 
     // 3. Check 2FA (TOTP)
