@@ -94,8 +94,11 @@ router.get('/verify/:qrToken', async (req, res) => {
     
     if (!card) return res.status(404).json({ message: 'Invalid or expired ID card' });
     
-    const user = await fallbackDb.findById('users', card.userId);
-    if (!user) return res.status(404).json({ message: 'Employee profile not found' });
+    const user = (await fallbackDb.findById('users', card.userId)) || 
+                 (await fallbackDb.findOne('users', { firebaseUid: card.userId })) ||
+                 (await fallbackDb.findOne('users', { email: card.email }));
+    
+    if (!user) return res.status(404).json({ message: 'Employee profile not found in registry' });
 
     res.json({
       name: user.name,

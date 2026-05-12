@@ -25,7 +25,7 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const verificationUrl = `${window.location.origin}/verify/${cardData?.qrToken}`;
+  const verificationUrl = `${window.location.origin}/#/verify/${cardData?.qrToken}`;
 
   const downloadCard = async (side = 'front') => {
     const ref = side === 'front' ? frontRef : backRef;
