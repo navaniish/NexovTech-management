@@ -200,7 +200,7 @@ const TopBar = ({ onMenuToggle }) => {
            >
               <div className="text-right hidden lg:block">
                 <p className="text-[13px] font-black text-slate-900 leading-tight uppercase tracking-tighter">
-                  {user?.name || 'Navaneeswar'}
+                  {user?.name || 'Admin User'}
                 </p>
                 <p className={`text-[9px] font-black uppercase tracking-[0.1em] ${
                   user?.role === 'Admin' ? 'text-indigo-600' : 
@@ -208,7 +208,7 @@ const TopBar = ({ onMenuToggle }) => {
                   user?.role === 'Manager' ? 'text-emerald-600' : 
                   'text-slate-400'
                 }`}>
-                  {user?.role || 'Super Admin'}
+                  {user?.role || 'Authorized'}
                 </p>
               </div>
               <div className="w-11 h-11 rounded-2xl overflow-hidden border-2 border-white shadow-xl group-hover:scale-105 transition-all duration-300">

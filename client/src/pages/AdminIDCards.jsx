@@ -10,6 +10,8 @@ import DigitalIDCard from '../components/IDCard/DigitalIDCard';
 
 import API_URL from '../config';
 import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 // Resolve avatar URLs: local paths need the backend server prefix
 const SERVER_BASE = API_URL.replace('/api', '');
@@ -29,7 +31,7 @@ const AdminIDCards = () => {
     const saved = localStorage.getItem('nexov_admin_cards');
     try { return saved ? JSON.parse(saved) : []; } catch { return []; }
   });
-  const [loading, setLoading] = useState(() => !localStorage.getItem('nexov_admin_employees'));
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [generatingId, setGeneratingId] = useState(null);
@@ -43,22 +45,41 @@ const AdminIDCards = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [empRes, cardRes] = await Promise.all([
+      // 1. Fetch from Legacy Backend
+      const [legacyEmpRes, cardRes] = await Promise.all([
         fetch(`${API_URL}/team`),
         fetch(`${API_URL}/idcard/list/all`)
       ]);
-      if (empRes.ok) {
-        const empData = await empRes.json();
-        setEmployees(empData);
-        localStorage.setItem('nexov_admin_employees', JSON.stringify(empData));
+      
+      let legacyEmployees = [];
+      if (legacyEmpRes.ok) {
+        legacyEmployees = await legacyEmpRes.json();
       }
+
+      // 2. Fetch from Firestore (Source of Truth)
+      const fsSnap = await getDocs(collection(db, 'employees'));
+      const fsEmployees = fsSnap.docs.map(d => ({ ...d.data(), id: d.id, _id: d.id }));
+
+      // 3. Merge: Prioritize Firestore, but include unique legacy users
+      const mergedEmployees = [...fsEmployees];
+      legacyEmployees.forEach(lUser => {
+        const lEmail = lUser.email?.toLowerCase();
+        // Only add from legacy if they aren't already in Firestore (prevents duplicates and respects deletions)
+        if (lEmail && !mergedEmployees.find(m => m.email?.toLowerCase() === lEmail)) {
+          mergedEmployees.push(lUser);
+        }
+      });
+
+      setEmployees(mergedEmployees);
+      localStorage.setItem('nexov_admin_employees', JSON.stringify(mergedEmployees));
+
       if (cardRes.ok) {
         const cardData = await cardRes.json();
         setCards(cardData);
         localStorage.setItem('nexov_admin_cards', JSON.stringify(cardData));
       }
     } catch (err) {
-      console.error(err);
+      console.error("Data synchronization failed:", err);
     } finally {
       setLoading(false);
     }

@@ -11,12 +11,22 @@
   },
   {
     "id": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
-    "expiryDate": "2028-05-11T20:27:42.751Z",
     "qrToken": "7bfd7f4bbdc48121da398c415bd2f030",
     "employeeId": "NXG-MLRQ6YH2",
-    "issueDate": "2026-05-11T20:27:42.751Z",
     "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
     "email": "nexovtech@myyahoo.com",
+    "status": "Active",
+    "expiryDate": "2028-05-11T00:00:00.000Z",
+    "issueDate": "2026-05-11T00:00:00.000Z"
+  },
+  {
+    "id": "WJdOgEaZ7vVThsp6SeXxIpQJONS2",
+    "qrToken": "17aa191eb53cba497b5ce8c9d3f30670",
+    "employeeId": "NXG-IPQJONS2",
+    "userId": "WJdOgEaZ7vVThsp6SeXxIpQJONS2",
+    "email": "manicharanteja.nexovtech@gmail.com",
+    "expiryDate": "2028-05-12T00:00:00.000Z",
+    "issueDate": "2026-05-12T00:00:00.000Z",
     "status": "Active"
   },
   {
@@ -35,8 +45,8 @@
     "employeeId": "NXG-BZDLA2J2",
     "userId": "yph0evdoiiTrvTbfubJWBZdlA2J2",
     "email": "manicharanteja@nexovtech.com",
-    "status": "Active",
     "expiryDate": "2028-05-11T00:00:00.000Z",
-    "issueDate": "2026-05-11T00:00:00.000Z"
+    "issueDate": "2026-05-11T00:00:00.000Z",
+    "status": "Inactive"
   }
 ]

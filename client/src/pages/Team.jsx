@@ -115,6 +115,9 @@ const MemberCard = ({ member, index, onRemove, onAssign, onViewDossier }) => (
   </motion.div>
 );
 
+import { db } from '../firebase';
+import { doc, setDoc } from 'firebase/firestore';
+
 const Team = () => {
   const [members, setMembers] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -171,13 +174,25 @@ const Team = () => {
   const handleInvite = async (e) => {
     e.preventDefault();
     try {
+      // 1. Sync with Legacy Backend
       const response = await fetch(`${API_URL}/team/invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(inviteData)
       });
+      
       if (response.ok) {
-        showNotification('Team invitation dispatched successfully.');
+        // 2. Sync with Secure Firestore Employees Registry
+        const employeeRef = doc(db, 'employees', inviteData.email.toLowerCase());
+        await setDoc(employeeRef, {
+          email: inviteData.email.toLowerCase(),
+          name: inviteData.name,
+          role: inviteData.role,
+          status: 'active',
+          invitedAt: new Date()
+        });
+
+        showNotification('Team invitation dispatched and security record initialized.');
         fetchData();
         setShowInvite(false);
         setInviteData({ name: '', email: '', role: 'Developer' });
@@ -186,6 +201,7 @@ const Team = () => {
         showNotification(data.message || 'Error inviting member', true);
       }
     } catch (err) {
+      console.error('Invite Error:', err);
       showNotification('Server connection failed.', true);
     }
   };

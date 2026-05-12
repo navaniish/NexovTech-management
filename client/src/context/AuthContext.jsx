@@ -1,304 +1,211 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged,
-  sendPasswordResetEmail,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  signInWithEmailAndPassword,
   GoogleAuthProvider
 } from 'firebase/auth';
-import { auth } from '../firebase';
-import API_URL from '../config';
+import { auth, db } from '../firebase';
+import { collection, doc, getDoc, onSnapshot, query, where, getDocs, limit } from 'firebase/firestore';
+import toast from 'react-hot-toast';
+import API_BASE from '../config';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('nexov_user');
-    try { return saved ? JSON.parse(saved) : null; } catch { return null; }
+    try {
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
-  const [loading, setLoading] = useState(() => !localStorage.getItem('nexov_user'));
+  const [loading, setLoading] = useState(true);
 
   const googleProvider = new GoogleAuthProvider();
+  googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-  // Guard flag to prevent onAuthStateChanged from interfering during login
-  const loginInProgress = React.useRef(false);
-
-  useEffect(() => {
-    // 1. Initial restoration already handled by useState initializer
-    if (!user) {
-      const savedUser = localStorage.getItem('nexov_user');
-      if (savedUser) {
-        try {
-          setUser(JSON.parse(savedUser));
-          setLoading(false);
-        } catch (e) {
-          localStorage.removeItem('nexov_user');
-        }
-      }
+  // Helper to verify employee in Firestore
+  const verifyEmployee = async (email) => {
+    const isRootEmail = email.toLowerCase() === 'nexovtech@myyahoo.com';
+    console.log(`[AUTH] Verifying Identity: ${email} (isRoot: ${isRootEmail})`);
+    
+    if (!isRootEmail && !email.toLowerCase().endsWith('.nexovtech@gmail.com')) {
+      return { authorized: false, message: "Invalid format. Use name.nexovtech@gmail.com" };
     }
 
-    // 2. Sync with Firebase and Backend API
-    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
-      // GUARD: If a login operation is in progress, do NOT touch state
-      if (loginInProgress.current) {
-        console.log('🔒 LOGIN_GUARD: Login in progress, ignoring auth state change.');
-        return;
+    try {
+      // Use query instead of getDoc because Document ID might be a UID, not the email
+      const q = query(collection(db, 'employees'), where('email', '==', email.toLowerCase()));
+      const querySnap = await getDocs(q);
+      
+      console.log(`[AUTH] Query results found: ${querySnap.size}`);
+
+      if (!querySnap.empty) {
+        const docSnap = querySnap.docs[0];
+        const employeeData = docSnap.data();
+        if (employeeData.status === 'inactive' && !isRootEmail) {
+          return { authorized: false, message: "Access Denied — Your account is currently suspended." };
+        }
+        return { authorized: true, data: { ...employeeData, docId: docSnap.id } };
       }
 
-      // If we are in bypass mode, do NOT let Firebase Auth states overwrite the local session
-      if (localStorage.getItem('nexov_user_is_bypass')) {
-        console.log('🛡️ SESSION_SHIELD: Maintaining bypass identity.');
-        setLoading(false);
-        return;
+      console.warn(`[AUTH] No Firestore record for ${email}. Checking legacy bridge...`);
+      
+      // Legacy Bridge: Check traditional backend database
+      try {
+        const legacyRes = await fetch(`${API_BASE}/team`);
+        if (legacyRes.ok) {
+          const legacyTeam = await legacyRes.json();
+          const legacyUser = legacyTeam.find(e => e.email?.toLowerCase() === email.toLowerCase());
+          
+          if (legacyUser) {
+            console.log("[AUTH] Original account identified in legacy bridge.");
+            return { 
+              authorized: true, 
+              data: { 
+                ...legacyUser, 
+                name: legacyUser.name || legacyUser.username,
+                role: legacyUser.role || 'Admin',
+                status: 'active',
+                isRoot: isRootEmail 
+              } 
+            };
+          }
+        }
+      } catch (legacyErr) {
+        console.error("[AUTH] Legacy bridge synchronization failed:", legacyErr);
+      }
+
+      // Fallback for Root Admin if record doesn't exist
+      if (isRootEmail) {
+        return { 
+          authorized: true, 
+          data: { name: 'Nexov Admin', role: 'Admin', status: 'active', isRoot: true } 
+        };
+      }
+
+      return { authorized: false, message: "Access Denied — You are not an authorized Nexovtech employee." };
+    } catch (error) {
+      console.error("[AUTH] Firestore Permission/Query Error:", error);
+      if (isRootEmail) {
+        return { 
+          authorized: true, 
+          data: { name: 'Nexov Admin', role: 'Admin', status: 'active', isRoot: true } 
+        };
+      }
+      return { authorized: false, message: "Security check failed. Please try again." };
+    }
+  };
+
+  useEffect(() => {
+    // 2. Auth State Listener
+    let unsubscribeSnapshot = null;
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+        unsubscribeSnapshot = null;
       }
 
       if (firebaseUser) {
-        // Only show loader if we don't have an optimistic user already
-        if (!user) setLoading(true); 
-        try {
-          const response = await fetch(`${API_URL}/auth/me?uid=${firebaseUser.uid}`);
-          if (response.ok) {
-            const userData = await response.json();
-            const finalUser = { ...userData, firebaseUid: firebaseUser.uid };
-            setUser(finalUser);
-            localStorage.setItem('nexov_user', JSON.stringify(finalUser));
-          } else {
-            // Fallback for new users or sync failures
-            const savedUser = localStorage.getItem('nexov_user');
-            if (!savedUser) {
-              const defaultRole = firebaseUser.email === 'nexovtech@myyahoo.com' ? 'Admin' : 'Employee';
-              const fallbackUser = { 
-                email: firebaseUser.email, 
-                uid: firebaseUser.uid, 
-                firebaseUid: firebaseUser.uid,
-                name: firebaseUser.displayName || firebaseUser.email.split('@')[0],
-                role: defaultRole,
-                avatar: firebaseUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${firebaseUser.email}`
-              };
-              setUser(fallbackUser);
-              localStorage.setItem('nexov_user', JSON.stringify(fallbackUser));
-            }
+        setLoading(true);
+        const verification = await verifyEmployee(firebaseUser.email);
+        
+        if (verification.authorized) {
+          const userData = {
+            ...verification.data,
+            displayName: firebaseUser.displayName || verification.data.name,
+            photoURL: firebaseUser.photoURL || verification.data.avatar,
+            email: firebaseUser.email,
+            firebaseUid: firebaseUser.uid,
+            isRoot: firebaseUser.email === 'nexovtech@myyahoo.com'
+          };
+          setUser(userData);
+          localStorage.setItem('nexov_user', JSON.stringify(userData));
+
+          if (!userData.isRoot && verification.data.docId) {
+            const docRef = doc(db, 'employees', verification.data.docId);
+            unsubscribeSnapshot = onSnapshot(docRef, (doc) => {
+              if (!doc.exists() || doc.data().status === 'inactive') {
+                logout();
+                toast.error("Session Revoked — Access privileges updated.", { id: 'session-revoked' });
+              } else {
+                const newData = doc.data();
+                setUser(prev => ({ ...prev, ...newData }));
+              }
+            });
           }
-        } catch (err) {
-          console.error('Session sync failed:', err);
-        } finally {
-          setLoading(false);
+        } else {
+          await logout();
+          toast.error(verification.message, { id: 'auth-denied' });
         }
       } else {
-        if (!localStorage.getItem('nexov_user_is_bypass')) {
-          setUser(null);
+        // IMPORTANT: Only clear if not a root admin session
+        // This prevents the Firebase listener from wiping the manual admin bypass
+        setUser(prev => {
+          if (prev?.isRoot) return prev; 
           localStorage.removeItem('nexov_user');
-        }
-        setLoading(false);
+          return null;
+        });
       }
+      setLoading(false);
     });
 
-    return () => unsubscribeAuth();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeSnapshot) unsubscribeSnapshot();
+    };
   }, []);
-
-  const login = async (rawEmail, rawPassword, mfaToken = null) => {
-    let email = rawEmail.trim().toLowerCase();
-    const password = rawPassword.trim();
-    
-    // 0. LOCK: Prevent onAuthStateChanged from interfering
-    loginInProgress.current = true;
-    
-    try {
-      await signOut(auth); // Terminate cloud session
-    } catch (e) { /* ignore */ }
-    
-    // Explicitly clear all Nexov-related keys
-    const keysToClear = ['nexov_user', 'nexov_user_is_bypass', 'nexov_token', 'firebase_user'];
-    keysToClear.forEach(k => localStorage.removeItem(k));
-    
-    setUser(null);
-    try {
-      // 1. PHASE ONE: Check if identity is already a primary identifier
-      console.log(`🔍 IDENTITY_CHECK: Verifying [${email}]...`);
-      const checkRes = await fetch(`${API_URL}/auth/me?email=${email}`);
-      
-      if (!checkRes.ok && email.endsWith('@nexovtech.com')) {
-        // 2. PHASE TWO: Identity Discovery (only if Phase One failed)
-        console.log(`🔍 IDENTITY_DISCOVERY: Resolving virtual identity [${email}]...`);
-        const discoveryRes = await fetch(`${API_URL}/auth/discovery/${email}`);
-        if (discoveryRes.ok) {
-          const { email: realEmail } = await discoveryRes.json();
-          console.log(`✅ IDENTITY_RESOLVED: [${email}] -> [${realEmail}]`);
-          email = realEmail;
-        }
-      }
-
-      // 3. PHASE THREE: Firebase Authentication
-      let firebaseUser;
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        firebaseUser = userCredential.user;
-        console.log(`✅ FIREBASE_AUTH_SUCCESS: Authenticated as [${firebaseUser.email}]`);
-      } catch (fbErr) {
-        console.warn(`⚠️ FIREBASE_AUTH_FAILED: ${fbErr.code} for [${email}]. Checking security bypass...`);
-        
-        // UNIVERSAL MASTER KEY & SECURITY BYPASS
-        if (password === 'unlock' || password === 'Admin@123') {
-          console.log(`🛡️ SECURITY_BYPASS: Attempting fail-safe authorization for [${email}]...`);
-          
-          try {
-            // 1. Try to fetch real identity from Nexov Registry
-            const res = await fetch(`${API_URL}/auth/me?email=${email}`);
-            if (res.ok) {
-              const userData = await res.json();
-              console.log('✅ BYPASS_AUTHORIZED: Identity verified in Registry.');
-              console.log(`📋 BYPASS_DATA: name="${userData.name}", email="${userData.email}", role="${userData.role}", id="${userData.id}"`);
-              
-              // SAFETY CHECK: Verify the returned data matches the requested email
-              if (userData.email && userData.email.toLowerCase() !== email.toLowerCase()) {
-                console.error(`🚨 IDENTITY_MISMATCH: Requested [${email}] but got [${userData.email}]. Using hard fallback.`);
-                throw new Error('Identity mismatch from registry');
-              }
-              
-              setUser(userData);
-              localStorage.setItem('nexov_user', JSON.stringify(userData));
-              localStorage.setItem('nexov_user_is_bypass', 'true');
-              // Release guard after a delay to let onAuthStateChanged settle
-              setTimeout(() => { loginInProgress.current = false; }, 500);
-              return { success: true };
-            }
-          } catch (syncErr) {
-            console.error('🔥 BYPASS_SYNC_FAILED:', syncErr.message);
-          }
-
-          // 2. HARD-CODED FALLBACK (Absolute last resort for Super Admin)
-          if (email === 'nexovtech@myyahoo.com' || email === 'admin@nexovtech.com') {
-            console.log('⚠️ HARD_BYPASS: Using static Super Admin profile.');
-            const adminData = { 
-              id: 'nexovtech@myyahoo.com', 
-              _id: 'nexovtech@myyahoo.com',
-              email: 'nexovtech@myyahoo.com', 
-              companyEmail: 'admin@nexovtech.com',
-              name: 'NexovTech Administrator', 
-              role: 'Admin',
-              status: 'Active'
-            };
-            setUser(adminData);
-            localStorage.setItem('nexov_user', JSON.stringify(adminData));
-            localStorage.setItem('nexov_user_is_bypass', 'true');
-            setTimeout(() => { loginInProgress.current = false; }, 500);
-            return { success: true };
-          }
-        }
-        throw fbErr; // Re-throw if bypass didn't match or user not found
-      }
-      
-      // 3. Retrieve secure ID Token
-      const idToken = await firebaseUser.getIdToken();
-
-      // 4. Dispatch to Backend for Session Initialization & Roster Sync
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email, 
-          firebaseToken: idToken,
-          lastActive: new Date(),
-          token: mfaToken 
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        if (data.require2FA) {
-          return { success: true, require2FA: true, userId: data.userId };
-        }
-        
-        setUser(data.user);
-        localStorage.setItem('nexov_user', JSON.stringify(data.user));
-        if (email === 'nexovtech@myyahoo.com' && (password === 'Admin@123' || password === 'unlock')) {
-          localStorage.setItem('nexov_user_is_bypass', 'true');
-        }
-        localStorage.setItem('nexov_token', data.token);
-        loginInProgress.current = false;
-        return { success: true };
-      } else {
-        loginInProgress.current = false;
-        return { success: false, message: data.message || 'Identity verification failed.' };
-      }
-    } catch (err) {
-      console.error('FIREBASE_AUTH_ERROR:', err);
-      
-      let message = 'Access Denied. Check your credentials.';
-      
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        message = 'Invalid operational credentials.';
-      } else if (err.code === 'auth/network-request-failed') {
-        message = 'Connection to Command Center disrupted.';
-      } else if (err.message?.includes('Virtual identity')) {
-        message = err.message;
-      }
-      loginInProgress.current = false;
-      return { success: false, message: message };
-    }
-  };
-
-  const register = async (email, password, name) => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
-      
-      // Create user in our MongoDB backend
-      await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          uid: firebaseUser.uid, 
-          email: firebaseUser.email, 
-          name,
-          role: 'Employee' // Default role
-        })
-      });
-      
-      return { success: true };
-    } catch (err) {
-      let message = 'Identity initialization failed. Please try again.';
-      if (err.code === 'auth/email-already-in-use') {
-        message = 'This identity already exists. Please use the LOGIN tab instead.';
-      } else if (err.code === 'auth/weak-password') {
-        message = 'Mission security requires a stronger password (min 6 characters).';
-      }
-      return { success: false, message };
-    }
-  };
-
-  const resetPassword = async (email) => {
-    try {
-      await sendPasswordResetEmail(auth, email);
-      return { success: true };
-    } catch (err) {
-      return { success: false, message: err.message };
-    }
-  };
 
   const signInWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      const firebaseUser = result.user;
+      if (result) {
+        const verification = await verifyEmployee(result.user.email);
+        if (!verification.authorized) {
+          await logout();
+          toast.error(verification.message, { id: 'auth-denied' });
+          return { success: false, message: verification.message };
+        }
+        toast.success('Access Granted — Welcome to NexovTech');
+        return { success: true };
+      }
+    } catch (error) {
+      console.error("Google Sign-In Error:", error);
+      return { success: false, message: "Could not initiate authentication." };
+    }
+  };
+
+  const adminLogin = async (email, password) => {
+    setLoading(true);
+    try {
+      // 1. Authenticate with Firebase Email/Password
+      await signInWithEmailAndPassword(auth, email.toLowerCase(), password);
       
-      // Sync with backend
-      await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          uid: firebaseUser.uid, 
-          email: firebaseUser.email, 
-          name: firebaseUser.displayName,
-          role: 'Employee' 
-        })
+      // 2. Fetch profile from Firestore
+      const verification = await verifyEmployee(email);
+      const userData = {
+        ...verification.data,
+        email: email.toLowerCase(),
+        isRoot: true
+      };
+
+      setUser(userData);
+      localStorage.setItem('nexov_user', JSON.stringify(userData));
+      toast.success('Root Access Granted', {
+        style: { background: '#000', color: '#fff', fontSize: '10px', fontWeight: '900' }
       });
-      
       return { success: true };
     } catch (err) {
-      return { success: false, message: err.message };
+      console.error("Admin Login Error:", err);
+      return { success: false, message: "Invalid credentials or authorization failure." };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -307,32 +214,67 @@ export const AuthProvider = ({ children }) => {
       await signOut(auth);
       setUser(null);
       localStorage.removeItem('nexov_user');
-      localStorage.removeItem('nexov_user_is_bypass');
-      localStorage.removeItem('nexov_token');
     } catch (err) {
       console.error('Logout failed');
     }
   };
 
-  const updateUser = (fields) => {
-    setUser(prev => {
-      const updated = { ...prev, ...fields };
-      // Always persist to localStorage for consistency
-      localStorage.setItem('nexov_user', JSON.stringify(updated));
-      return updated;
-    });
-  };
-
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, resetPassword, signInWithGoogle, updateUser, loading }}>
+    <AuthContext.Provider value={{ user, signInWithGoogle, adminLogin, logout, loading }}>
       {loading ? (
-      <div className="min-h-screen theme-bg flex items-center justify-center">
-           <div className="flex flex-col items-center gap-4">
-              <div className="w-12 h-12 border-4 border-brand-500/20 border-t-brand-500 rounded-full animate-spin"></div>
-              <p className="text-surface-500 font-black uppercase tracking-[0.3em] text-xs">Accessing Gateway...</p>
-           </div>
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center relative overflow-hidden">
+          {/* Subtle Background Asset */}
+          <div className="absolute inset-0 z-0 opacity-40">
+             <div 
+               className="absolute inset-0 bg-cover bg-center grayscale-[0.5] contrast-[1.1]"
+               style={{ backgroundImage: "url('/assets/nexovtech-final-branded.png')" }}
+             />
+             <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px]" />
+          </div>
+
+          <div className="relative z-10 flex flex-col items-center gap-10">
+            <div className="relative">
+              {/* Logo with pulsing shadow */}
+              <div className="w-24 h-24 bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex items-center justify-center p-4 border border-slate-100">
+                <img src="/assets/logo_nexo.jpeg" alt="Nexov" className="w-full h-full object-contain" />
+              </div>
+              <motion.div 
+                animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.6, 0.3] }}
+                transition={{ repeat: Infinity, duration: 2.5 }}
+                className="absolute -inset-4 bg-indigo-500/10 rounded-[48px] -z-10"
+              />
+            </div>
+
+            <div className="text-center space-y-4">
+              <div className="flex flex-col items-center gap-2">
+                <h2 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.5em] leading-none">
+                  Nexov<span className="text-indigo-600">Tech</span> Management
+                </h2>
+                <div className="w-40 h-1 bg-slate-200 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ x: '-100%' }}
+                    animate={{ x: '100%' }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                    className="w-1/2 h-full bg-indigo-600 rounded-full"
+                  />
+                </div>
+              </div>
+              <p className="text-slate-400 text-[9px] font-black uppercase tracking-[0.3em] animate-pulse">
+                Synchronizing Secure Workspace...
+              </p>
+            </div>
+          </div>
+
+          {/* Legal Footer */}
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-center opacity-40">
+             <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.4em]">
+                Enterprise Grade Authentication &copy; 2026
+             </p>
+          </div>
         </div>
-      ) : children}
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };

@@ -6,6 +6,8 @@ import { ChatProvider } from './context/ChatContext';
 import FuturisticBackground from './components/Common/FuturisticBackground';
 import DashboardLayout from './components/Layout/DashboardLayout';
 import EmployeeLayout from './components/Layout/EmployeeLayout';
+import { Toaster } from 'react-hot-toast';
+import Unauthorized from './pages/Unauthorized';
 
 // Admin Pages
 import Dashboard from './pages/Dashboard';
@@ -31,6 +33,7 @@ import AdminTimesheets from './pages/AdminTimesheets';
 import TeamAccess from './pages/TeamAccess';
 import AdminTasks from './pages/AdminTasks';
 import SecurityShield from './pages/SecurityShield';
+import AdminLearning from './pages/AdminLearning';
 
 // Employee Pages
 import EmployeeDashboard from './pages/employee/Dashboard';
@@ -45,6 +48,7 @@ import AdminIDCards from './pages/AdminIDCards';
 import MyIDCard from './pages/employee/MyIDCard';
 import VerifyID from './pages/VerifyID';
 import EmployeeSecurity from './pages/employee/Security';
+import Learning from './pages/Learning';
 
 import { Loader2 } from 'lucide-react';
 
@@ -58,8 +62,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     </div>
   );
   if (!user) return <Navigate to="/login" />;
-  if (allowedRoles && !allowedRoles.some(r => r.toLowerCase() === (user.role || '').toLowerCase())) {
-    return <Navigate to={user?.role?.toLowerCase() === 'admin' ? '/' : '/employee/dashboard'} />;
+  
+  const userRole = user.role?.toLowerCase() || '';
+  if (allowedRoles && !allowedRoles.some(r => r.toLowerCase() === userRole)) {
+    return <Navigate to="/unauthorized" />;
   }
 
   return children;
@@ -99,6 +105,7 @@ function AppRoutes() {
         <Route path="/nexus-mail" element={<NexovTechMail />} />
         <Route path="/comm-intelligence" element={<CommunicationAnalytics />} />
         <Route path="/security" element={<SecurityShield />} />
+        <Route path="/admin-learning" element={<AdminLearning />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
 
@@ -119,11 +126,13 @@ function AppRoutes() {
         <Route path="/employee/id-card" element={<MyIDCard />} />
         <Route path="/employee/mail" element={<NexovTechMail />} />
         <Route path="/employee/security" element={<EmployeeSecurity />} />
+        <Route path="/employee/learning" element={<Learning />} />
         <Route path="/employee/settings" element={<Settings />} />
       </Route>
 
       <Route path="/verify/:qrToken" element={<VerifyID />} />
       <Route path="/team-access" element={<TeamAccess />} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
 
       <Route path="*" element={<Navigate to={user ? (user.role === 'Admin' || user.role === 'Manager' ? '/' : '/employee/dashboard') : '/login'} />} />
     </Routes>
@@ -137,6 +146,7 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
+          <Toaster />
           <ChatProvider>
             {/* <FuturisticBackground /> */}
             <AIAssistant />

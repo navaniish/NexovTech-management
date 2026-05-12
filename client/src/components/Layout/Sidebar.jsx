@@ -5,7 +5,7 @@ import {
   Clock, Banknote, CreditCard,
   MessageSquare, Settings,
   ChevronLeft, ChevronRight,
-  ChevronDown, X, ShieldCheck, Sparkles, Mail, Target
+  ChevronDown, X, ShieldCheck, Sparkles, Mail, Target, BookOpen
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -52,6 +52,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     { path: '/timesheets', icon: Clock, label: 'Time Registry' },
     { path: '/nexus-mail', icon: Mail, label: 'Nexus Mail', badge: counts.mail },
     { path: '/comm-intelligence', icon: Sparkles, label: 'Intelligence' },
+    { path: '/admin-learning', icon: BookOpen, label: 'Learning Ops' },
     { path: '/audit', icon: ShieldCheck, label: 'AI Audit' },
     { path: '/security', icon: ShieldCheck, label: 'Security Shield' },
     { path: '/settings', icon: Settings, label: 'Settings' },
@@ -104,13 +105,17 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         {/* USER PROFILE SECTION */}
         <div className="p-4 border-t border-white/10">
            <div className={`flex items-center gap-3 p-2 rounded-xl transition-all ${isCollapsed ? 'justify-center' : ''}`}>
-              <div className="w-10 h-10 rounded-2xl overflow-hidden border-2 border-white shadow-lg shrink-0">
-                 <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Admin`} alt="" />
+              <div className="w-10 h-10 rounded-2xl overflow-hidden border-2 border-white shadow-lg shrink-0 bg-slate-800">
+                 <img 
+                   src={user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL.replace('/api', '')}${user.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'Admin'}`} 
+                   alt="" 
+                   className="w-full h-full object-cover"
+                 />
               </div>
               {!isCollapsed && (
                 <div className="flex-1 min-w-0">
-                   <p className="text-[13px] font-black text-white truncate">Super Admin</p>
-                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Access Granted</p>
+                   <p className="text-[13px] font-black text-white truncate">{user?.name || 'Authorized User'}</p>
+                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{user?.role || 'Access Granted'}</p>
                 </div>
               )}
            </div>

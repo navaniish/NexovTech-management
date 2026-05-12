@@ -13,6 +13,8 @@ import {
 import API_URL from '../config';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase';
+import { doc, deleteDoc, setDoc, query, collection, where, getDocs } from 'firebase/firestore';
 
 const ROLES = [
   { value: 'Developer', label: 'Developer', color: '#3b82f6' },
@@ -63,22 +65,31 @@ const Settings = () => {
 
   const fetchTeam = async () => {
     try {
-      const res = await fetch(`${API_URL}/auth/team-access?t=${Date.now()}`);
-      if (res.ok) {
-        const data = await res.json();
-        const unique = (data || []).reduce((acc, curr) => {
-          const email = curr.email?.toLowerCase();
-          if (email && !acc.find(item => item.email?.toLowerCase() === email)) {
-            acc.push({ ...curr, email });
-          } else if (!email && !acc.find(item => (item.id === curr.id || item._id === curr._id))) {
-            acc.push(curr);
-          }
-          return acc;
-        }, []);
-        setTeamMembers(unique);
+      // 1. Fetch from Legacy Backend
+      const legacyRes = await fetch(`${API_URL}/auth/team-access?t=${Date.now()}`);
+      let legacyData = [];
+      if (legacyRes.ok) {
+        legacyData = await legacyRes.json();
       }
+
+      // 2. Fetch from Firestore
+      const fsSnap = await getDocs(collection(db, 'employees'));
+      const fsData = fsSnap.docs.map(d => ({ ...d.data(), id: d.id, _id: d.id }));
+
+      // 3. Merge: Prioritize Firestore, filter out revoked users
+      const merged = fsData.filter(m => m.status !== 'revoked');
+      
+      legacyData.forEach(lUser => {
+        const lEmail = lUser.email?.toLowerCase();
+        // Only add legacy user if they are NOT in Firestore (prevents re-adding revoked users)
+        if (lEmail && !fsData.find(m => m.email?.toLowerCase() === lEmail)) {
+          merged.push(lUser);
+        }
+      });
+
+      setTeamMembers(merged);
     } catch (err) {
-      console.error('Roster fetch failed');
+      console.error('Roster fetch failed', err);
     }
   };
 
@@ -86,13 +97,33 @@ const Settings = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      // 1. Legacy Backend Registration
       const res = await fetch(`${API_URL}/auth/grant-access`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(accessForm),
       });
       const data = await res.json();
+      
       if (res.ok) {
+        // 2. Firestore Cloud Sync
+        try {
+          const userRef = doc(db, 'employees', accessForm.email.toLowerCase());
+          await setDoc(userRef, {
+            name: accessForm.name,
+            email: accessForm.email.toLowerCase(),
+            role: accessForm.role,
+            phone: accessForm.phoneNo,
+            bankName: accessForm.bankName,
+            accountNumber: accessForm.accountNumber,
+            ifscCode: accessForm.ifscCode,
+            status: 'active',
+            joinedAt: new Date().toISOString()
+          });
+        } catch (fsErr) {
+          console.error("Firestore sync failed:", fsErr);
+        }
+
         showToast(data.message || 'Specialist registered successfully');
         setAccessForm({
           email: '', name: '', role: 'Developer',
@@ -110,18 +141,31 @@ const Settings = () => {
     }
   };
 
-  const handleRevokeAccess = async (id, name) => {
+  const handleRevokeAccess = async (id, name, email) => {
     if (!window.confirm(`Are you sure you want to revoke access for ${name}?`)) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/auth/revoke-access/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        showToast('Access revoked successfully');
-        fetchTeam();
-      } else {
-        showToast('Failed to revoke access', 'error');
+      // 1. Mark as 'revoked' in Firestore (The Blacklist)
+      try {
+        if (email) {
+          const userRef = doc(db, 'employees', email.toLowerCase());
+          await setDoc(userRef, { 
+            name, 
+            email: email.toLowerCase(), 
+            status: 'revoked',
+            revokedAt: new Date().toISOString() 
+          }, { merge: true });
+        }
+      } catch (fsErr) {
+        console.error("Firestore blacklisting failed:", fsErr);
       }
-    } catch {
+
+      // 2. UI Update (Immediate removal)
+      setTeamMembers(prev => prev.filter(m => (m.email?.toLowerCase() !== email?.toLowerCase()) && (m.id !== id && m._id !== id)));
+      
+      showToast('Access revoked and cloud registry blacklisted');
+    } catch (err) {
+      console.error(err);
       showToast('Network disruption', 'error');
     } finally {
       setLoading(false);
@@ -595,7 +639,7 @@ const Settings = () => {
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
                                  <button 
-                                   onClick={(e) => { e.stopPropagation(); handleRevokeAccess(member.id || member._id, member.name); }} 
+                                   onClick={(e) => { e.stopPropagation(); handleRevokeAccess(member.id || member._id, member.name, member.email); }} 
                                    className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-rose-300 hover:text-white hover:bg-rose-500 transition-all"
                                  >
                                     <UserX size={18} />
