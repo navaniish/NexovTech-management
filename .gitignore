@@ -16,3 +16,12 @@ client/dist
 client/node_modules
 server/node_modules
 .git/index.lock
+
+# Antigravity / Gemini Agent Directories
+.gemini/
+brain/
+knowledge/
+.tempmediaStorage/
+scratch/
+logs/
+overview.txt
