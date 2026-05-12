@@ -99,11 +99,24 @@ const VerifyID = () => {
                  data.status === 'Active' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
                }`}>
                    {data.status === 'Active' ? (
-                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" />
-                       <path d="M7 12L10.5 15.5L18 8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                     </svg>
-                   ) : <XCircle size={20} />}
+                     <motion.svg 
+                       width="22" height="22" viewBox="0 0 24 24" fill="none" 
+                       initial="initial" animate="animate"
+                     >
+                       <motion.circle 
+                         cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" 
+                         initial={{ pathLength: 0, opacity: 0 }}
+                         animate={{ pathLength: 1, opacity: 1 }}
+                         transition={{ duration: 0.5, ease: "easeOut" }}
+                       />
+                       <motion.path 
+                         d="M7 12L10.5 15.5L18 8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" 
+                         initial={{ pathLength: 0 }}
+                         animate={{ pathLength: 1 }}
+                         transition={{ duration: 0.5, delay: 0.4, ease: "easeInOut" }}
+                       />
+                     </motion.svg>
+                   ) : <XCircle size={22} className="text-rose-500" />}
                   Identity Verified: {data.status}
                </div>
 
