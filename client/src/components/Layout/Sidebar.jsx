@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Users, Briefcase, 
@@ -9,24 +9,52 @@ import {
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
-const menuItems = [
-  { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/hr', icon: Users, label: 'Employees', badge: '128' },
-  { path: '/tasks', icon: Target, label: 'Work Assignment' },
-  { path: '/projects', icon: Briefcase, label: 'Projects' },
-  { path: '/attendance', icon: Clock, label: 'Attendance' },
-  { path: '/payroll', icon: Banknote, label: 'Payroll' },
-  { path: '/id-cards', icon: CreditCard, label: 'E-id' },
-  { path: '/timesheets', icon: Clock, label: 'Time Registry' },
-  { path: '/nexus-mail', icon: Mail, label: 'Nexus Mail', badge: 5 },
-  { path: '/comm-intelligence', icon: Sparkles, label: 'Intelligence' },
-  { path: '/audit', icon: ShieldCheck, label: 'AI Audit' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
-];
+import API_URL from '../../config';
 
 const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { user } = useAuth();
+  const [counts, setCounts] = useState({ employees: 0, mail: 0 });
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        // Fetch Employee Count
+        const empRes = await fetch(`${API_URL}/auth/count`);
+        const empData = await empRes.json();
+        
+        // Fetch Mail Count
+        let mailCount = 0;
+        if (user?.email) {
+           const mailRes = await fetch(`${API_URL}/mail/unread-count/${user.email}`);
+           const mailData = await mailRes.json();
+           mailCount = mailData.count;
+        }
+
+        setCounts({ employees: empData.count, mail: mailCount });
+      } catch (err) {
+        console.error('Sidebar count sync failed');
+      }
+    };
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 60000); // Sync every minute
+    return () => clearInterval(interval);
+  }, [user?.email]);
+
+  const menuItems = [
+    { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/hr', icon: Users, label: 'Employees', badge: counts.employees },
+    { path: '/tasks', icon: Target, label: 'Work Assignment' },
+    { path: '/projects', icon: Briefcase, label: 'Projects' },
+    { path: '/attendance', icon: Clock, label: 'Attendance' },
+    { path: '/payroll', icon: Banknote, label: 'Payroll' },
+    { path: '/id-cards', icon: CreditCard, label: 'E-id' },
+    { path: '/timesheets', icon: Clock, label: 'Time Registry' },
+    { path: '/nexus-mail', icon: Mail, label: 'Nexus Mail', badge: counts.mail },
+    { path: '/comm-intelligence', icon: Sparkles, label: 'Intelligence' },
+    { path: '/audit', icon: ShieldCheck, label: 'AI Audit' },
+    { path: '/settings', icon: Settings, label: 'Settings' },
+  ];
 
   return (
     <>
