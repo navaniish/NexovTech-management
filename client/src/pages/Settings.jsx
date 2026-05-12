@@ -132,25 +132,29 @@ const Settings = () => {
     const file = e.target.files[0];
     if (!file) return;
     setUploading(true);
-    const formData = new FormData();
-    formData.append('avatar', file);
-    try {
-      const res = await fetch(`${API_URL}/auth/upload-avatar/${user?._id || user?.id}`, {
-        method: 'POST',
-        body: formData,
-      });
-      if (res.ok) {
-        const data = await res.json();
-        updateUser({ avatar: data.avatar });
-        showToast('Profile photo updated', 'success');
-      } else {
-        showToast('Upload failed', 'error');
+    
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = async () => {
+      const base64Avatar = reader.result;
+      try {
+        const res = await fetch(`${API_URL}/auth/update-profile/${user?._id || user?.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ avatar: base64Avatar })
+        });
+        if (res.ok) {
+          updateUser({ avatar: base64Avatar });
+          showToast('Profile photo updated', 'success');
+        } else {
+          showToast('Upload failed', 'error');
+        }
+      } catch (err) {
+        showToast('Network error', 'error');
+      } finally {
+        setUploading(false);
       }
-    } catch (err) {
-      showToast('Network error', 'error');
-    } finally {
-      setUploading(false);
-    }
+    };
   };
 
   const handleUpdateProfile = (e) => {
