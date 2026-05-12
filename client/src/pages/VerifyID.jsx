@@ -98,25 +98,27 @@ const VerifyID = () => {
                <div className={`px-6 py-2 rounded-full border text-xs font-black uppercase tracking-widest flex items-center gap-2 mb-8 ${
                  data.status === 'Active' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
                }`}>
-                   {data.status === 'Active' ? (
-                     <motion.svg 
-                       width="22" height="22" viewBox="0 0 24 24" fill="none" 
-                       initial="initial" animate="animate"
-                     >
-                       <motion.circle 
-                         cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" 
-                         initial={{ pathLength: 0, opacity: 0 }}
-                         animate={{ pathLength: 1, opacity: 1 }}
-                         transition={{ duration: 0.5, ease: "easeOut" }}
-                       />
-                       <motion.path 
-                         d="M7 12L10.5 15.5L18 8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" 
-                         initial={{ pathLength: 0 }}
-                         animate={{ pathLength: 1 }}
-                         transition={{ duration: 0.5, delay: 0.4, ease: "easeInOut" }}
-                       />
-                     </motion.svg>
-                   ) : <XCircle size={22} className="text-rose-500" />}
+                    {data.status === 'Active' ? (
+                      <motion.svg 
+                        width="24" height="24" viewBox="0 0 24 24" fill="none" 
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                      >
+                        <motion.circle 
+                          cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" 
+                          initial={{ pathLength: 0 }}
+                          animate={{ pathLength: 1 }}
+                          transition={{ duration: 0.6, ease: "easeInOut" }}
+                        />
+                        <motion.path 
+                          d="M7 12L10.5 14.5L17 8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" 
+                          initial={{ pathLength: 0 }}
+                          animate={{ pathLength: 1 }}
+                          transition={{ duration: 0.4, delay: 0.5, ease: "easeOut" }}
+                        />
+                      </motion.svg>
+                    ) : <XCircle size={24} className="text-rose-500" />}
                   Identity Verified: {data.status}
                </div>
 
