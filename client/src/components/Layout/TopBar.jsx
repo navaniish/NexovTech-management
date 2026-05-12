@@ -226,48 +226,48 @@ const TopBar = ({ onMenuToggle }) => {
                <>
                  <div className="fixed inset-0 z-10" onClick={() => setShowUserMenu(false)} />
                  <motion.div
-                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                   className="absolute right-0 mt-4 w-64 bg-white rounded-3xl shadow-2xl border border-slate-100 p-3 z-20 backdrop-blur-xl"
-                 >
-                    <div className="p-4 border-b border-slate-50 mb-2">
-                       <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Authenticated Unit</p>
-                       <p className="text-sm font-black text-slate-900 truncate">{user?.companyEmail || user?.email || 'admin@nexovtech.com'}</p>
-                    </div>
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-3 w-52 bg-white rounded-[24px] shadow-2xl border border-slate-100 p-1.5 z-20 backdrop-blur-xl"
+                  >
+                     <div className="px-3 py-2 border-b border-slate-50 mb-1">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Authenticated Unit</p>
+                        <p className="text-[11px] font-black text-slate-900 truncate">{user?.companyEmail || user?.email || 'admin@nexovtech.com'}</p>
+                     </div>
 
-                    <button 
-                      onClick={() => { navigate('/settings'); setShowUserMenu(false); }}
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-all group"
-                    >
-                       <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
-                          <User size={16} />
-                       </div>
-                       <span className="text-xs font-black uppercase tracking-widest">Command Profile</span>
-                    </button>
+                     <button 
+                       onClick={() => { navigate('/settings'); setShowUserMenu(false); }}
+                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-all group"
+                     >
+                        <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
+                           <User size={14} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Command Profile</span>
+                     </button>
 
-                    <button 
-                      onClick={() => { navigate('/settings'); setShowUserMenu(false); }}
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-all group"
-                    >
-                       <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
-                          <SettingsIcon size={16} />
-                       </div>
-                       <span className="text-xs font-black uppercase tracking-widest">System Settings</span>
-                    </button>
+                     <button 
+                       onClick={() => { navigate('/settings'); setShowUserMenu(false); }}
+                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-all group"
+                     >
+                        <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
+                           <SettingsIcon size={14} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest">System Settings</span>
+                     </button>
 
-                    <div className="my-2 border-t border-slate-50" />
+                     <div className="my-1 border-t border-slate-50" />
 
-                    <button 
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all group"
-                    >
-                       <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center group-hover:bg-rose-100 transition-colors">
-                          <LogOut size={16} />
-                       </div>
-                       <span className="text-xs font-black uppercase tracking-widest">Terminate Session</span>
-                    </button>
-                 </motion.div>
+                     <button 
+                       onClick={handleLogout}
+                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-500 hover:bg-rose-50 transition-all group"
+                     >
+                        <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center group-hover:bg-rose-100 transition-colors">
+                           <LogOut size={14} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest">Terminate Session</span>
+                     </button>
+                  </motion.div>
                </>
              )}
            </AnimatePresence>

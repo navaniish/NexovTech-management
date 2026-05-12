@@ -228,44 +228,6 @@ const AdminIDCards = () => {
          </div>
       </section>
 
-      {/* 2. CORPORATE IDENTITY STANDARD (MOCKUP REFERENCE) */}
-      <section className="relative overflow-hidden rounded-[40px] bg-slate-950 p-1 md:p-2 group">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-transparent to-red-500/20 opacity-30" />
-        <div className="relative z-10 glass-card !bg-slate-900/40 rounded-[38px] p-8 md:p-12 border-slate-800 flex flex-col lg:flex-row items-center gap-12">
-          <div className="flex-1 space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20">
-               <Sparkles size={14} className="text-red-400" />
-               <span className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em]">Gold Standard Reference</span>
-            </div>
-            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter leading-tight italic">
-              The <span className="text-red-500">Ultimate</span> Identity Platform.
-            </h2>
-            <p className="text-slate-400 text-lg font-medium max-w-xl">
-              High-fidelity digital credentials engineered for the modern enterprise. Our ID system combines biometric security with industrial-grade aesthetics.
-            </p>
-            <div className="flex items-center gap-6 pt-4">
-              <div className="flex flex-col">
-                <span className="text-2xl font-black text-white italic">4K</span>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Resolution</span>
-              </div>
-              <div className="w-[1px] h-10 bg-slate-800" />
-              <div className="flex flex-col">
-                <span className="text-2xl font-black text-white italic">AES-256</span>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Encryption</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative shrink-0 group-hover:scale-[1.02] transition-transform duration-700">
-             <div className="absolute inset-0 bg-red-500/20 blur-[100px] rounded-full" />
-             <img 
-               src="/id_standard.png" 
-               alt="ID Standard" 
-               className="relative z-10 w-full max-w-2xl rounded-[32px] shadow-[0_40px_100px_rgba(0,0,0,0.8)] border border-white/10" 
-             />
-          </div>
-        </div>
-      </section>
 
       {/* Tab Switcher - Now with premium styling */}
       <div className="xl:hidden flex p-2 bg-white/10 backdrop-blur-md border border-white/5 rounded-[24px]">

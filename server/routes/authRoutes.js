@@ -195,7 +195,7 @@ router.post('/login', async (req, res) => {
       os: agent.os.toString(),
       loginStatus: 'Success',
       location: 'Firebase Auth',
-      timestamp: new Date()
+      createdAt: new Date()
     });
 
     // 5. Generate Internal Session JWT

@@ -3,8 +3,6 @@ const router = express.Router();
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
 const fallbackDb = require('../utils/fallbackDb');
-const SecurityLog = require('../models/SecurityLog'); // These are small logs, Mongoose is fine or we can use fallbackDb
-const TrustedDevice = require('../models/TrustedDevice');
 const jwt = require('jsonwebtoken');
 const useragent = require('useragent');
 const requestIp = require('request-ip');
@@ -34,27 +32,14 @@ router.post('/2fa/setup', auth, async (req, res) => {
       issuer: 'NexovTech'
     });
     
-    console.log(`🛡️ 2FA_SETUP: Generating secret for [${user.email}]`);
-    
-    if (!secret.otpauth_url) {
-      throw new Error('Failed to generate OTP Auth URL');
-    }
+    if (!secret.otpauth_url) throw new Error('Failed to generate OTP Auth URL');
 
-    // Generate QR Code URL
     const qrCodeData = await QRCode.toDataURL(secret.otpauth_url);
-    console.log('✅ QR_CODE_GENERATED: Length:', qrCodeData.length);
 
-    // Temp save secret using fallbackDb
-    await fallbackDb.update('users', user.id, {
-      temp2FASecret: secret.base32
-    });
+    await fallbackDb.update('users', user.id, { temp2FASecret: secret.base32 });
 
-    res.json({
-      secret: secret.base32,
-      qrCode: qrCodeData
-    });
+    res.json({ secret: secret.base32, qrCode: qrCodeData });
   } catch (err) {
-    console.error('2FA Setup Error:', err);
     res.status(500).json({ message: 'Failed to initialize 2FA' });
   }
 });
@@ -73,7 +58,6 @@ router.post('/2fa/verify', auth, async (req, res) => {
     });
 
     if (verified) {
-      // Generate Recovery Codes
       const backupCodes = Array.from({ length: 8 }, () => Math.random().toString(36).substr(2, 10).toUpperCase());
       
       await fallbackDb.update('users', user.id, {
@@ -83,30 +67,25 @@ router.post('/2fa/verify', auth, async (req, res) => {
         backupCodes: backupCodes
       });
 
-      // Log success (using Mongoose for logs is okay as they are peripheral)
       const agent = useragent.parse(req.headers['user-agent']);
       const ip = requestIp.getClientIp(req);
       const geo = geoip.lookup(ip);
 
-      try {
-        await SecurityLog.create({
-          userId: user.id,
-          action: '2fa_enabled',
-          ipAddress: ip,
-          device: agent.device.toString(),
-          browser: agent.toAgent(),
-          location: geo ? { city: geo.city, country: geo.country, ll: geo.ll } : undefined
-        });
-      } catch (logErr) {
-        console.warn('Security log creation failed, continuing...');
-      }
+      await fallbackDb.save('security_logs', {
+        userId: user.id,
+        action: '2fa_enabled',
+        ipAddress: ip,
+        device: agent.device.toString(),
+        browser: agent.toAgent(),
+        location: geo ? { city: geo.city, country: geo.country } : { city: 'Unknown' },
+        createdAt: new Date()
+      });
 
       res.json({ message: '2FA enabled successfully', backupCodes });
     } else {
       res.status(400).json({ message: 'Invalid OTP token' });
     }
   } catch (err) {
-    console.error('2FA Verify Error:', err);
     res.status(500).json({ message: 'Verification failed' });
   }
 });
@@ -131,13 +110,12 @@ router.post('/2fa/disable', auth, async (req, res) => {
         backupCodes: []
       });
 
-      try {
-        await SecurityLog.create({
-          userId: user.id,
-          action: '2fa_disabled',
-          status: 'Warning'
-        });
-      } catch (logErr) {}
+      await fallbackDb.save('security_logs', {
+        userId: user.id,
+        action: '2fa_disabled',
+        status: 'Warning',
+        createdAt: new Date()
+      });
 
       res.json({ message: '2FA disabled successfully' });
     } else {
@@ -151,8 +129,8 @@ router.post('/2fa/disable', auth, async (req, res) => {
 // 4. Get Security Logs
 router.get('/logs', auth, async (req, res) => {
   try {
-    const logs = await SecurityLog.find({ userId: req.user.id }).sort({ createdAt: -1 }).limit(50);
-    res.json(logs);
+    const logs = await fallbackDb.find('security_logs', { userId: req.user.id });
+    res.json(logs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 50));
   } catch (err) {
     res.status(500).json({ message: 'Failed to retrieve security logs' });
   }
@@ -161,7 +139,7 @@ router.get('/logs', auth, async (req, res) => {
 // 5. Get Trusted Devices
 router.get('/devices', auth, async (req, res) => {
   try {
-    const devices = await TrustedDevice.find({ userId: req.user.id });
+    const devices = await fallbackDb.find('trusted_devices', { userId: req.user.id });
     res.json(devices);
   } catch (err) {
     res.status(500).json({ message: 'Failed to retrieve devices' });
@@ -171,7 +149,7 @@ router.get('/devices', auth, async (req, res) => {
 // 6. Delete Device
 router.delete('/devices/:id', auth, async (req, res) => {
   try {
-    await TrustedDevice.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+    await fallbackDb.remove('trusted_devices', req.params.id);
     res.json({ message: 'Device revoked successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to revoke device' });
@@ -182,8 +160,8 @@ router.delete('/devices/:id', auth, async (req, res) => {
 router.get('/admin/logs', auth, async (req, res) => {
   if (req.user.role !== 'Admin') return res.status(403).json({ message: 'Access denied' });
   try {
-    const logs = await SecurityLog.find().sort({ createdAt: -1 }).limit(100);
-    res.json(logs);
+    const logs = await fallbackDb.find('security_logs', {});
+    res.json(logs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 100));
   } catch (err) {
     res.status(500).json({ message: 'Failed to retrieve global audit trail' });
   }
@@ -225,23 +203,6 @@ router.post('/2fa/regenerate-backup-codes', auth, async (req, res) => {
 // 10. Session Integrity Check
 router.get('/session-check', auth, async (req, res) => {
   res.json({ status: 'Valid', timestamp: new Date(), node: req.headers['user-agent'] });
-});
-
-// 11. Trigger Security Alert (Notification Simulation)
-router.post('/notify-alert', auth, async (req, res) => {
-  const { type, message } = req.body;
-  try {
-    // In a real app, this would send an Email/SMS
-    console.log(`🚨 SECURITY_ALERT: [${req.user.id}] ${type} - ${message}`);
-    await SecurityLog.create({
-      userId: req.user.id,
-      action: 'security_alert_sent',
-      details: `${type}: ${message}`
-    });
-    res.json({ message: 'Alert processed and logged' });
-  } catch (err) {
-    res.status(500).json({ message: 'Alert routing failed' });
-  }
 });
 
 module.exports = router;
