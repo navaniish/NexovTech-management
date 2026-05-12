@@ -53,6 +53,8 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     { path: '/nexus-mail', icon: Mail, label: 'Nexus Mail', badge: counts.mail },
     { path: '/comm-intelligence', icon: Sparkles, label: 'Intelligence' },
     { path: '/audit', icon: ShieldCheck, label: 'AI Audit' },
+    { path: '/security', icon: ShieldCheck, label: 'Security Shield' },
+    { path: '/employee/security', icon: ShieldCheck, label: 'Employee Security' },
     { path: '/settings', icon: Settings, label: 'Settings' },
   ];
 

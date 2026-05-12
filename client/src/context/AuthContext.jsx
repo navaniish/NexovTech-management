@@ -14,8 +14,11 @@ import API_URL from '../config';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('nexov_user');
+    try { return saved ? JSON.parse(saved) : null; } catch { return null; }
+  });
+  const [loading, setLoading] = useState(() => !localStorage.getItem('nexov_user'));
 
   const googleProvider = new GoogleAuthProvider();
 
@@ -23,13 +26,16 @@ export const AuthProvider = ({ children }) => {
   const loginInProgress = React.useRef(false);
 
   useEffect(() => {
-    // 1. Initial restoration from localStorage (Synchronous)
-    const savedUser = localStorage.getItem('nexov_user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        localStorage.removeItem('nexov_user');
+    // 1. Initial restoration already handled by useState initializer
+    if (!user) {
+      const savedUser = localStorage.getItem('nexov_user');
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+          setLoading(false);
+        } catch (e) {
+          localStorage.removeItem('nexov_user');
+        }
       }
     }
 
@@ -49,7 +55,8 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (firebaseUser) {
-        setLoading(true); 
+        // Only show loader if we don't have an optimistic user already
+        if (!user) setLoading(true); 
         try {
           const response = await fetch(`${API_URL}/auth/me?uid=${firebaseUser.uid}`);
           if (response.ok) {

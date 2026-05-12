@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const IS_SERVERLESS = !!(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 
@@ -21,11 +23,25 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Security Middlewares
+app.use(helmet({
+  crossOriginResourcePolicy: false, // For local image serving
+}));
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply rate limiting to auth and security routes
+app.use('/api/auth/login', limiter);
+app.use('/api/security/2fa/verify', limiter);
+
 // Routes - High Priority Security Bridge
-const securityRoutes = require('./routes/securityRoutes');
-app.post('/api/security/2fa/setup', (req, res) => securityRoutes.handleSetup(req, res));
-app.post('/api/security/2fa/verify', (req, res) => securityRoutes.handleVerify(req, res));
-app.use('/api/security', securityRoutes);
+app.use('/api/security', require('./routes/securityRoutes'));
 
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));

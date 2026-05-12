@@ -100,9 +100,15 @@ const TaskCard = ({ project }) => (
 );
 
 const Projects = () => {
-  const [projects, setProjects] = useState([]);
-  const [teamMembers, setTeamMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState(() => {
+    const saved = localStorage.getItem('nexov_projects');
+    try { return saved ? JSON.parse(saved) : []; } catch { return []; }
+  });
+  const [teamMembers, setTeamMembers] = useState(() => {
+    const saved = localStorage.getItem('nexov_team_members');
+    try { return saved ? JSON.parse(saved) : []; } catch { return []; }
+  });
+  const [loading, setLoading] = useState(() => !localStorage.getItem('nexov_projects'));
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState('pending');
@@ -128,8 +134,16 @@ const Projects = () => {
         fetch(`${API_URL}/projects`),
         fetch(`${API_URL}/team`)
       ]);
-      if (pRes.ok) setProjects(await pRes.json());
-      if (tRes.ok) setTeamMembers(await tRes.json());
+      if (pRes.ok) {
+        const pData = await pRes.json();
+        setProjects(pData);
+        localStorage.setItem('nexov_projects', JSON.stringify(pData));
+      }
+      if (tRes.ok) {
+        const tData = await tRes.json();
+        setTeamMembers(tData);
+        localStorage.setItem('nexov_team_members', JSON.stringify(tData));
+      }
     } catch (err) {
       if (!silent) setError(err.message);
     } finally {

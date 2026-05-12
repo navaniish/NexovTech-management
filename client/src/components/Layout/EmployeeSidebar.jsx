@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, CheckSquare, Briefcase, Clock, Wallet,
-  ChevronLeft, ChevronRight, LogOut, Sparkles, Bell, Calendar, IndianRupee, Settings, CreditCard, MessageSquare, Mail
+  ChevronLeft, ChevronRight, LogOut, Sparkles, Bell, Calendar, IndianRupee, Settings, CreditCard, MessageSquare, Mail, ShieldCheck
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -18,6 +18,7 @@ const menuItems = [
   { path: '/employee/timesheet', icon: Clock, label: 'Timesheet', badge: null },
   { path: '/employee/id-card', icon: CreditCard, label: 'My E-ID Card', badge: 'New' },
   { path: '/employee/mail', icon: Mail, label: 'Nexus Mail', badge: 'OFFICIAL' },
+  { path: '/employee/security', icon: ShieldCheck, label: 'Security Shield', badge: 'PRO' },
   { path: '/employee/settings', icon: Settings, label: 'Settings', badge: null },
 ];
 

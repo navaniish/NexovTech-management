@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema({
   passwordUpdatedAt: { type: Date, default: Date.now },
   twoFactorEnabled: { type: Boolean, default: false },
   twoFactorSecret: { type: String },
+  temp2FASecret: { type: String },
   backupCodes: [{ type: String }],
   bankName: { type: String },
   accountNumber: { type: String },

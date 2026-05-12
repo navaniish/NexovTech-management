@@ -10,7 +10,7 @@ const DashboardLayout = () => {
     <div className="flex flex-col h-[100dvh] w-full overflow-hidden relative">
       {/* 1. COMPANY THEME BACKGROUND LAYER */}
       <div className="fixed inset-0 z-0">
-         <div className="absolute inset-0 bg-white/60 backdrop-blur-3xl z-10" />
+         <div className="absolute inset-0 bg-white/20 z-10" />
          <img 
            src="/assets/office-bg.png" 
            alt="Company Theme" 

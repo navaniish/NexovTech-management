@@ -113,39 +113,37 @@ const AdminTasks = () => {
 
   return (
     <div className="w-full h-full flex flex-col p-4 md:p-10 space-y-6 md:space-y-8 animate-in fade-in duration-1000 overflow-y-auto custom-scrollbar">
-      {/* 1. FUTURISTIC COMMAND HEADER */}
-      <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8 bg-slate-950 p-6 md:p-12 rounded-[32px] md:rounded-[40px] relative overflow-hidden shadow-2xl border border-white/5">
-        <div className="absolute top-0 right-0 w-[300px] md:w-[400px] h-[300px] md:h-[400px] bg-indigo-600/10 blur-[80px] md:blur-[100px] rounded-full -mr-20 md:-mr-40 -mt-20 md:-mt-40" />
-        
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
-             <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-600 rounded-xl md:rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-600/20">
-                <Target size={20} className="text-white md:hidden" />
-                <Target size={24} className="text-white hidden md:block" />
-             </div>
-             <h1 className="text-2xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">
-                Work <span className="text-indigo-500">Assignment</span>
-             </h1>
-          </div>
-          <p className="text-slate-400 text-[12px] md:text-[14px] font-bold tracking-[0.05em] max-w-md">
-             Global mission dispatch and tactical task management for the NexovTech specialist roster.
-          </p>
-        </div>
-
-        <div className="flex flex-row items-center justify-between lg:justify-end gap-4 md:gap-4 relative z-10">
-           <div className="flex flex-col items-start lg:items-end pr-4 md:pr-6 border-r border-white/10">
-              <span className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Queue Load</span>
-              <span className="text-xl md:text-2xl font-black text-white">{stats.total}</span>
-           </div>
-           <button 
-             onClick={() => setShowAssign(true)}
-             className="h-12 md:h-14 px-6 md:px-8 bg-white text-slate-950 rounded-xl md:rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] hover:bg-indigo-500 hover:text-white transition-all shadow-2xl shadow-white/5 flex items-center gap-2 md:gap-3 group"
-           >
-             <Zap size={16} className="md:hidden group-hover:scale-110 transition-transform fill-current" />
-             <Zap size={18} className="hidden md:block group-hover:scale-110 transition-transform fill-current" /> 
-             <span>Dispatch Mission</span>
-           </button>
-        </div>
+      {/* 1. HIGH-FIDELITY OFFICE HEADER */}
+      <section className="relative w-full overflow-hidden rounded-[24px] md:rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[220px] group">
+         {/* Background Image Layer */}
+         <div 
+           className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+           style={{ backgroundImage: "url('/assets/office-bg.png')" }}
+         />
+         {/* Glass Overlay */}
+         <div className="absolute inset-0 bg-white/30" />
+         
+         <div className="relative z-10 flex-1 p-6 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-1">
+               <h1 className="text-2xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none flex items-center gap-3">
+                  Work Assignment <span className="animate-bounce-slow">📝</span>
+               </h1>
+               <p className="text-slate-500 text-[13px] md:text-[15px] font-medium">
+                  Global mission dispatch and tactical task management.
+               </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4">
+               {/* Dispatch Button */}
+               <button 
+                 onClick={() => setShowAssign(true)}
+                 className="bg-slate-900 text-white px-6 md:px-8 py-2.5 md:py-3.5 rounded-[16px] md:rounded-[20px] text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] hover:bg-indigo-600 transition-all shadow-xl flex items-center gap-3"
+               >
+                 <Zap size={18} className="fill-current" />
+                 <span>Dispatch</span>
+               </button>
+            </div>
+         </div>
       </section>
 
       {/* 2. KPI DASHBOARD */}

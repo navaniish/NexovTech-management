@@ -30,6 +30,7 @@ import CommunicationAnalytics from './pages/CommunicationAnalytics';
 import AdminTimesheets from './pages/AdminTimesheets';
 import TeamAccess from './pages/TeamAccess';
 import AdminTasks from './pages/AdminTasks';
+import SecurityShield from './pages/SecurityShield';
 
 // Employee Pages
 import EmployeeDashboard from './pages/employee/Dashboard';
@@ -96,6 +97,7 @@ function AppRoutes() {
         <Route path="/id-cards" element={<AdminIDCards />} />
         <Route path="/nexus-mail" element={<NexovTechMail />} />
         <Route path="/comm-intelligence" element={<CommunicationAnalytics />} />
+        <Route path="/security" element={<SecurityShield />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
 
@@ -115,6 +117,7 @@ function AppRoutes() {
         <Route path="/employee/leaves" element={<MyLeaves />} />
         <Route path="/employee/id-card" element={<MyIDCard />} />
         <Route path="/employee/mail" element={<NexovTechMail />} />
+        <Route path="/employee/security" element={<SecurityShield />} />
         <Route path="/employee/settings" element={<Settings />} />
       </Route>
 

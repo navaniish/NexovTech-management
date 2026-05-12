@@ -39,6 +39,18 @@ const Dashboard = () => {
 
   React.useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    
+    // Fast Sync: Load from cache first
+    const cachedStats = localStorage.getItem('nexov_dashboard_stats');
+    if (cachedStats) {
+      try {
+        setStats(JSON.parse(cachedStats));
+        setLoading(false);
+      } catch (e) {
+        console.warn('Stats cache corrupted');
+      }
+    }
+
     fetchDashboardStats();
     return () => clearInterval(timer);
   }, []);
@@ -56,6 +68,7 @@ const Dashboard = () => {
       if (res.ok) {
         const data = await res.json();
         setStats(data);
+        localStorage.setItem('nexov_dashboard_stats', JSON.stringify(data));
       } else {
         const errorData = await res.json().catch(() => ({}));
         console.error(`Stats fetch failed [${res.status}]:`, errorData.message || 'Unknown error');
@@ -102,7 +115,7 @@ const Dashboard = () => {
            style={{ backgroundImage: "url('/assets/office-bg.png')" }}
          />
          {/* Glass Overlay */}
-         <div className="absolute inset-0 bg-white/70 backdrop-blur-[4px]" />
+         <div className="absolute inset-0 bg-white/30" />
          
          <div className="relative z-10 flex-1 p-6 md:p-12 flex flex-col justify-center">
             <div className="space-y-1 mb-6">

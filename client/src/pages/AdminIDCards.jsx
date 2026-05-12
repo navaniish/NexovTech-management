@@ -21,9 +21,15 @@ const getAvatarUrl = (avatar) => {
 
 const AdminIDCards = () => {
   const { user: currentUser } = useAuth();
-  const [employees, setEmployees] = useState([]);
-  const [cards, setCards] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [employees, setEmployees] = useState(() => {
+    const saved = localStorage.getItem('nexov_admin_employees');
+    try { return saved ? JSON.parse(saved) : []; } catch { return []; }
+  });
+  const [cards, setCards] = useState(() => {
+    const saved = localStorage.getItem('nexov_admin_cards');
+    try { return saved ? JSON.parse(saved) : []; } catch { return []; }
+  });
+  const [loading, setLoading] = useState(() => !localStorage.getItem('nexov_admin_employees'));
   const [search, setSearch] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [generatingId, setGeneratingId] = useState(null);
@@ -41,8 +47,16 @@ const AdminIDCards = () => {
         fetch(`${API_URL}/team`),
         fetch(`${API_URL}/idcard/list/all`)
       ]);
-      if (empRes.ok) setEmployees(await empRes.json());
-      if (cardRes.ok) setCards(await cardRes.json());
+      if (empRes.ok) {
+        const empData = await empRes.json();
+        setEmployees(empData);
+        localStorage.setItem('nexov_admin_employees', JSON.stringify(empData));
+      }
+      if (cardRes.ok) {
+        const cardData = await cardRes.json();
+        setCards(cardData);
+        localStorage.setItem('nexov_admin_cards', JSON.stringify(cardData));
+      }
     } catch (err) {
       console.error(err);
     } finally {

@@ -8,6 +8,8 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const LoginHistory = require('../models/LoginHistory');
 const useragent = require('useragent');
+const requestIp = require('request-ip');
+const geoip = require('geoip-lite');
 
 // POST /auth/upload-avatar/:id — Upload profile photo
 router.post('/upload-avatar/:id', upload.single('avatar'), async (req, res) => {
@@ -171,15 +173,18 @@ router.post('/login', async (req, res) => {
     }
 
     // 4. Record Success History
+    const ip = requestIp.getClientIp(req);
+    const geo = geoip.lookup(ip);
+
     await fallbackDb.save('loginHistory', {
       userId: user.id || user._id,
       email: user.email,
-      ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
+      ipAddress: ip,
       device: agent.device.toString(),
       browser: agent.toAgent(),
       os: agent.os.toString(),
       loginStatus: 'Success',
-      location: 'Firebase Auth',
+      location: geo ? `${geo.city}, ${geo.country}` : 'Firebase Auth',
       timestamp: new Date()
     });
 
@@ -208,6 +213,21 @@ router.post('/login', async (req, res) => {
 
   } catch (err) {
     console.error('🔥 SESSION_INIT_ERROR:', err);
+    
+    // Log Failure
+    const ip = requestIp.getClientIp(req);
+    const geo = geoip.lookup(ip);
+    await fallbackDb.save('loginHistory', {
+      email: email || 'unknown',
+      ipAddress: ip,
+      device: agent.device.toString(),
+      browser: agent.toAgent(),
+      os: agent.os.toString(),
+      loginStatus: 'Failure',
+      location: geo ? `${geo.city}, ${geo.country}` : 'Remote Attempt',
+      timestamp: new Date()
+    });
+
     res.status(500).json({ message: 'Mission Control failed to initialize session.' });
   }
 });
@@ -329,10 +349,14 @@ router.get('/team-access', async (req, res) => {
   }
 });
 
-// Revoke access
-router.delete('/revoke-access/:id', async (req, res) => {
-  await fallbackDb.deleteOne('users', req.params.id);
-  res.json({ message: 'Access revoked successfully' });
+// GET count of all users
+router.get('/count', async (req, res) => {
+  try {
+    const users = await fallbackDb.find('users', {});
+    res.json({ count: users.length });
+  } catch (err) {
+    res.status(500).json({ count: 0 });
+  }
 });
 
 module.exports = router;

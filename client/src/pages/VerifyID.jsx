@@ -51,7 +51,7 @@ const VerifyID = () => {
         }}
       />
       {/* Subtle Overlay for readability */}
-      <div className="absolute inset-0 bg-white/20 backdrop-blur-[2px]" />
+      <div className="absolute inset-0 bg-white/10" />
 
       <div className="w-full max-w-md relative z-10">
         <div className="flex flex-col items-center mb-10">

@@ -26,7 +26,7 @@
 body {
   /* High-Fidelity Office Theme */
   background: 
-    linear-gradient(rgba(248, 250, 252, 0.9), rgba(226, 232, 240, 0.85)),
+    linear-gradient(rgba(248, 250, 252, 0.6), rgba(226, 232, 240, 0.5)),
     url('/assets/office-bg.png');
   background-size: cover;
   background-position: center;
