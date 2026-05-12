@@ -135,7 +135,7 @@ const NexovTechMail = () => {
         </div>
 
         {/* 3. MESSAGE LIST */}
-        <div className={`flex-1 glass-card !p-0 rounded-[40px] flex flex-col overflow-hidden border-slate-100 shadow-2xl shadow-slate-200/50 ${selectedMail ? 'hidden xl:flex' : 'flex'}`}>
+        <div className={`flex-[1.5] min-w-[380px] glass-card !p-0 rounded-[40px] flex flex-col overflow-hidden border-slate-100 shadow-2xl shadow-slate-200/50 ${selectedMail ? 'hidden xl:flex' : 'flex'}`}>
            <div className="p-6 border-b border-slate-50 bg-white/40 backdrop-blur-xl relative z-10">
               <div className="relative group">
                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-brand-500 transition-colors" size={20} />
@@ -173,7 +173,7 @@ const NexovTechMail = () => {
                    animate={{ opacity: 1, y: 0 }}
                    transition={{ delay: i * 0.05 }}
                    onClick={() => setSelectedMail(mail)}
-                   className={`group flex items-center gap-6 px-6 py-5 rounded-[28px] cursor-pointer transition-all duration-300 ${
+                   className={`group flex items-center gap-4 px-4 py-4 rounded-[28px] cursor-pointer transition-all duration-300 ${
                      selectedMail?.id === mail.id 
                      ? 'bg-slate-900 text-white shadow-2xl scale-[1.02] translate-x-2' 
                      : 'bg-white hover:bg-white hover:shadow-xl border border-slate-50 hover:border-brand-500/20'
@@ -211,7 +211,7 @@ const NexovTechMail = () => {
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 40 }}
-              className="fixed inset-0 lg:relative lg:inset-auto lg:w-[600px] xl:w-[750px] glass-card !p-0 z-[110] flex flex-col overflow-hidden shadow-2xl border-slate-100"
+              className="fixed inset-0 lg:relative lg:inset-auto lg:w-[450px] xl:w-[650px] flex-[2.5] glass-card !p-0 z-[110] flex flex-col overflow-hidden shadow-2xl border-slate-100"
             >
               <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-white/40 backdrop-blur-xl">
                 <button onClick={() => setSelectedMail(null)} className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-400 hover:text-brand-600 transition-all shadow-lg lg:hidden">
