@@ -41,8 +41,19 @@ const VerifyID = () => {
   );
 
   return (
-    <div className="min-h-screen bg-transparent p-6 flex items-center justify-center">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen relative flex items-center justify-center p-6 overflow-hidden">
+      {/* Background Image Layer */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+        style={{ 
+          backgroundImage: "url('/assets/heehe.jpg')",
+          filter: 'brightness(0.95)'
+        }}
+      />
+      {/* Subtle Overlay for readability */}
+      <div className="absolute inset-0 bg-white/20 backdrop-blur-[2px]" />
+
+      <div className="w-full max-w-md relative z-10">
         <div className="flex flex-col items-center mb-10">
           <div className="w-16 h-16 bg-white/10 backdrop-blur-xl rounded-[24px] flex items-center justify-center p-3 shadow-2xl shadow-brand-600/20 mb-4 border border-gray-200">
             <img 
