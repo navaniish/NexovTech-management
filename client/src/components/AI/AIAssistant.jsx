@@ -86,7 +86,7 @@ const AIAssistant = () => {
         className="fixed bottom-8 right-8 w-16 h-16 rounded-full shadow-[0_20px_50px_rgba(139,92,246,0.3)] flex items-center justify-center z-[100] border-2 border-brand-500/50 group overflow-hidden bg-[#020617]"
       >
         <img
-          src="/assets/logo.png"
+          src="/assets/logo_nexo.jpeg"
           alt="Nexov AI"
           className="w-10 h-10 object-contain group-hover:scale-110 transition-transform"
         />
@@ -109,7 +109,7 @@ const AIAssistant = () => {
             <div className="p-4 bg-[#020617] border-b border-white/5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center overflow-hidden bg-white/5">
-                  <img src="/assets/logo.png" alt="Nexov AI" className="w-6 h-6 object-contain" />
+                  <img src="/assets/logo_nexo.jpeg" alt="Nexov AI" className="w-6 h-6 object-contain" />
                 </div>
                 <div>
                   <h3 className="text-[11px] font-black text-white uppercase tracking-widest">Nexov AI</h3>
@@ -138,7 +138,7 @@ const AIAssistant = () => {
                 <div key={idx} className={`flex ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
                   <div className={`flex gap-3 max-w-[90%] ${msg.role === 'assistant' ? '' : 'flex-row-reverse'}`}>
                     <div className={`w-7 h-7 rounded-full overflow-hidden shrink-0 flex items-center justify-center ${msg.role === 'assistant' ? 'bg-white/5 border border-white/10' : 'bg-white/10 text-brand-400'}`}>
-                      {msg.role === 'assistant' ? <img src="/assets/logo.png" className="w-4 h-4 object-contain" /> : <User size={14} />}
+                      {msg.role === 'assistant' ? <img src="/assets/logo_nexo.jpeg" className="w-4 h-4 object-contain" /> : <User size={14} />}
                     </div>
                     <div className={`p-3 rounded-2xl text-[11px] font-bold leading-relaxed ${msg.role === 'assistant' ? 'bg-white/5 text-slate-300 border border-white/5' : 'bg-brand-600 text-white shadow-xl'}`}>
                       {msg.content}
