@@ -77,24 +77,24 @@ const NexovTechMail = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-160px)] gap-6 animate-in fade-in duration-700">
+    <div className="flex flex-col h-[calc(100vh-140px)] gap-4 animate-in fade-in duration-700">
       
       {/* 1. VIBRANT HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
-        <div className="space-y-1">
-           <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-none italic">Nexus Mail</h1>
-           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em]">Secure Multi-Node Communication Hub</p>
+        <div className="space-y-0.5">
+           <h1 className="text-2xl font-black text-slate-900 tracking-tighter leading-none italic">Nexus Mail</h1>
+           <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em]">Communication Hub</p>
         </div>
         <div className="flex items-center gap-4">
            <button 
              onClick={() => setComposing(true)}
-             className="h-14 px-8 bg-slate-900 text-white rounded-2xl flex items-center gap-3 font-black text-[10px] uppercase tracking-widest shadow-2xl hover:bg-brand-600 transition-all group"
+             className="h-11 px-6 bg-slate-900 text-white rounded-xl flex items-center gap-2 font-black text-[9px] uppercase tracking-widest shadow-xl hover:bg-brand-600 transition-all group"
            >
-             <Zap size={18} className="text-amber-400 fill-amber-400 group-hover:scale-125 transition-transform" /> 
-             Dispatch Message
+             <Zap size={14} className="text-amber-400 fill-amber-400 group-hover:scale-125 transition-transform" /> 
+             Dispatch
            </button>
-           <button onClick={fetchMails} className="w-14 h-14 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400 hover:text-brand-600 transition-all shadow-xl">
-             <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+           <button onClick={fetchMails} className="w-11 h-11 bg-white border border-slate-100 rounded-xl flex items-center justify-center text-slate-400 hover:text-brand-600 transition-all shadow-lg">
+             <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
            </button>
         </div>
       </div>
@@ -107,49 +107,49 @@ const NexovTechMail = () => {
              <button
                key={folder.id}
                onClick={() => { setActiveFolder(folder.id); setSelectedMail(null); }}
-               className={`h-14 px-6 rounded-2xl flex items-center justify-between transition-all duration-300 group ${
+               className={`h-12 px-5 rounded-xl flex items-center justify-between transition-all duration-300 group ${
                  activeFolder === folder.id 
-                 ? 'bg-slate-900 text-white shadow-2xl shadow-slate-900/20' 
+                 ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/10' 
                  : 'bg-white/50 text-slate-400 hover:bg-white hover:text-slate-900 border border-transparent hover:border-slate-100 shadow-sm'
                }`}
              >
                <div className="flex items-center gap-4">
-                 <folder.icon size={18} className={activeFolder === folder.id ? 'text-brand-400' : `${folder.color} opacity-60 group-hover:opacity-100`} />
-                 <span className="text-[11px] font-black uppercase tracking-widest">{folder.label}</span>
+                 <folder.icon size={16} className={activeFolder === folder.id ? 'text-brand-400' : `${folder.color} opacity-60 group-hover:opacity-100`} />
+                 <span className="text-[10px] font-black uppercase tracking-widest">{folder.label}</span>
                </div>
                {folder.id === 'inbox' && mails.length > 0 && (
-                 <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black ${activeFolder === folder.id ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                 <span className={`px-2 py-0.5 rounded-md text-[8px] font-black ${activeFolder === folder.id ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
                     {mails.length}
                  </span>
                )}
              </button>
            ))}
            
-           <div className="mt-auto glass-card p-6 rounded-[32px] border-slate-100 bg-gradient-to-br from-indigo-50/50 to-white/50">
-              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white mb-4 shadow-lg shadow-indigo-600/20">
-                 <ShieldCheck size={20} />
+           <div className="mt-auto glass-card p-4 rounded-2xl border-slate-100 bg-gradient-to-br from-indigo-50/50 to-white/50">
+              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white mb-3 shadow-lg shadow-indigo-600/20">
+                 <ShieldCheck size={16} />
               </div>
-              <p className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-1">Encrypted Line</p>
-              <p className="text-[10px] font-medium text-slate-500 leading-relaxed italic opacity-80">"Quantum-grade security protocol active."</p>
+              <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-1">Encrypted Line</p>
+              <p className="text-[9px] font-medium text-slate-500 leading-relaxed italic opacity-80">"Quantum-grade security active."</p>
            </div>
         </div>
 
         {/* 3. MESSAGE LIST */}
-        <div className={`flex-[1.5] min-w-[380px] glass-card !p-0 rounded-[40px] flex flex-col overflow-hidden border-slate-100 shadow-2xl shadow-slate-200/50 ${selectedMail ? 'hidden xl:flex' : 'flex'}`}>
-           <div className="p-6 border-b border-slate-50 bg-white/40 backdrop-blur-xl relative z-10">
+        <div className={`flex-[1.5] min-w-[380px] glass-card !p-0 rounded-[32px] flex flex-col overflow-hidden border-slate-100 shadow-2xl shadow-slate-200/50 ${selectedMail ? 'hidden xl:flex' : 'flex'}`}>
+           <div className="p-4 border-b border-slate-50 bg-white/40 backdrop-blur-xl relative z-10">
               <div className="relative group">
-                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-brand-500 transition-colors" size={20} />
+                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-brand-500 transition-colors" size={16} />
                  <input 
                    type="text" 
-                   placeholder="SEARCH DISPATCH REGISTRY..." 
+                   placeholder="SEARCH..." 
                    value={searchTerm}
                    onChange={(e) => setSearchTerm(e.target.value)}
-                   className="w-full h-14 bg-white border border-slate-100 rounded-2xl pl-14 pr-6 text-[11px] font-black uppercase tracking-widest text-slate-900 outline-none focus:ring-4 focus:ring-brand-500/10 transition-all placeholder:text-slate-200"
+                   className="w-full h-11 bg-white border border-slate-100 rounded-xl pl-12 pr-6 text-[10px] font-black uppercase tracking-widest text-slate-900 outline-none focus:ring-4 focus:ring-brand-500/5 transition-all placeholder:text-slate-200"
                  />
               </div>
            </div>
 
-           <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2 bg-slate-50/30">
+           <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-1 bg-slate-50/30">
              {loading ? (
                <div className="h-full flex flex-col items-center justify-center p-20 animate-pulse">
                   <div className="w-20 h-20 bg-indigo-50 rounded-[32px] flex items-center justify-center mb-6">
@@ -173,10 +173,10 @@ const NexovTechMail = () => {
                    animate={{ opacity: 1, y: 0 }}
                    transition={{ delay: i * 0.05 }}
                    onClick={() => setSelectedMail(mail)}
-                   className={`group flex items-center gap-4 px-4 py-4 rounded-[28px] cursor-pointer transition-all duration-300 ${
+                   className={`group flex items-center gap-3 px-3 py-3 rounded-2xl cursor-pointer transition-all duration-300 ${
                      selectedMail?.id === mail.id 
-                     ? 'bg-slate-900 text-white shadow-2xl scale-[1.02] translate-x-2' 
-                     : 'bg-white hover:bg-white hover:shadow-xl border border-slate-50 hover:border-brand-500/20'
+                     ? 'bg-slate-900 text-white shadow-xl translate-x-1' 
+                     : 'bg-white hover:bg-white hover:shadow-lg border border-slate-50 hover:border-brand-500/10'
                    }`}
                  >
                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:rotate-12 ${
