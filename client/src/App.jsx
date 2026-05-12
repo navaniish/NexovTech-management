@@ -44,6 +44,7 @@ import MyLeaves from './pages/employee/MyLeaves';
 import AdminIDCards from './pages/AdminIDCards';
 import MyIDCard from './pages/employee/MyIDCard';
 import VerifyID from './pages/VerifyID';
+import EmployeeSecurity from './pages/employee/Security';
 
 import { Loader2 } from 'lucide-react';
 
@@ -117,7 +118,7 @@ function AppRoutes() {
         <Route path="/employee/leaves" element={<MyLeaves />} />
         <Route path="/employee/id-card" element={<MyIDCard />} />
         <Route path="/employee/mail" element={<NexovTechMail />} />
-        <Route path="/employee/security" element={<SecurityShield />} />
+        <Route path="/employee/security" element={<EmployeeSecurity />} />
         <Route path="/employee/settings" element={<Settings />} />
       </Route>
 

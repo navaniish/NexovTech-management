@@ -5,6 +5,42 @@
     "priority": "Normal",
     "type": "MAIL_DISPATCH",
     "user": "nexovtech@myyahoo.com",
-    "timestamp": "2026-05-12T09:21:09.137Z"
+    "timestamp": {
+      "_seconds": 1778577669,
+      "_nanoseconds": 137000000
+    }
+  },
+  {
+    "id": "OMPyCP8Fy0gh8kfggBfo",
+    "details": "Dispatched internal mail: hiii to manicharanteja@nexovtech.com",
+    "priority": "Normal",
+    "type": "MAIL_DISPATCH",
+    "user": "manicharanteja@nexovtech.com",
+    "timestamp": {
+      "_seconds": 1778577421,
+      "_nanoseconds": 97000000
+    }
+  },
+  {
+    "id": "QQC5bXGwkbm3QZ7fsvAw",
+    "details": "Dispatched internal mail: hgello to manicharanteja1234@gmail.com",
+    "priority": "High",
+    "type": "MAIL_DISPATCH",
+    "user": "nexovtech@myyahoo.com",
+    "timestamp": {
+      "_seconds": 1778435175,
+      "_nanoseconds": 401000000
+    }
+  },
+  {
+    "id": "wUrN1h4ij9hJs8YP8dZD",
+    "details": "Dispatched internal mail: hiii to manicharanteja@nexovtech.com",
+    "priority": "Normal",
+    "type": "MAIL_DISPATCH",
+    "user": "nexovtech@myyahoo.com",
+    "timestamp": {
+      "_seconds": 1778577276,
+      "_nanoseconds": 569000000
+    }
   }
 ]

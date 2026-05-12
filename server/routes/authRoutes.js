@@ -8,8 +8,6 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const LoginHistory = require('../models/LoginHistory');
 const useragent = require('useragent');
-const requestIp = require('request-ip');
-const geoip = require('geoip-lite');
 
 // POST /auth/upload-avatar/:id — Upload profile photo
 router.post('/upload-avatar/:id', upload.single('avatar'), async (req, res) => {
@@ -24,14 +22,14 @@ router.post('/upload-avatar/:id', upload.single('avatar'), async (req, res) => {
     const avatarUrl = `/uploads/avatars/${req.file.filename}`;
 
     const updatedUser = await fallbackDb.update('users', userId, { avatar: avatarUrl });
-    
+
     if (!updatedUser) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json({ 
-      message: 'Profile photo updated successfully', 
-      avatar: avatarUrl 
+    res.json({
+      message: 'Profile photo updated successfully',
+      avatar: avatarUrl
     });
   } catch (err) {
     console.error('Upload Error:', err);
@@ -42,7 +40,7 @@ router.post('/upload-avatar/:id', upload.single('avatar'), async (req, res) => {
 // GET /auth/me — Sync user data from UID
 router.get('/me', async (req, res) => {
   const { uid, email } = req.query;
-  
+
   let user;
   if (email) {
     // 1. Explicit Email Lookup (High Priority for Bypass/Discovery)
@@ -51,7 +49,7 @@ router.get('/me', async (req, res) => {
     // 2. UID Lookup (Standard Auth Sync)
     user = await fallbackDb.findOne('users', { firebaseUid: uid });
   }
-  
+
   if (user) {
     if (user.email === 'nexovtech@myyahoo.com') user.role = 'Admin';
     return res.json(user);
@@ -63,10 +61,10 @@ router.get('/me', async (req, res) => {
 // POST /auth/register — Create/Sync profile from Firebase
 router.post('/register', async (req, res) => {
   const { uid, email, name, role, password } = req.body;
-  const userData = { 
-    firebaseUid: uid, 
-    email: email.toLowerCase(), 
-    name: name || 'New Explorer', 
+  const userData = {
+    firebaseUid: uid,
+    email: email.toLowerCase(),
+    name: name || 'New Explorer',
     role: email.toLowerCase() === 'nexovtech@myyahoo.com' ? 'Admin' : (role || 'Employee'),
     avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name + Date.now()}`,
     createdAt: new Date()
@@ -102,7 +100,7 @@ router.post('/login', async (req, res) => {
   const { email, firebaseToken, token } = req.body; // 'token' here is the 2FA MFA token
   const agent = useragent.parse(req.headers['user-agent']);
   const { admin } = require('../firebaseAdmin');
-  
+
   try {
     let firebaseUser;
 
@@ -125,66 +123,78 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Email identity required' });
     }
     let user = await fallbackDb.findOne('users', { email: lookupEmail });
-    
+
     // Virtual Email Generator
     const generateCompanyEmail = (name) => `${name.toLowerCase().replace(/[^a-z0-9]/g, '.')}@nexovtech.com`;
 
     if (!user) {
-       console.log(`🚀 ENTERPRISE_SYNC: New identity detected [${lookupEmail}]. Provisioning virtual workspace profile...`);
-       const name = firebaseUser.name || lookupEmail.split('@')[0];
-       user = await fallbackDb.save('users', {
-         email: lookupEmail,
-         companyEmail: generateCompanyEmail(name),
-         firebaseUid: firebaseUser.uid,
-         name: name,
-         role: lookupEmail === 'nexovtech@myyahoo.com' ? 'Super Admin' : 'Employee',
-         department: lookupEmail === 'nexovtech@myyahoo.com' ? 'Executive' : 'General',
-         status: 'Active',
-         avatar: firebaseUser.picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${lookupEmail}`,
-         lastActive: new Date(),
-         createdAt: new Date()
-       });
+      console.log(`🚀 ENTERPRISE_SYNC: New identity detected [${lookupEmail}]. Provisioning virtual workspace profile...`);
+      const name = firebaseUser.name || lookupEmail.split('@')[0];
+      user = await fallbackDb.save('users', {
+        email: lookupEmail,
+        companyEmail: generateCompanyEmail(name),
+        firebaseUid: firebaseUser.uid,
+        name: name,
+        role: lookupEmail === 'nexovtech@myyahoo.com' ? 'Super Admin' : 'Employee',
+        department: lookupEmail === 'nexovtech@myyahoo.com' ? 'Executive' : 'General',
+        status: 'Active',
+        avatar: firebaseUser.picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${lookupEmail}`,
+        lastActive: new Date(),
+        createdAt: new Date()
+      });
     } else {
-       // Update lastActive on every login/sync
-       const updatedUser = await fallbackDb.update('users', user.id || user._id, {
-         lastActive: new Date()
-       });
-       if (updatedUser) user = updatedUser;
+      // Update lastActive on every login/sync
+      const updatedUser = await fallbackDb.update('users', user.id || user._id, {
+        lastActive: new Date()
+      });
+      if (updatedUser) user = updatedUser;
     }
 
     if (!user) {
       return res.status(500).json({ message: 'Failed to provision or retrieve user profile.' });
     }
 
-    // 3. Check 2FA (TOTP)
+    // 3. Check 2FA (TOTP or Backup Code)
     if (user.twoFactorEnabled) {
       if (!token) {
         return res.json({ require2FA: true, userId: user.id || user._id });
       }
+
       const speakeasy = require('speakeasy');
+      
+      // Try TOTP first
       const verified = speakeasy.totp.verify({
         secret: user.twoFactorSecret,
         encoding: 'base32',
         token
       });
+
       if (!verified) {
-        return res.status(400).json({ message: 'Invalid 2FA token' });
+        // Try Backup Codes
+        const backupCodes = user.backupCodes || [];
+        const codeIndex = backupCodes.indexOf(token);
+        
+        if (codeIndex !== -1) {
+          console.log(`🛡️ SECURITY_BRIDGE: Emergency backup code consumed for [${user.email}]`);
+          // Consume the code
+          backupCodes.splice(codeIndex, 1);
+          await fallbackDb.update('users', user.id || user._id, { backupCodes });
+        } else {
+          return res.status(400).json({ message: 'Invalid verification token' });
+        }
       }
     }
 
     // 4. Record Success History
-    const ip = requestIp.getClientIp(req);
-    const geo = geoip.lookup(ip);
-
     await fallbackDb.save('loginHistory', {
       userId: user.id || user._id,
       email: user.email,
-      ipAddress: ip,
+      ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
       device: agent.device.toString(),
       browser: agent.toAgent(),
       os: agent.os.toString(),
       loginStatus: 'Success',
-      location: geo ? `${geo.city}, ${geo.country}` : 'Firebase Auth',
+      location: 'Firebase Auth',
       timestamp: new Date()
     });
 
@@ -213,21 +223,6 @@ router.post('/login', async (req, res) => {
 
   } catch (err) {
     console.error('🔥 SESSION_INIT_ERROR:', err);
-    
-    // Log Failure
-    const ip = requestIp.getClientIp(req);
-    const geo = geoip.lookup(ip);
-    await fallbackDb.save('loginHistory', {
-      email: email || 'unknown',
-      ipAddress: ip,
-      device: agent.device.toString(),
-      browser: agent.toAgent(),
-      os: agent.os.toString(),
-      loginStatus: 'Failure',
-      location: geo ? `${geo.city}, ${geo.country}` : 'Remote Attempt',
-      timestamp: new Date()
-    });
-
     res.status(500).json({ message: 'Mission Control failed to initialize session.' });
   }
 });
@@ -236,13 +231,13 @@ router.post('/login', async (req, res) => {
 router.post('/grant-access', async (req, res) => {
   const { email, role, name, tempPassword, bankName, accountNumber, ifscCode, upiId } = req.body;
   const { admin } = require('../firebaseAdmin');
-  
+
   if (!email) return res.status(400).json({ message: 'Email is required for secure delegation' });
   if (!tempPassword) return res.status(400).json({ message: 'Initial password is required' });
 
   try {
     console.log(`🛡️ SECURITY_BRIDGE: Creating cloud credentials for [${email}]...`);
-    
+
     // 1. Create User in Firebase Auth
     let firebaseUser;
     try {
@@ -287,11 +282,11 @@ router.post('/grant-access', async (req, res) => {
 
     console.log(`📝 ACCESS_SYNC: Registering specialist [${email}] in database...`);
     const saved = await fallbackDb.save('users', userData);
-    
+
     const allUsers = (await fallbackDb.find('users', {})) || [];
-    
-    res.json({ 
-      message: `Access granted to ${email}. Cloud identity activated.`, 
+
+    res.json({
+      message: `Access granted to ${email}. Cloud identity activated.`,
       user: saved,
       updatedRoster: allUsers
     });
@@ -305,12 +300,12 @@ router.post('/grant-access', async (req, res) => {
 router.put('/update-financials/:id', async (req, res) => {
   const { bankName, accountNumber, ifscCode, upiId } = req.body;
   try {
-    const updated = await fallbackDb.save('users', { 
-      id: req.params.id, 
-      bankName, 
-      accountNumber, 
-      ifscCode, 
-      upiId 
+    const updated = await fallbackDb.save('users', {
+      id: req.params.id,
+      bankName,
+      accountNumber,
+      ifscCode,
+      upiId
     });
     res.json(updated);
   } catch (err) {

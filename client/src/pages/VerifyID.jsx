@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { 
-  ShieldCheck, XCircle, Loader2, User, 
+import {
+  ShieldCheck, XCircle, Loader2, User,
   Briefcase, Building2, Calendar, CheckCircle2,
   AlertTriangle, Sparkles
 } from 'lucide-react';
@@ -43,23 +43,23 @@ const VerifyID = () => {
   return (
     <div className="min-h-screen relative flex items-center justify-center p-6 overflow-hidden">
       {/* Background Image Layer */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
-        style={{ 
+        style={{
           backgroundImage: "url('/assets/heehe.jpg')",
           filter: 'brightness(0.95)'
         }}
       />
       {/* Subtle Overlay for readability */}
-      <div className="absolute inset-0 bg-white/10" />
+      <div className="absolute inset-0 bg-white/20 backdrop-blur-[2px]" />
 
       <div className="w-full max-w-md relative z-10">
         <div className="flex flex-col items-center mb-10">
           <div className="w-16 h-16 bg-white rounded-[24px] flex items-center justify-center p-3 shadow-2xl mb-4 border border-slate-100">
-            <img 
-              src="/assets/logo.jpeg" 
-              alt="Logo" 
-              className="w-full h-full object-contain" 
+            <img
+              src="/assets/logo.jpeg"
+              alt="Logo"
+              className="w-full h-full object-contain"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = 'https://ui-avatars.com/api/?name=NexovTech&background=0D8ABC&color=fff';
@@ -71,7 +71,7 @@ const VerifyID = () => {
         </div>
 
         {error ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="theme-card rounded-[40px] p-12 text-center border border-rose-500/20 shadow-xl"
@@ -86,71 +86,70 @@ const VerifyID = () => {
             </div>
           </motion.div>
         ) : (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-[40px] p-8 space-y-8 border border-slate-100 shadow-[0_40px_100px_rgba(0,0,0,0.1)] relative overflow-hidden"
           >
             {/* Subtle Texture/Pattern on solid card */}
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-            
+
             <div className="flex flex-col items-center">
-               <div className={`px-6 py-2 rounded-full border text-xs font-black uppercase tracking-widest flex items-center gap-2 mb-8 ${
-                 data.status === 'Active' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
-               }`}>
-                    {data.status === 'Active' ? (
-                      <motion.svg 
-                        width="24" height="24" viewBox="0 0 24 24" fill="none" 
-                        initial={{ scale: 0.5, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                      >
-                        <motion.circle 
-                          cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" 
-                          initial={{ pathLength: 0 }}
-                          animate={{ pathLength: 1 }}
-                          transition={{ duration: 0.6, ease: "easeInOut" }}
-                        />
-                        <motion.path 
-                          d="M7 12L10.5 14.5L17 8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" 
-                          initial={{ pathLength: 0 }}
-                          animate={{ pathLength: 1 }}
-                          transition={{ duration: 0.4, delay: 0.5, ease: "easeOut" }}
-                        />
-                      </motion.svg>
-                    ) : <XCircle size={24} className="text-rose-500" />}
-                  Identity Verified: {data.status}
-               </div>
+              <div className={`px-6 py-2 rounded-full border text-xs font-black uppercase tracking-widest flex items-center gap-2 mb-8 ${data.status === 'Active' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                }`}>
+                {data.status === 'Active' ? (
+                  <motion.svg
+                    width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  >
+                    <motion.circle
+                      cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.6, ease: "easeInOut" }}
+                    />
+                    <motion.path
+                      d="M7 12L10.5 14.5L17 8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.4, delay: 0.5, ease: "easeOut" }}
+                    />
+                  </motion.svg>
+                ) : <XCircle size={24} className="text-rose-500" />}
+                Identity Verified: {data.status}
+              </div>
 
-               <div className="w-32 h-32 rounded-[32px] bg-gray-50 p-1 shadow-2xl mb-6 border-4 border-gray-200 overflow-hidden backdrop-blur-xl">
-                  <img 
-                    src={data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`} 
-                    className="w-full h-full object-cover rounded-[26px]" 
-                    alt="" 
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`;
-                    }}
-                  />
-               </div>
+              <div className="w-32 h-32 rounded-[32px] bg-gray-50 p-1 shadow-2xl mb-6 border-4 border-gray-200 overflow-hidden backdrop-blur-xl">
+                <img
+                  src={data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`}
+                  className="w-full h-full object-cover rounded-[26px]"
+                  alt=""
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`;
+                  }}
+                />
+              </div>
 
-               <h3 className="text-2xl font-black theme-text-primary tracking-tight">{data.name}</h3>
-               <p className="text-rose-600 font-bold uppercase tracking-widest text-xs mt-1">{data.role}</p>
+              <h3 className="text-2xl font-black theme-text-primary tracking-tight">{data.name}</h3>
+              <p className="text-rose-600 font-bold uppercase tracking-widest text-xs mt-1">{data.role}</p>
             </div>
 
             <div className="space-y-4 pt-4 border-t border-slate-50">
-               <InfoRow icon={ShieldCheck} label="Employee ID" value={data.employeeId} />
-               <InfoRow icon={Building2} label="Organization" value="NexovTech" />
-               <InfoRow icon={Calendar} label="Issued On" value={new Date(data.issueDate).toLocaleDateString()} />
-               <InfoRow icon={Calendar} label="Expiry Date" value={new Date(data.expiryDate).toLocaleDateString()} />
+              <InfoRow icon={ShieldCheck} label="Employee ID" value={data.employeeId} />
+              <InfoRow icon={Building2} label="Organization" value="NexovTech" />
+              <InfoRow icon={Calendar} label="Issued On" value={new Date(data.issueDate).toLocaleDateString()} />
+              <InfoRow icon={Calendar} label="Expiry Date" value={new Date(data.expiryDate).toLocaleDateString()} />
             </div>
 
             <div className={`p-4 rounded-2xl ${data.status === 'Active' ? 'bg-emerald-500/5 border border-emerald-500/10' : 'bg-rose-500/5 border border-rose-500/10'}`}>
-               <p className={`text-[10px] font-black text-center leading-relaxed ${data.status === 'Active' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  {data.status === 'Active' 
-                    ? 'OFFICIAL IDENTITY: AUTHORIZED PERSONNEL' 
-                    : 'ACCESS REVOKED: CONTACT SECURITY'}
-               </p>
+              <p className={`text-[10px] font-black text-center leading-relaxed ${data.status === 'Active' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                {data.status === 'Active'
+                  ? 'OFFICIAL IDENTITY: AUTHORIZED PERSONNEL'
+                  : 'ACCESS REVOKED: CONTACT SECURITY'}
+              </p>
             </div>
           </motion.div>
         )}

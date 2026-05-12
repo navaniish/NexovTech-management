@@ -178,4 +178,70 @@ router.delete('/devices/:id', auth, async (req, res) => {
   }
 });
 
+// 7. Admin: Get ALL Security Logs
+router.get('/admin/logs', auth, async (req, res) => {
+  if (req.user.role !== 'Admin') return res.status(403).json({ message: 'Access denied' });
+  try {
+    const logs = await SecurityLog.find().sort({ createdAt: -1 }).limit(100);
+    res.json(logs);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to retrieve global audit trail' });
+  }
+});
+
+// 8. Admin: Get ALL Users Security Status
+router.get('/admin/users-status', auth, async (req, res) => {
+  if (req.user.role !== 'Admin') return res.status(403).json({ message: 'Access denied' });
+  try {
+    const users = await fallbackDb.find('users', {});
+    const statusData = users.map(u => ({
+      id: u.id || u._id,
+      name: u.name,
+      email: u.email,
+      twoFactorEnabled: u.twoFactorEnabled || false,
+      role: u.role
+    }));
+    res.json(statusData);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to retrieve user statuses' });
+  }
+});
+
+// 9. Regenerate Backup Codes
+router.post('/2fa/regenerate-backup-codes', auth, async (req, res) => {
+  try {
+    const user = await fallbackDb.findById('users', req.user.id);
+    if (!user || !user.twoFactorEnabled) return res.status(400).json({ message: '2FA not active' });
+
+    const backupCodes = Array.from({ length: 8 }, () => Math.random().toString(36).substr(2, 10).toUpperCase());
+    await fallbackDb.update('users', user.id, { backupCodes });
+
+    res.json({ message: 'Backup codes regenerated', backupCodes });
+  } catch (err) {
+    res.status(500).json({ message: 'Regeneration failed' });
+  }
+});
+
+// 10. Session Integrity Check
+router.get('/session-check', auth, async (req, res) => {
+  res.json({ status: 'Valid', timestamp: new Date(), node: req.headers['user-agent'] });
+});
+
+// 11. Trigger Security Alert (Notification Simulation)
+router.post('/notify-alert', auth, async (req, res) => {
+  const { type, message } = req.body;
+  try {
+    // In a real app, this would send an Email/SMS
+    console.log(`🚨 SECURITY_ALERT: [${req.user.id}] ${type} - ${message}`);
+    await SecurityLog.create({
+      userId: req.user.id,
+      action: 'security_alert_sent',
+      details: `${type}: ${message}`
+    });
+    res.json({ message: 'Alert processed and logged' });
+  } catch (err) {
+    res.status(500).json({ message: 'Alert routing failed' });
+  }
+});
+
 module.exports = router;
