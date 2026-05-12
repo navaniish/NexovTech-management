@@ -55,7 +55,7 @@ const VerifyID = () => {
 
       <div className="w-full max-w-md relative z-10">
         <div className="flex flex-col items-center mb-10">
-          <div className="w-16 h-16 bg-white/10 backdrop-blur-xl rounded-[24px] flex items-center justify-center p-3 shadow-2xl shadow-brand-600/20 mb-4 border border-gray-200">
+          <div className="w-16 h-16 bg-white rounded-[24px] flex items-center justify-center p-3 shadow-2xl mb-4 border border-slate-100">
             <img 
               src="/assets/logo.jpeg" 
               alt="Logo" 
@@ -89,13 +89,21 @@ const VerifyID = () => {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="theme-card rounded-[40px] p-8 space-y-8 border border-emerald-500/10 shadow-2xl shadow-emerald-500/5"
+            className="bg-white rounded-[40px] p-8 space-y-8 border border-slate-100 shadow-[0_40px_100px_rgba(0,0,0,0.1)] relative overflow-hidden"
           >
+            {/* Subtle Texture/Pattern on solid card */}
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+            
             <div className="flex flex-col items-center">
                <div className={`px-6 py-2 rounded-full border text-xs font-black uppercase tracking-widest flex items-center gap-2 mb-8 ${
                  data.status === 'Active' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
                }`}>
-                  {data.status === 'Active' ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
+                   {data.status === 'Active' ? (
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" />
+                       <path d="M7 12L10.5 15.5L18 8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                     </svg>
+                   ) : <XCircle size={20} />}
                   Identity Verified: {data.status}
                </div>
 
@@ -115,18 +123,18 @@ const VerifyID = () => {
                <p className="text-rose-600 font-bold uppercase tracking-widest text-xs mt-1">{data.role}</p>
             </div>
 
-            <div className="space-y-4 pt-4 border-t border-black/5">
+            <div className="space-y-4 pt-4 border-t border-slate-50">
                <InfoRow icon={ShieldCheck} label="Employee ID" value={data.employeeId} />
-               <InfoRow icon={Building2} label="Organization" value={data.company} />
+               <InfoRow icon={Building2} label="Organization" value="NexovTech" />
                <InfoRow icon={Calendar} label="Issued On" value={new Date(data.issueDate).toLocaleDateString()} />
                <InfoRow icon={Calendar} label="Expiry Date" value={new Date(data.expiryDate).toLocaleDateString()} />
             </div>
 
-            <div className={`p-4 rounded-2xl border ${data.status === 'Active' ? 'bg-emerald-500/5 border-emerald-500/10' : 'bg-rose-500/5 border-rose-500/10'}`}>
-               <p className={`text-[10px] font-bold text-center leading-relaxed ${data.status === 'Active' ? 'text-emerald-500/80' : 'text-rose-500/80'}`}>
+            <div className={`p-4 rounded-2xl ${data.status === 'Active' ? 'bg-emerald-500/5 border border-emerald-500/10' : 'bg-rose-500/5 border border-rose-500/10'}`}>
+               <p className={`text-[10px] font-black text-center leading-relaxed ${data.status === 'Active' ? 'text-emerald-600' : 'text-rose-600'}`}>
                   {data.status === 'Active' 
-                    ? 'This identity is current and authorized for all NexovTech facilities and operations.' 
-                    : 'This credential has been deactivated. Please contact security administration.'}
+                    ? 'OFFICIAL IDENTITY: AUTHORIZED PERSONNEL' 
+                    : 'ACCESS REVOKED: CONTACT SECURITY'}
                </p>
             </div>
           </motion.div>
