@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
-const puppeteer = require('puppeteer');
 const fallbackDb = require('../utils/fallbackDb');
 const payslipTemplate = require('../utils/payslipTemplate');
 
@@ -176,18 +175,26 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Payslip PDF Generation (Enterprise-Grade Puppeteer Architecture)
+// PDF Generation - Serverless Compatible Architecture
 router.get('/:id/pdf', async (req, res) => {
   try {
-    console.log(`📄 PDF_GEN: Initiating statement forgery for ID: ${req.params.id}`);
     const payroll = await fallbackDb.findById('payrolls', req.params.id);
+    if (!payroll) return res.status(404).json({ message: 'Payroll record not found' });
+
+    // Fallback for Serverless Environments (Netlify/Vercel)
+    // Puppeteer is too large for standard Lambda functions. 
+    // In production, we recommend using a dedicated microservice or a client-side generator like jsPDF.
     
-    if (!payroll) {
-      console.error(`❌ PDF_GEN_FAILURE: Record ${req.params.id} not found in the mission vault.`);
-      return res.status(404).json({ message: 'Payroll record not found' });
+    let puppeteer;
+    try {
+      puppeteer = require('puppeteer');
+    } catch (e) {
+      console.warn('⚠️ PDF_ENGINE_OFFLINE: Puppeteer not found in this environment.');
+      return res.status(501).json({ 
+        message: 'Statement generation is optimized for high-performance dedicated servers. Please contact administrator for local PDF export.',
+        details: 'SERVERLESS_RESTRICTION: Chromium engine not initialized.'
+      });
     }
-    
-    console.log(`✅ PDF_GEN: Record found for ${payroll.employeeName}. Launching Puppeteer engine...`);
 
     // Prepare Logo Base64
     let logoBase64 = '';
@@ -197,20 +204,15 @@ router.get('/:id/pdf', async (req, res) => {
         const logoBuffer = fs.readFileSync(logoPath);
         logoBase64 = `data:image/jpeg;base64,${logoBuffer.toString('base64')}`;
       }
-    } catch (e) {
-      console.warn('Logo encoding failed:', e);
-    }
+    } catch (e) { /* ignore logo fail */ }
 
-    // Generate HTML Content
     const htmlContent = payslipTemplate({ ...payroll, logoBase64 });
 
-    // Launch Puppeteer
     const browser = await puppeteer.launch({
       headless: 'new',
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
-    
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
     
     const pdfBuffer = await page.pdf({
@@ -222,18 +224,13 @@ router.get('/:id/pdf', async (req, res) => {
 
     await browser.close();
 
-    // Secure Storage Persistence
-    const fileName = `Payslip-${payroll.employeeName.replace(/\s+/g, '_')}-${payroll.month}-${payroll.year}-${Date.now()}.pdf`;
-    const storagePath = path.join(__dirname, '../storage/payslips', fileName);
-    fs.writeFileSync(storagePath, pdfBuffer);
-
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+    res.setHeader('Content-Disposition', `attachment; filename=Payslip-${payroll.employeeName.replace(/\s+/g, '_')}.pdf`);
     res.send(pdfBuffer);
 
   } catch (err) {
-    console.error('Puppeteer PDF Generation Failed:', err);
-    res.status(500).json({ message: 'Failed to generate enterprise-grade PDF statement' });
+    console.error('PDF Generation Failed:', err);
+    res.status(500).json({ message: 'Failed to generate PDF statement' });
   }
 });
 
