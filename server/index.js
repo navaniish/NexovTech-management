@@ -11,6 +11,12 @@ const IS_SERVERLESS = !!(process.env.NETLIFY || process.env.VERCEL || process.en
 
 try { dotenv.config(); } catch (e) { /* no .env in serverless */ }
 
+// Initialize Telegram Bot
+const { initBot } = require('./bot/telegramBot');
+if (!IS_SERVERLESS) {
+  initBot(process.env.TELEGRAM_BOT_TOKEN);
+}
+
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 try { if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true }); } catch (e) { /* read-only FS */ }
 
@@ -148,7 +154,13 @@ if (!IS_SERVERLESS) {
 
   const PORT = process.env.PORT || 5006;
   server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
+  }).on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`\n❌ PORT ${PORT} IS BUSY! (Ghost process found)`);
+      console.error(`Please run: Stop-Process -Name "node" -Force\n`);
+      process.exit(1);
+    }
   });
 }
 

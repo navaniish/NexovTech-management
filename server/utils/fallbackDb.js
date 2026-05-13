@@ -60,6 +60,8 @@ const fallbackDb = {
       let ref = db.collection(collection);
       let hasFilter = false;
       if (query.email) { ref = ref.where('email', '==', query.email); hasFilter = true; }
+      if (query.otp) { ref = ref.where('otp', '==', query.otp); hasFilter = true; }
+      if (query.telegramId) { ref = ref.where('telegramId', '==', query.telegramId); hasFilter = true; }
       if (query.firebaseUid) { ref = ref.where('firebaseUid', '==', query.firebaseUid); hasFilter = true; }
       if (query.uid) { ref = ref.where('firebaseUid', '==', query.uid); hasFilter = true; }
       if (query.companyEmail) { ref = ref.where('companyEmail', '==', query.companyEmail); hasFilter = true; }

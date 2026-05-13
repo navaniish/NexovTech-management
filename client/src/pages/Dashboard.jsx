@@ -12,7 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import API_URL from '../config';
 
 const CardSparkline = ({ data, color, index }) => (
-   <ResponsiveContainer width="100%" height="100%">
+   <ResponsiveContainer width="100%" height={45} minWidth={0}>
       <AreaChart data={data.map((v, i) => ({ v, i }))}>
          <defs>
             <linearGradient id={`grad-${index}`} x1="0" y1="0" x2="0" y2="1">
@@ -133,8 +133,8 @@ const Dashboard = () => {
          <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             <div className="lg:col-span-3 glass-card !p-6 flex flex-col min-h-[300px] border-slate-100">
                <h4 className="text-[11px] font-black text-slate-900 uppercase mb-6 tracking-tight italic text-center">Unit Allocation</h4>
-               <div className="flex-1 relative">
-                  <ResponsiveContainer width="100%" height="100%">
+               <div className="flex-1 relative min-h-[180px]">
+                  <ResponsiveContainer width="100%" height="100%" minHeight={180}>
                      <PieChart>
                         <Pie data={deptData} innerRadius={55} outerRadius={75} paddingAngle={8} dataKey="value" stroke="none">
                            {deptData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}

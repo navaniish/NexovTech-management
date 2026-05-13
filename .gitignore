@@ -25,3 +25,8 @@ knowledge/
 scratch/
 logs/
 overview.txt
+
+# Data Vaults
+server/data/sessions.json
+server/data/telegram_otps.json
+server/data/telegram_users.json

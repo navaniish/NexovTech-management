@@ -102,24 +102,8 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
            </nav>
         </div>
 
-        {/* USER PROFILE SECTION */}
-        <div className="p-4 border-t border-white/10">
-           <div className={`flex items-center gap-3 p-2 rounded-xl transition-all ${isCollapsed ? 'justify-center' : ''}`}>
-              <div className="w-10 h-10 rounded-2xl overflow-hidden border-2 border-white shadow-lg shrink-0 bg-slate-800">
-                 <img 
-                   src={user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL.replace('/api', '')}${user.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'Admin'}`} 
-                   alt="" 
-                   className="w-full h-full object-cover"
-                 />
-              </div>
-              {!isCollapsed && (
-                <div className="flex-1 min-w-0">
-                   <p className="text-[13px] font-black text-white truncate">{user?.name || 'Authorized User'}</p>
-                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{user?.role || 'Access Granted'}</p>
-                </div>
-              )}
-           </div>
-        </div>
+        {/* Profile removed to prevent redundancy with TopBar */}
+
 
         {/* COLLAPSE TOGGLE */}
         <button 

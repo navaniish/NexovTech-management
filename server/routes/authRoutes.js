@@ -8,6 +8,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const LoginHistory = require('../models/LoginHistory');
 const useragent = require('useragent');
+const { sendNotification } = require('../bot/telegramBot');
 
 // POST /auth/upload-avatar/:id — Upload profile photo
 router.post('/upload-avatar/:id', upload.single('avatar'), async (req, res) => {
@@ -197,7 +198,12 @@ router.post('/login', async (req, res) => {
       location: 'Firebase Auth',
       createdAt: new Date()
     });
-
+    
+    // 4.5 Send Telegram Notification if linked
+    if (user.telegramId) {
+      sendNotification(user.telegramId, `🛡️ *Security Alert*: A new login to your NexovTech portal was detected.\n\n📍 *IP*: ${req.ip || 'Unknown'}\n🖥️ *Device*: ${agent.os.toString()} / ${agent.toAgent()}`);
+    }
+ 
     // 5. Generate Internal Session JWT
     const jwtToken = jwt.sign(
       { id: user.id || user._id, role: user.role, firebaseUid: firebaseUser.uid },
