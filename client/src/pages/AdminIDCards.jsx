@@ -60,12 +60,12 @@ const AdminIDCards = () => {
       const fsSnap = await getDocs(collection(db, 'employees'));
       const fsEmployees = fsSnap.docs.map(d => ({ ...d.data(), id: d.id, _id: d.id }));
 
-      // 3. Merge: Prioritize Firestore, but include unique legacy users
-      const mergedEmployees = [...fsEmployees];
+      // 3. Merge: Prioritize Firestore, but include unique legacy users (filter revoked)
+      const mergedEmployees = fsEmployees.filter(e => e.status !== 'revoked' && e.status !== 'Revoked');
       legacyEmployees.forEach(lUser => {
         const lEmail = lUser.email?.toLowerCase();
         // Only add from legacy if they aren't already in Firestore (prevents duplicates and respects deletions)
-        if (lEmail && !mergedEmployees.find(m => m.email?.toLowerCase() === lEmail)) {
+        if (lEmail && !mergedEmployees.find(m => m.email?.toLowerCase() === lEmail) && lUser.status !== 'revoked' && lUser.status !== 'Revoked') {
           mergedEmployees.push(lUser);
         }
       });
@@ -86,8 +86,12 @@ const AdminIDCards = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (currentUser) {
+      fetchData();
+    } else {
+      setLoading(false);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     if (selectedEmployee) {
@@ -134,7 +138,7 @@ const AdminIDCards = () => {
     e.preventDefault();
     setSavingDetails(true);
     try {
-      await fetch(`${API_URL}/auth/update-profile/${selectedEmployee._id || selectedEmployee.id}`, {
+      const profileRes = await fetch(`${API_URL}/auth/update-profile/${selectedEmployee._id || selectedEmployee.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -147,16 +151,20 @@ const AdminIDCards = () => {
           teamSign: editForm.teamSign
         })
       });
+
+      if (!profileRes.ok) throw new Error('Identity Registry update failed');
       let updatedCard = selectedEmployee.card;
       if (selectedEmployee.card) {
         const newIssueDate = editForm.issueDate ? new Date(editForm.issueDate).toISOString() : selectedEmployee.card.issueDate;
         const newExpiryDate = editForm.expiryDate ? new Date(editForm.expiryDate).toISOString() : selectedEmployee.card.expiryDate;
         
-        await fetch(`${API_URL}/idcard/update-details/${selectedEmployee.card.id || selectedEmployee.card._id}`, {
+        const cardRes = await fetch(`${API_URL}/idcard/update-details/${selectedEmployee.card.id || selectedEmployee.card._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ issueDate: newIssueDate, expiryDate: newExpiryDate })
         });
+        
+        if (!cardRes.ok) throw new Error('ID Card metadata update failed');
         
         updatedCard = { ...selectedEmployee.card, issueDate: newIssueDate, expiryDate: newExpiryDate };
       }

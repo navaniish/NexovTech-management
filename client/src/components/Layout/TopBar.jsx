@@ -60,21 +60,22 @@ const TopBar = ({ onMenuToggle }) => {
   };
 
   return (
-    <header className="h-[70px] md:h-[80px] w-full glass-panel border-b border-white/20 px-4 md:px-8 flex items-center justify-between relative z-[100] shrink-0">
+    <header className="h-[64px] md:h-[80px] sticky top-0 w-full glass-panel border-b border-white/20 px-4 md:px-8 flex items-center justify-between z-[60] shrink-0 backdrop-blur-xl">
       
       {/* LEFT AREA - BRAND LOGO */}
-      <div className="flex items-center gap-4 md:w-[260px]">
+      <div className="flex items-center gap-3 md:w-[260px]">
         <button 
           onClick={onMenuToggle}
-          className="md:hidden p-2 text-slate-500 hover:bg-white/50 rounded-xl"
+          className="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-colors"
         >
           <Menu size={22} />
         </button>
         
         <div className="flex items-center group cursor-pointer" onClick={() => navigate('/')}>
-           <div className="h-[40px] md:h-[60px] bg-white rounded-lg p-1 px-2 flex items-center justify-center transition-all duration-300 group-hover:scale-105 shadow-sm">
+           <div className="h-[36px] md:h-[50px] bg-white rounded-lg p-1 px-2 flex items-center justify-center transition-all duration-300 group-hover:scale-105 shadow-sm">
               <img src="/assets/company-logo.jpeg" alt="Logo" className="h-full w-auto object-contain" />
            </div>
+           <span className="md:hidden ml-2 text-[15px] font-black tracking-tighter text-slate-900">NEXOVTECH</span>
         </div>
       </div>
 
@@ -97,18 +98,18 @@ const TopBar = ({ onMenuToggle }) => {
       </div>
 
       {/* RIGHT UTILITIES */}
-      <div className="flex items-center gap-3">
-        <button onClick={toggleTheme} className="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-2xl transition-all">
-          <Sun size={20} />
+      <div className="flex items-center gap-2 md:gap-3">
+        <button onClick={toggleTheme} className="hidden sm:flex w-10 h-10 items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-xl transition-all">
+          <Sun size={18} />
         </button>
         <div className="relative">
           <button 
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative w-11 h-11 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-2xl transition-all"
+            className="relative w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-xl transition-all"
           >
-            <Bell size={20} />
+            <Bell size={18} />
             {unreadCount > 0 && (
-              <span className="absolute top-2.5 right-2.5 w-4 h-4 bg-rose-500 text-white text-[8px] font-black flex items-center justify-center rounded-full border-2 border-white shadow-lg animate-pulse">
+              <span className="absolute top-2 right-2 w-3.5 h-3.5 bg-rose-500 text-white text-[7px] font-black flex items-center justify-center rounded-full border-2 border-white shadow-lg">
                 {unreadCount}
               </span>
             )}
@@ -122,7 +123,7 @@ const TopBar = ({ onMenuToggle }) => {
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 mt-4 w-[340px] bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-20 backdrop-blur-xl"
+                  className="absolute right-0 mt-4 w-[280px] sm:w-[340px] bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-[100] backdrop-blur-xl"
                 >
                   <div className="p-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
                     <div>
@@ -187,11 +188,11 @@ const TopBar = ({ onMenuToggle }) => {
             )}
           </AnimatePresence>
         </div>
-        <button className="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-2xl transition-all">
-          <MessageSquare size={20} />
+        <button className="hidden sm:flex w-10 h-10 items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-xl transition-all">
+          <MessageSquare size={18} />
         </button>
         
-        <div className="w-px h-8 bg-white/40 mx-2" />
+        <div className="hidden sm:block w-px h-6 bg-white/40 mx-1" />
 
         <div className="relative">
            <div 
@@ -211,14 +212,14 @@ const TopBar = ({ onMenuToggle }) => {
                   {user?.role || 'Authorized'}
                 </p>
               </div>
-              <div className="w-11 h-11 rounded-2xl overflow-hidden border-2 border-white shadow-xl group-hover:scale-105 transition-all duration-300">
+               <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl md:rounded-2xl overflow-hidden border-2 border-white shadow-lg group-hover:scale-105 transition-all duration-300">
                  <img 
                    src={user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL.replace('/api', '')}${user.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'Admin'}`} 
                    alt="" 
                    className="w-full h-full object-cover" 
                  />
               </div>
-              <ChevronDown size={14} className={`text-slate-400 transition-transform duration-300 ${showUserMenu ? 'rotate-180' : ''}`} />
+              <ChevronDown size={12} className={`text-slate-400 transition-transform duration-300 ${showUserMenu ? 'rotate-180' : ''}`} />
            </div>
 
            <AnimatePresence>

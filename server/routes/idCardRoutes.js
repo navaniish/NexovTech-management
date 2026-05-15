@@ -151,4 +151,14 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
+// DELETE /idcard/:cardId — Admin: Purge ID card
+router.delete('/:cardId', async (req, res) => {
+  try {
+    await fallbackDb.deleteOne('idcards', req.params.cardId);
+    res.json({ message: 'Credential purged from registry' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to purge credential' });
+  }
+});
+
 module.exports = router;

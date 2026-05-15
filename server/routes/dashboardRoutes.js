@@ -8,7 +8,7 @@ router.get('/stats', async (req, res) => {
     const tasks = await fallbackDb.find('tasks', {});
     const clients = await fallbackDb.find('clients', {});
     const users = await fallbackDb.find('users', {});
-    const team = users.filter(u => u.role !== 'Admin'); // Specialists roster
+    const team = users; // Comprehensive organization roster
     const leaves = await fallbackDb.find('leaves', {});
     const candidates = await fallbackDb.find('recruitment', {});
     const transactions = await fallbackDb.find('transactions', {});

@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 
 const Unauthorized = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const handleBack = async () => {
     await logout();
@@ -47,9 +47,15 @@ const Unauthorized = () => {
               Your identity has been authenticated, but you do not have the required clearance level to access this sector.
             </p>
             <div className="bg-slate-950/50 rounded-2xl p-4 border border-slate-800 inline-block">
-              <div className="flex items-center gap-3 text-slate-500 text-[10px] font-black uppercase tracking-widest">
-                <Lock size={12} className="text-rose-500" />
-                Access Level: Unauthorized
+              <div className="flex flex-col gap-2 text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                <div className="flex items-center gap-3">
+                  <Lock size={12} className="text-rose-500" />
+                  Access Level: <span className="text-white">{user?.role || 'Unauthorized'}</span>
+                </div>
+                <div className="flex items-center gap-3 opacity-60">
+                  <span className="w-3" />
+                  Identity: <span className="lowercase font-normal">{user?.email || 'N/A'}</span>
+                </div>
               </div>
             </div>
           </div>

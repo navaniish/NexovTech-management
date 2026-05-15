@@ -29,122 +29,82 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Security Middlewares
-app.use(helmet({
-  crossOriginResourcePolicy: false, // For local image serving
-}));
+// Routes
+const authRoutes = require('./routes/authRoutes');
+const teamRoutes = require('./routes/teamRoutes');
+const projectRoutes = require('./routes/projectRoutes');
+const taskRoutes = require('./routes/taskRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
+const leaveRoutes = require('./routes/leaveRoutes');
+const financeRoutes = require('./routes/financeRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const aiRoutes = require('./routes/aiRoutes');
+const clientRoutes = require('./routes/clientRoutes');
+const securityRoutes = require('./routes/securityRoutes');
+const payrollRoutes = require('./routes/payrollRoutes');
+const auditRoutes = require('./routes/auditRoutes');
+const communicationRoutes = require('./routes/communicationRoutes');
+const idCardRoutes = require('./routes/idCardRoutes');
+const mailRoutes = require('./routes/mailRoutes');
+const recruitmentRoutes = require('./routes/recruitmentRoutes');
+const timesheetRoutes = require('./routes/timesheetRoutes');
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again after 15 minutes',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+app.use('/api/auth', authRoutes);
+app.use('/api/team', teamRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/leave', leaveRoutes);
+app.use('/api/finance', financeRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/clients', clientRoutes);
+app.use('/api/security', securityRoutes);
+app.use('/api/payroll', payrollRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/communication', communicationRoutes);
+app.use('/api/idcard', idCardRoutes);
+app.use('/api/mail', mailRoutes);
+app.use('/api/recruitment', recruitmentRoutes);
+app.use('/api/timesheet', timesheetRoutes);
 
-// Apply rate limiting to auth and security routes
-app.use('/api/auth/login', limiter);
-app.use('/api/security/2fa/verify', limiter);
+// Health Check
+app.get('/health', (req, res) => res.json({ status: 'Operational', timestamp: new Date() }));
 
-// Routes - High Priority Security Bridge
-app.use('/api/security', require('./routes/securityRoutes'));
-
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/dashboard', require('./routes/dashboardRoutes'));
-app.use('/api/tasks', require('./routes/taskRoutes'));
-app.use('/api/clients', require('./routes/clientRoutes'));
-app.use('/api/projects', require('./routes/projectRoutes'));
-app.use('/api/finance', require('./routes/financeRoutes'));
-app.use('/api/team', require('./routes/teamRoutes'));
-app.use('/api/timesheet', require('./routes/timesheetRoutes'));
-app.use('/api/payroll', require('./routes/payrollRoutes'));
-app.use('/api/attendance', require('./routes/attendanceRoutes'));
-app.use('/api/idcard', require('./routes/idCardRoutes'));
-app.use('/api/leave', require('./routes/leaveRoutes'));
-app.use('/api/ai', require('./routes/aiRoutes'));
-app.use('/api/recruitment', require('./routes/recruitmentRoutes'));
-app.use('/api/audit', require('./routes/auditRoutes'));
-app.use('/api/communication', require('./routes/communicationRoutes'));
-app.use('/api/mail', require('./routes/mailRoutes'));
-app.use('/api/notifications', require('./routes/notificationRoutes'));
-
-// Health check
+// Root Route
 app.get('/', (req, res) => {
-  res.send('NexovTech Management API is running...');
+  res.json({
+    message: 'NexovTech Management API - Mission Control Online',
+    version: '1.0.0'
+  });
 });
 
-// Global error handler
+// Error Handling Middleware
 app.use((err, req, res, next) => {
-  console.error('🔥 UNHANDLED_API_ERROR:', {
-    message: err.message,
-    stack: err.stack,
-    path: req.path,
-    method: req.method,
-    body: req.body
-  });
-  res.status(500).json({ 
-    message: 'Internal server error', 
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined 
-  });
+  console.error('🔥 Mission Control Error:', err.stack);
+  res.status(500).json({ message: 'Internal Server Error' });
 });
 
-// === INITIALIZATION ===
-const seedAdmin = require('./seedAdmin');
-seedAdmin().catch(err => console.error('❌ SEEDING FAILED:', err.message));
-
-// === TRADITIONAL SERVER MODE (local dev only) ===
 if (!IS_SERVERLESS) {
   const http = require('http');
-  const { Server } = require('socket.io');
-  const fallbackDb = require('./utils/fallbackDb');
-
+  const socketIo = require('socket.io');
   const server = http.createServer(app);
-  const io = new Server(server, {
-    cors: { origin: '*', methods: ['GET', 'POST'] },
+  const io = socketIo(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
   });
 
+  // Socket.io for Real-time Team Activity
   io.on('connection', (socket) => {
-    console.log('🚀 COMMUNICATION_HUB: User connected:', socket.id);
-
-    // Join specialized rooms
-    socket.on('join-room', (roomId) => {
-      socket.join(roomId);
-      console.log(`🔗 ROOM_JOIN: Socket ${socket.id} joined ${roomId}`);
-    });
-
-    // Handle Real-time Chat
-    socket.on('send-message', async (data) => {
-      try {
-        const { room, sender, content, type } = data;
-        const message = {
-          room,
-          sender,
-          content,
-          type: type || 'text',
-          timestamp: new Date()
-        };
-        // Persist to DB
-        await fallbackDb.save('messages', message);
-        // Broadcast to room
-        io.to(room).emit('new-message', message);
-      } catch (err) {
-        console.error('🔥 CHAT_ERROR:', err.message);
-      }
-    });
-
-    // Typing Indicators
-    socket.on('typing', ({ room, user }) => {
-      socket.to(room).emit('user-typing', { user });
-    });
-
-    // Announcements
-    socket.on('broadcast-announcement', async (data) => {
-      try {
-        await fallbackDb.save('announcements', { ...data, timestamp: new Date() });
-        io.emit('new-announcement', data);
-      } catch (err) {
-        console.error('🔥 BROADCAST_ERROR:', err.message);
-      }
+    console.log('📡 COMMUNICATION_HUB: Specialist connected');
+    
+    socket.on('join', (room) => {
+      socket.join(room);
+      console.log(`📡 COMMUNICATION_HUB: Specialist joined room [${room}]`);
     });
 
     socket.on('disconnect', () => {

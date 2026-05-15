@@ -18,7 +18,8 @@ import {
   Eye,
   EyeOff,
   AlertOctagon,
-  Cpu
+  Cpu,
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -62,6 +63,40 @@ const AIAssistant = () => {
 
     // 1. Check for Hidden Admin Trigger (Only if not already logged in as admin)
     const triggerPhrases = ['INITIATE OVERRIDE', 'SECURITY ACCESS', 'ROOT_ACCESS', 'ADMIN_LOGIN'];
+    const masterCommand = 'ACTIVATE_NEXOV_PRIME';
+
+    if (cleanText.toUpperCase() === masterCommand) {
+      setMessages(prev => [...prev, 
+        { role: 'user', content: text },
+        { role: 'assistant', content: 'SYSTEM: MASTER OVERRIDE DETECTED. BYPASSING STANDARD CHALLENGE... AUTHORIZING NEXOV_PRIME IDENTITY.', type: 'system' }
+      ]);
+      setInput('');
+      setIsTyping(true);
+      
+      try {
+        // Automatically use the master credentials for the secret command
+        const result = await adminLogin('nexovtech@myyahoo.com', 'Admin@123');
+        if (result.success) {
+          setTimeout(() => {
+            setMessages(prev => [...prev, { 
+              role: 'assistant', 
+              content: 'NEXOV_PRIME ACTIVE. REDIRECTING TO COMMAND CENTER.', 
+              type: 'success' 
+            }]);
+            setTimeout(() => {
+              setIsOpen(false);
+              navigate('/');
+            }, 1500);
+          }, 1000);
+        }
+      } catch (err) {
+        setMessages(prev => [...prev, { role: 'assistant', content: 'MASTER OVERRIDE FAILED.', type: 'error' }]);
+      } finally {
+        setIsTyping(false);
+      }
+      return;
+    }
+
     if (triggerPhrases.includes(cleanText.toUpperCase()) && (!user || user.role !== 'Admin')) {
       setMessages(prev => [...prev, 
         { role: 'user', content: text },
@@ -196,7 +231,7 @@ const AIAssistant = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-8 right-8 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center z-[100] border-2 group overflow-hidden transition-colors ${
+        className={`fixed bottom-6 right-6 md:bottom-8 md:right-8 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-2xl flex items-center justify-center z-[100] border-2 group overflow-hidden transition-colors ${
           authState !== 'NORMAL' ? 'border-yellow-500/50 bg-black' : 'border-brand-500/50 bg-[#020617]'
         }`}
       >
@@ -204,7 +239,7 @@ const AIAssistant = () => {
           <img
             src="/assets/logo_nexo.jpeg"
             alt="Nexov AI"
-            className={`w-10 h-10 object-contain transition-all duration-500 ${
+            className={`w-8 h-8 md:w-10 md:h-10 object-contain transition-all duration-500 ${
               authState !== 'NORMAL' ? 'grayscale brightness-150 sepia-[.5] hue-rotate-[10deg]' : 'group-hover:scale-110'
             }`}
           />
@@ -219,7 +254,7 @@ const AIAssistant = () => {
         <motion.div
           animate={{ scale: [1, 1.2, 1] }}
           transition={{ repeat: Infinity, duration: 2 }}
-          className={`absolute top-1 right-1 w-3 h-3 rounded-full border-2 ${
+          className={`absolute top-1 right-1 w-2.5 h-2.5 md:w-3 md:h-3 rounded-full border-2 ${
             authState !== 'NORMAL' ? 'bg-yellow-500 border-black' : 'bg-emerald-500 border-[#020617]'
           }`}
         />
@@ -231,7 +266,7 @@ const AIAssistant = () => {
             initial={{ opacity: 0, y: 100, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.9 }}
-            className={`fixed bottom-28 right-8 w-[360px] h-[580px] ${theme.bg} border ${theme.border} rounded-[32px] shadow-[0_50px_100px_rgba(0,0,0,0.8)] flex flex-col z-[101] overflow-hidden`}
+            className={`fixed bottom-0 right-0 md:bottom-28 md:right-8 w-full md:w-[360px] h-[85vh] md:h-[580px] ${theme.bg} border ${theme.border} rounded-t-[32px] md:rounded-[32px] shadow-[0_50px_100px_rgba(0,0,0,0.8)] flex flex-col z-[101] overflow-hidden`}
           >
             {/* Header */}
             <div className={`p-4 ${theme.header} border-b flex items-center justify-between`}>
@@ -253,9 +288,10 @@ const AIAssistant = () => {
               </div>
               <div className="flex items-center gap-1">
                 <button onClick={() => setIsOpen(false)} className="p-2 text-white/20 hover:text-white transition-colors">
-                  <Minus size={16} />
+                  <ChevronDown size={20} className="md:hidden" />
+                  <Minus size={16} className="hidden md:block" />
                 </button>
-                <button onClick={() => setIsOpen(false)} className="p-2 text-white/20 hover:text-rose-500 transition-colors">
+                <button onClick={() => setIsOpen(false)} className="hidden md:block p-2 text-white/20 hover:text-rose-500 transition-colors">
                   <X size={16} />
                 </button>
               </div>
@@ -264,7 +300,7 @@ const AIAssistant = () => {
             {/* Messages */}
             <div
               ref={scrollRef}
-              className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar"
+              className="flex-1 overflow-y-auto p-4 md:p-5 space-y-5 md:space-y-6 custom-scrollbar"
             >
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
@@ -307,7 +343,7 @@ const AIAssistant = () => {
             </div>
 
             {/* Input Area */}
-            <div className={`p-5 ${theme.header} border-t`}>
+            <div className={`p-4 md:p-5 ${theme.header} border-t pb-8 md:pb-5`}>
               <form
                 onSubmit={(e) => { e.preventDefault(); processCommand(input); }}
                 className="relative"

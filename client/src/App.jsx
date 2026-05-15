@@ -24,6 +24,7 @@ import Settings from './pages/Settings';
 import Login from './pages/Login';
 import AdminPayroll from './pages/AdminPayroll';
 import AdminHR from './pages/AdminHR';
+import SecurityShield from './pages/SecurityShield';
 import AdminAttendance from './pages/AdminAttendance';
 import AdminLeaves from './pages/AdminLeaves';
 import AIAuditEngine from './pages/AIAuditEngine';
@@ -32,7 +33,6 @@ import CommunicationAnalytics from './pages/CommunicationAnalytics';
 import AdminTimesheets from './pages/AdminTimesheets';
 import TeamAccess from './pages/TeamAccess';
 import AdminTasks from './pages/AdminTasks';
-import SecurityShield from './pages/SecurityShield';
 import AdminLearning from './pages/AdminLearning';
 
 // Employee Pages
@@ -49,6 +49,7 @@ import MyIDCard from './pages/employee/MyIDCard';
 import VerifyID from './pages/VerifyID';
 import EmployeeSecurity from './pages/employee/Security';
 import Learning from './pages/Learning';
+import AIAssistant from './components/AI/AIAssistant';
 
 import { Loader2 } from 'lucide-react';
 
@@ -76,11 +77,11 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/login" element={!user ? <Login /> : <Navigate to={user.role === 'Admin' ? '/' : '/employee/dashboard'} />} />
+      <Route path="/login" element={!user ? <Login /> : <Navigate to={(user.role === 'Admin' || user.role === 'Super Admin' || user.role === 'Manager') ? '/' : '/employee/dashboard'} />} />
 
       {/* Admin/Manager Routes */}
       <Route element={
-        <ProtectedRoute allowedRoles={['Admin', 'Manager']}>
+        <ProtectedRoute allowedRoles={['Admin', 'Manager', 'Super Admin']}>
           <DashboardLayout />
         </ProtectedRoute>
       }>
@@ -98,20 +99,24 @@ function AppRoutes() {
         <Route path="/hr" element={<AdminHR />} />
         <Route path="/tasks" element={<AdminTasks />} />
         <Route path="/attendance" element={<AdminAttendance />} />
+        
+        {/* EXCLUSIVE: SUPER ADMIN INFRASTRUCTURE */}
+        <Route element={<ProtectedRoute allowedRoles={['Admin', 'Super Admin']} />}>
+          <Route path="/security-shield" element={<SecurityShield />} />
+        </Route>
         <Route path="/timesheets" element={<AdminTimesheets />} />
         <Route path="/leaves" element={<AdminLeaves />} />
         <Route path="/audit" element={<AIAuditEngine />} />
         <Route path="/id-cards" element={<AdminIDCards />} />
         <Route path="/nexus-mail" element={<NexovTechMail />} />
         <Route path="/comm-intelligence" element={<CommunicationAnalytics />} />
-        <Route path="/security" element={<SecurityShield />} />
         <Route path="/admin-learning" element={<AdminLearning />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
 
       {/* Employee Routes */}
       <Route element={
-        <ProtectedRoute allowedRoles={['Employee', 'Developer', 'Editor', 'AI Specialist', 'Security Analyst']}>
+        <ProtectedRoute allowedRoles={['Employee', 'Specialist', 'Developer', 'Editor', 'AI Specialist', 'Security Analyst']}>
           <EmployeeLayout />
         </ProtectedRoute>
       }>
@@ -138,8 +143,6 @@ function AppRoutes() {
     </Routes>
   );
 }
-
-import AIAssistant from './components/AI/AIAssistant';
 
 function App() {
   return (

@@ -110,6 +110,18 @@ router.post('/login', async (req, res) => {
       try {
         firebaseUser = await admin.auth().verifyIdToken(firebaseToken);
         console.log(`✅ FIREBASE_VERIFIED: [${firebaseUser.email}]`);
+
+        // 1.1 Provider Policy Enforcement
+        // Team members with '.nexovtech@gmail.com' must use Google Login ONLY
+        const authEmail = firebaseUser.email.toLowerCase();
+        const signInProvider = firebaseUser.firebase.sign_in_provider;
+        
+        if (authEmail.includes('.nexovtech@gmail.com') && signInProvider === 'password') {
+          console.warn(`🛡️ SECURITY_POLICY: Blocked password login for [${authEmail}]. Google OAuth required.`);
+          return res.status(403).json({ 
+            message: 'Unauthorized Provider: Please use "Sign in with Google" to access your NexovTech account.' 
+          });
+        }
       } catch (authErr) {
         console.error('🔥 FIREBASE_TOKEN_INVALID:', authErr.message);
         return res.status(401).json({ message: 'Identity verification failed. Token expired or invalid.' });
@@ -187,6 +199,9 @@ router.post('/login', async (req, res) => {
     }
 
     // 4. Record Success History
+    const geo = require('geoip-lite').lookup(req.ip || req.headers['x-forwarded-for'] || '127.0.0.1');
+    const locationStr = geo ? `${geo.city}, ${geo.region}, ${geo.country}` : 'Remote Gateway';
+
     await fallbackDb.save('loginHistory', {
       userId: user.id || user._id,
       email: user.email,
@@ -195,7 +210,9 @@ router.post('/login', async (req, res) => {
       browser: agent.toAgent(),
       os: agent.os.toString(),
       loginStatus: 'Success',
-      location: 'Firebase Auth',
+      location: locationStr,
+      area: geo ? geo.timezone : 'UTC',
+      application: 'NexovTech Web Portal',
       createdAt: new Date()
     });
     
@@ -235,36 +252,45 @@ router.post('/login', async (req, res) => {
 
 // Grant Access (Admin)
 router.post('/grant-access', async (req, res) => {
-  const { email, role, name, tempPassword, bankName, accountNumber, ifscCode, upiId } = req.body;
+  const { email, role, name, tempPassword, bankName, accountNumber, ifscCode, upiId, phoneNo } = req.body;
   const { admin } = require('../firebaseAdmin');
 
   if (!email) return res.status(400).json({ message: 'Email is required for secure delegation' });
-  if (!tempPassword) return res.status(400).json({ message: 'Initial password is required' });
 
   try {
-    console.log(`🛡️ SECURITY_BRIDGE: Creating cloud credentials for [${email}]...`);
+    console.log(`🛡️ SECURITY_BRIDGE: Provisioning identity for [${email}]...`);
 
-    // 1. Create User in Firebase Auth
-    let firebaseUser;
-    try {
-      firebaseUser = await admin.auth().createUser({
-        email: email.trim().toLowerCase(),
-        password: tempPassword,
-        displayName: name,
-      });
-      console.log('✅ SECURITY_BRIDGE: Firebase account created:', firebaseUser.uid);
-    } catch (authErr) {
-      // If user already exists in Firebase, just find them
-      if (authErr.code === 'auth/email-already-exists') {
-        firebaseUser = await admin.auth().getUserByEmail(email.trim().toLowerCase());
-        console.log('ℹ️ SECURITY_BRIDGE: Firebase account already exists, syncing ID...');
-      } else {
-        throw authErr;
+    let firebaseUid = null;
+
+    // 1. Optional: Create User in Firebase Auth if password provided (otherwise rely on Google Login sync)
+    // POLICY: If email is '.nexovtech@gmail.com', password creation is FORBIDDEN.
+    const isNexovtechGmail = email.toLowerCase().includes('.nexovtech@gmail.com');
+
+    if (tempPassword && !isNexovtechGmail) {
+      try {
+        const firebaseUser = await admin.auth().createUser({
+          email: email.trim().toLowerCase(),
+          password: tempPassword,
+          displayName: name,
+        });
+        firebaseUid = firebaseUser.uid;
+        console.log('✅ SECURITY_BRIDGE: Firebase account created via password:', firebaseUid);
+      } catch (authErr) {
+        if (authErr.code === 'auth/email-already-exists') {
+          const firebaseUser = await admin.auth().getUserByEmail(email.trim().toLowerCase());
+          firebaseUid = firebaseUser.uid;
+          console.log('ℹ️ SECURITY_BRIDGE: Firebase account already exists, syncing ID...');
+        } else {
+          throw authErr;
+        }
       }
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(tempPassword, salt);
+    let hashedPassword = null;
+    if (tempPassword && !isNexovtechGmail) {
+      const salt = await bcrypt.genSalt(10);
+      hashedPassword = await bcrypt.hash(tempPassword, salt);
+    }
 
     const generateCompanyEmail = (name) => `${name.toLowerCase().replace(/[^a-z0-9]/g, '.')}@nexovtech.com`;
 
@@ -272,8 +298,9 @@ router.post('/grant-access', async (req, res) => {
       name,
       email: email.trim().toLowerCase(),
       companyEmail: generateCompanyEmail(name),
-      firebaseUid: firebaseUser.uid,
+      firebaseUid: firebaseUid,
       password: hashedPassword,
+      phone: phoneNo, // Mapping phoneNo from frontend to phone in DB
       role: role || 'Employee',
       department: role === 'Admin' ? 'Executive' : (req.body.department || 'General'),
       status: 'Active',
@@ -292,7 +319,9 @@ router.post('/grant-access', async (req, res) => {
     const allUsers = (await fallbackDb.find('users', {})) || [];
 
     res.json({
-      message: `Access granted to ${email}. Cloud identity activated.`,
+      message: isNexovtechGmail 
+        ? `Access granted to ${email}. (Google Login Required for this identity)`
+        : `Access granted to ${email}. Cloud identity activated.`,
       user: saved,
       updatedRoster: allUsers
     });
@@ -357,6 +386,18 @@ router.get('/count', async (req, res) => {
     res.json({ count: users.length });
   } catch (err) {
     res.status(500).json({ count: 0 });
+  }
+});
+
+// GET /auth/login-history/:userId — Retrieve security audit log
+router.get('/login-history/:userId', async (req, res) => {
+  try {
+    const history = await fallbackDb.find('loginHistory', { userId: req.params.userId });
+    // Sort by most recent first
+    const sorted = (history || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json(sorted.slice(0, 10)); // Return last 10 logins
+  } catch (err) {
+    res.status(500).json({ message: 'Audit logs inaccessible' });
   }
 });
 

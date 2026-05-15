@@ -7,6 +7,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { sentinel } from '../services/securityService';
 
 const Login = () => {
   const [error, setError] = useState('');
@@ -24,8 +25,11 @@ const Login = () => {
     try {
       const result = await signInWithGoogle();
       if (result.success) {
-        navigate('/');
+        const storedUser = JSON.parse(localStorage.getItem('nexov_user'));
+        const targetPath = (storedUser?.role === 'Admin' || storedUser?.role === 'Manager') ? '/' : '/employee/dashboard';
+        navigate(targetPath);
       } else {
+        sentinel.logActivity('AUTH_FAILURE_GOOGLE', { email: 'Unknown (Google)' }, 'failure');
         setError(result.message);
       }
     } catch (err) {
@@ -43,8 +47,11 @@ const Login = () => {
     try {
       const result = await adminLogin(adminCreds.email, adminCreds.password);
       if (result.success) {
-        navigate('/');
+        const storedUser = JSON.parse(localStorage.getItem('nexov_user'));
+        const targetPath = (storedUser?.role === 'Admin' || storedUser?.role === 'Manager') ? '/' : '/employee/dashboard';
+        navigate(targetPath);
       } else {
+        sentinel.logActivity('AUTH_FAILURE_ADMIN', { email: adminCreds.email }, 'failure');
         setError(result.message);
       }
     } catch (err) {

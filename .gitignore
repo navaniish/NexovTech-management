@@ -30,3 +30,7 @@ overview.txt
 server/data/sessions.json
 server/data/telegram_otps.json
 server/data/telegram_users.json
+
+# Diagnostic / Scratch Scripts
+server/scratch_*
+server/purge_cloud_duplicates.js

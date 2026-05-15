@@ -52,7 +52,61 @@ const authScene = new Scenes.WizardScene(
   }
 );
 
-const stage = new Scenes.Stage([authScene]);
+// 2. Scene for Credential Recovery via Phone
+const recoveryScene = new Scenes.WizardScene(
+  'RECOVERY_SCENE',
+  async (ctx) => {
+    await ctx.reply('🔐 *NexovTech Identity Recovery*\n\nPlease share your contact (phone number) using the button below to retrieve your workspace credentials.', {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        keyboard: [[{ text: '📱 Share My Contact', request_contact: true }]],
+        resize_keyboard: true,
+        one_time_keyboard: true
+      }
+    });
+    return ctx.wizard.next();
+  },
+  async (ctx) => {
+    if (!ctx.message.contact) {
+      await ctx.reply('❌ You must share your contact to continue. Recovery cancelled.');
+      return ctx.scene.leave();
+    }
+
+    const phone = ctx.message.contact.phone_number;
+    const user = await authService.lookupByPhone(phone);
+
+    if (!user) {
+      await ctx.reply('❌ This phone number is not linked to any NexovTech account. Please contact HR.');
+      return ctx.scene.leave();
+    }
+
+    // Show plain text password if available (less than 30 chars), otherwise show hint
+    let displayPassword = user.password || 'Nexovtech@123';
+    if (displayPassword.length > 30) {
+       displayPassword = user.role === 'Admin' ? 'Admin@123 (or your custom pass)' : 'password123 (Default)';
+    }
+
+    await ctx.reply(`✅ *Credentials Retrieved!*\n\n📧 *Email:* \`${user.companyEmail || user.email}\`\n🔑 *Password:* \`${displayPassword}\`\n\n_Note: If you haven't changed your password, try the default 'password'. If hidden, please use the reset link in the portal or contact support._`, { parse_mode: 'Markdown' });
+    
+    // Auto-link account
+    await authService.linkTelegram(ctx.from.id, user.id || user._id, user.email || user.companyEmail, user.role);
+    await ctx.reply(`🔗 *Identity Linked*\n\nYour Telegram account is now linked to your NexovTech profile. You can now use the management menu.`, MAIN_MENU);
+    return ctx.scene.leave();
+  }
+);
+
+const stage = new Scenes.Stage([authScene, recoveryScene]);
+
+const MAIN_MENU = {
+  reply_markup: {
+    keyboard: [
+      [{ text: '📊 Dashboard Summary' }, { text: '📅 My Schedule' }],
+      [{ text: '📄 View Payslip' }, { text: '🚀 AI Workspace Assistant' }],
+      [{ text: '🔐 Security Status' }]
+    ],
+    resize_keyboard: true
+  }
+};
 
 function initBot(token) {
   if (!token) {
@@ -73,6 +127,7 @@ function initBot(token) {
   bot.telegram.setMyCommands([
     { command: 'start', description: '🚀 Authenticate / Start Session' },
     { command: 'menu', description: '📊 Open Command Center' },
+    { command: 'reset', description: '🔄 Unlink Account / Reset' },
     { command: 'help', description: '🆘 Get Assistance' }
   ]);
 
@@ -83,10 +138,17 @@ bot.use(sessionStore.middleware());
 
   // Middleware to check if user is authenticated
   bot.use(async (ctx, next) => {
-    if (ctx.message && ctx.message.text === '/start') return next();
+    const isStart = ctx.message && ctx.message.text === '/start';
+    const isRecovery = ctx.message && ctx.message.text === '📱 Get My Credentials (Phone)';
+    const isContact = ctx.message && ctx.message.contact;
+    
+    // Check if user is currently in the middle of an authentication or recovery flow
+    const isInAuthFlow = ctx.scene && ctx.scene.current;
+    
+    if (isStart || isRecovery || isContact || isInAuthFlow) return next();
     
     const tgUser = await authService.getTelegramUser(ctx.from.id);
-    if (!tgUser && !ctx.scene.current) {
+    if (!tgUser) {
       return ctx.reply('🔐 Your session is not authenticated. Please type /start to link your account.');
     }
     
@@ -94,26 +156,35 @@ bot.use(sessionStore.middleware());
     return next();
   });
 
-  const MAIN_MENU = {
-    reply_markup: {
-      keyboard: [
-        [{ text: '📊 Dashboard Summary' }, { text: '📅 My Schedule' }],
-        [{ text: '📄 View Payslip' }, { text: '🚀 AI Workspace Assistant' }],
-        [{ text: '🔐 Security Status' }]
-      ],
-      resize_keyboard: true
-    }
-  };
-
   bot.command('menu', (ctx) => ctx.reply('NexovTech Command Center:', MAIN_MENU));
+
+  bot.command('reset', async (ctx) => {
+    const success = await authService.unlinkTelegram(ctx.from.id);
+    if (success) {
+      await ctx.reply('🔄 *Identity Reset Successful*\n\nYour Telegram account has been unlinked from the NexovTech Enterprise Workspace. You can now use /start to link a new account.', { parse_mode: 'Markdown', reply_markup: { remove_keyboard: true } });
+    } else {
+      await ctx.reply('⚠️ No active link found for this account.');
+    }
+  });
 
   bot.start(async (ctx) => {
     const tgUser = await authService.getTelegramUser(ctx.from.id);
     if (tgUser) {
       return ctx.reply(`🚀 *NexovAI System Online*\n\nWelcome back, ${tgUser.name || tgUser.companyEmail}. I am your Operational Intelligence Engine.\n\nYou can use the menu below for quick actions, or simply chat with me naturally for any workspace assistance.`, { ...MAIN_MENU, parse_mode: 'Markdown' });
     }
-    return ctx.scene.enter('AUTH_SCENE');
+    
+    return ctx.reply('👋 Welcome to NexovTech Management Assistant.\n\nPlease share your contact to retrieve your credentials and link your account:', {
+      reply_markup: {
+        keyboard: [
+          [{ text: '📱 Get My Credentials (Phone)' }]
+        ],
+        resize_keyboard: true
+      }
+    });
   });
+
+  bot.hears('🔐 Authenticate via Email', (ctx) => ctx.scene.enter('AUTH_SCENE'));
+  bot.hears('📱 Get My Credentials (Phone)', (ctx) => ctx.scene.enter('RECOVERY_SCENE'));
 
   // Handle Menu Actions
   bot.hears('📊 Dashboard Summary', async (ctx) => {

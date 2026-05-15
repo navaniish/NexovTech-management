@@ -14,21 +14,26 @@ const AdminHR = () => {
   const [attendance, setAttendance] = useState([]);
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState(new Date().toISOString().split('T')[0]);
 
   const fetchAll = async () => {
     try {
       const [tRes, aRes, lRes] = await Promise.all([
-        fetch(`${API_URL}/team`),
+        fetch(`${API_URL}/team?t=${Date.now()}`),
         fetch(`${API_URL}/attendance/all`),
         fetch(`${API_URL}/leave/all`)
       ]);
       if (tRes.ok) setTeam(await tRes.json());
       if (aRes.ok) setAttendance(await aRes.json());
       if (lRes.ok) setLeaves(await lRes.json());
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
+    } catch (err) {
+      console.error('Personnel Sync Failure:', err);
+      setError('Mission Control Link Disrupted. Unable to synchronize personnel registry.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -50,11 +55,11 @@ const AdminHR = () => {
   };
 
   // Stats
-  const nonAdminTeam = team.filter(t => t.role !== 'Admin');
+  const activePersonnel = team;
   const todayAtt = attendance.filter(a => a.date === dateFilter);
   const presentCount = todayAtt.filter(a => a.attendanceStatus === 'Present').length;
   const lateCount = todayAtt.filter(a => a.attendanceStatus === 'Late').length;
-  const absentCount = Math.max(0, nonAdminTeam.length - todayAtt.length);
+  const absentCount = Math.max(0, activePersonnel.length - todayAtt.length);
   const pendingLeaves = leaves.filter(l => l.status === 'Pending').length;
 
   const chartData = [
@@ -78,50 +83,51 @@ const AdminHR = () => {
   );
 
   return (
-    <div className="w-full flex flex-col p-4 md:p-6 space-y-6 animate-in fade-in duration-1000 overflow-y-auto custom-scrollbar">
+    <div className="w-full flex flex-col p-4 sm:p-6 space-y-6 animate-in fade-in duration-1000 overflow-y-auto custom-scrollbar">
       {/* 1. HIGH-FIDELITY OFFICE HEADER */}
-      <section className="relative w-full overflow-hidden rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[220px] group">
+      <section className="relative w-full overflow-hidden rounded-[24px] md:rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[160px] md:min-h-[220px] group">
          <div 
            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
            style={{ backgroundImage: "url('/assets/office-bg.png')" }}
          />
-         <div className="absolute inset-0 bg-white/70 backdrop-blur-[4px]" />
+         <div className="absolute inset-0 bg-white/80 md:bg-white/70 backdrop-blur-[4px]" />
+         <div className="absolute inset-0 bg-gradient-to-r from-white/40 to-transparent md:hidden" />
          
-         <div className="relative z-10 flex-1 p-10 md:p-12 flex flex-col justify-center">
-            <div className="space-y-2 mb-8">
-               <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none flex items-center gap-3">
-                  HR Command Center <span className="animate-bounce-slow">🏢</span>
+         <div className="relative z-10 flex-1 p-6 md:p-12 flex flex-col justify-center">
+            <div className="space-y-1 mb-4 md:mb-8">
+               <h1 className="mobile-hero-title font-black text-slate-900 flex items-center gap-2">
+                  HR Command Center <span className="animate-bounce-slow text-2xl md:text-4xl">🏢</span>
                </h1>
-               <p className="text-slate-500 text-[15px] font-medium">
-                  Workforce management, attendance tracking & leave operations.
+               <p className="mobile-body-text text-slate-500 font-medium">
+                  Workforce management & leave operations.
                </p>
             </div>
          </div>
       </section>
 
       {/* 2. KPI NODES */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         <StatCard title="Present Today" value={presentCount} icon={CheckCircle2} accent="#10b981" delay={0.1} />
         <StatCard title="Late Arrivals" value={lateCount} icon={AlertCircle} accent="#f59e0b" delay={0.2} />
         <StatCard title="Absent" value={absentCount} icon={XCircle} accent="#ef4444" delay={0.3} />
-        <StatCard title="Pending Leaves" value={pendingLeaves} icon={Calendar} accent="#8b5cf6" delay={0.4} />
+        <StatCard title="Pending" value={pendingLeaves} icon={Calendar} accent="#8b5cf6" delay={0.4} />
       </div>
 
       {/* 3. CORE CONTENT HUB */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-3 space-y-4">
            {/* Snapshot Card */}
-           <div className="glass-card !p-6 border-slate-100">
-              <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest mb-6">Daily Snapshot</h4>
-              <div className="h-[200px]">
+           <div className="glass-card !p-4 md:!p-6 border-slate-100">
+              <h4 className="mobile-label-text text-slate-900 mb-4 md:mb-6">Daily Snapshot</h4>
+              <div className="h-[160px] md:h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData}>
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 8, fontWeight: 900 }} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 7, fontWeight: 900 }} />
                     <Tooltip 
                       cursor={{ fill: 'rgba(0,0,0,0.02)' }}
-                      contentStyle={{ background: '#fff', border: 'none', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }} 
+                      contentStyle={{ background: '#fff', border: 'none', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }} 
                     />
-                    <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                       {chartData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                     </Bar>
                   </BarChart>
@@ -130,20 +136,20 @@ const AdminHR = () => {
            </div>
 
            {/* Slim Nav Switcher */}
-           <div className="flex lg:flex-col gap-2 p-2 bg-white/40 border border-slate-100 rounded-[32px] shadow-lg backdrop-blur-xl">
+           <div className="flex lg:flex-col gap-2 p-1.5 bg-white/40 border border-slate-100 rounded-[24px] md:rounded-[32px] shadow-lg backdrop-blur-xl overflow-x-auto no-scrollbar">
              {tabs.map(t => (
-               <button
-                 key={t.id}
-                 onClick={() => setTab(t.id)}
-                 className={`flex items-center gap-4 px-6 h-12 rounded-2xl font-black text-[10px] transition-all uppercase tracking-widest lg:w-full group ${
-                     tab === t.id
-                     ? 'bg-slate-900 text-white shadow-xl translate-x-1'
-                     : 'text-slate-400 hover:text-slate-900 hover:bg-white'
-                   }`}
-               >
-                 <t.icon size={16} className={tab === t.id ? 'text-brand-400' : 'opacity-40 group-hover:opacity-100'} />
-                 {t.label}
-               </button>
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className={`flex items-center gap-3 md:gap-4 px-4 md:px-6 h-10 md:h-12 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] transition-all uppercase tracking-widest lg:w-full group whitespace-nowrap ${
+                      tab === t.id
+                      ? 'bg-slate-900 text-white shadow-xl translate-x-0 lg:translate-x-1'
+                      : 'text-slate-400 hover:text-slate-900 hover:bg-white'
+                    }`}
+                >
+                  <t.icon size={14} className={tab === t.id ? 'text-brand-400' : 'opacity-40 group-hover:opacity-100'} />
+                  {t.label}
+                </button>
              ))}
            </div>
         </div>
@@ -155,7 +161,7 @@ const AdminHR = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="glass-card !p-8 md:!p-10 min-h-[600px] border-slate-100 rounded-[40px] shadow-2xl"
+              className="glass-card !p-5 md:!p-10 min-h-[500px] md:min-h-[600px] border-slate-100 rounded-[32px] md:rounded-[40px] shadow-2xl"
             >
               {tab === 'attendance' && (
                 <AttendanceTab attendance={attendance} dateFilter={dateFilter} setDateFilter={setDateFilter} search={search} setSearch={setSearch} team={team} onRefresh={fetchAll} />
@@ -180,15 +186,15 @@ const StatCard = ({ title, value, icon: Icon, accent, delay }) => (
     initial={{ opacity: 0, y: 20 }} 
     animate={{ opacity: 1, y: 0 }} 
     transition={{ delay }}
-    className="glass-card !p-6 flex flex-col relative overflow-hidden group border-slate-100 hover:scale-[1.02] transition-all"
+    className="glass-card !p-4 md:!p-6 flex flex-col relative overflow-hidden group border-slate-100 hover:scale-[1.02] transition-all min-h-[100px] md:min-h-[120px]"
   >
-    <div className="flex items-center gap-4 mb-4 relative z-10">
-      <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm" style={{ backgroundColor: `${accent}10`, color: accent }}>
-        <Icon size={24} strokeWidth={2.5} />
+    <div className="flex items-center gap-3 md:gap-4 mb-2 md:mb-4 relative z-10">
+      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center shadow-sm shrink-0" style={{ backgroundColor: `${accent}10`, color: accent }}>
+        <Icon size={18} md:size={24} strokeWidth={2.5} />
       </div>
       <div className="flex flex-col min-w-0">
-        <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-0.5">{title}</span>
-        <h3 className="text-2xl font-black text-slate-900 leading-none">{value}</h3>
+        <span className="text-[8px] md:text-[10px] text-slate-400 font-black uppercase tracking-widest mb-0.5 truncate">{title}</span>
+        <h3 className="text-xl md:text-2xl font-black text-slate-900 leading-none truncate">{value}</h3>
       </div>
     </div>
   </motion.div>
@@ -233,36 +239,36 @@ const AttendanceTab = ({ attendance, dateFilter, setDateFilter, search, setSearc
   };
 
   return (
-    <div className="theme-card rounded-2xl p-6 space-y-4">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <h3 className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>Attendance Log</h3>
-        <div className="flex items-center gap-3">
+    <div className="theme-card rounded-2xl p-4 md:p-6 space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h3 className="mobile-section-title text-slate-900">Attendance Log</h3>
+        <div className="flex items-center gap-2 md:gap-3 overflow-x-auto no-scrollbar pb-1">
           <input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)}
-            className="px-4 py-2 rounded-xl text-xs font-bold outline-none border" style={{ background: 'var(--input-bg)', borderColor: 'var(--border-default)', color: 'var(--text-primary)' }} />
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2" size={14} style={{ color: 'var(--text-primary)' }} />
+            className="px-3 py-2 rounded-xl text-[10px] md:text-xs font-bold outline-none border bg-white border-slate-100" />
+          <div className="relative shrink-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
             <input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)}
-              className="pl-9 pr-4 py-2 rounded-xl text-xs font-bold outline-none border" style={{ background: 'var(--input-bg)', borderColor: 'var(--border-default)', color: 'var(--text-primary)' }} />
+              className="pl-9 pr-3 py-2 rounded-xl text-[10px] md:text-xs font-bold outline-none border bg-white border-slate-100 w-32 md:w-48" />
           </div>
           <button onClick={() => setShowMark(true)}
-            className="bg-brand-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-500 transition-all flex items-center gap-2 shadow-lg shadow-brand-600/20">
-            <UserPlus size={14} /> Mark Attendance
+            className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 transition-all flex items-center gap-2 shadow-lg shadow-indigo-100 shrink-0">
+            <UserPlus size={12} /> Mark
           </button>
         </div>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left">
+      <div className="overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+        <table className="w-full text-left min-w-[600px]">
           <thead>
-            <tr className="text-[10px] font-black uppercase tracking-widest border-b" style={{ borderColor: 'var(--border-default)', color: 'var(--text-primary)' }}>
+            <tr className="text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-slate-50 text-slate-400">
               <th className="pb-3 px-2">Employee</th>
-              <th className="pb-3 px-2">Check In</th>
-              <th className="pb-3 px-2">Check Out</th>
-              <th className="pb-3 px-2">Hours</th>
+              <th className="pb-3 px-2">In</th>
+              <th className="pb-3 px-2">Out</th>
+              <th className="pb-3 px-2">Hrs</th>
               <th className="pb-3 px-2">Status</th>
               <th className="pb-3 px-2 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y" style={{ borderColor: 'var(--border-default)' }}>
+          <tbody className="divide-y divide-slate-50">
             {filtered.map(a => (
               <tr key={a.id} className="hover:bg-black/[0.02] transition-colors">
                 <td className="py-3 px-2 text-sm font-bold text-gray-900">{getName(a.employeeId)}</td>

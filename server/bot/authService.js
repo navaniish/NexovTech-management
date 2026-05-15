@@ -64,6 +64,37 @@ class AuthService {
   async getTelegramUser(telegramId) {
     return await fallbackDb.findOne('telegram_users', { telegramId: telegramId.toString() });
   }
+
+  async lookupByPhone(phone) {
+    // Standardize phone number (remove +, spaces, etc.)
+    const cleanPhone = phone.replace(/\D/g, '');
+    
+    // Try different formats
+    let user = await fallbackDb.findOne('users', { phone: cleanPhone });
+    if (!user && cleanPhone.length > 10) {
+      // Try last 10 digits if it has a country code
+      user = await fallbackDb.findOne('users', { phone: cleanPhone.slice(-10) });
+    }
+    
+    return user;
+  }
+
+  async unlinkTelegram(telegramId) {
+    const tid = telegramId.toString();
+    const record = await fallbackDb.findOne('telegram_users', { telegramId: tid });
+    if (record) {
+      // 1. Remove from mapping collection
+      await fallbackDb.deleteOne('telegram_users', record.id || record._id);
+      
+      // 2. Clear from user profile
+      const user = await fallbackDb.findOne('users', { telegramId: tid });
+      if (user) {
+        await fallbackDb.update('users', user.id || user._id, { telegramId: null });
+      }
+      return true;
+    }
+    return false;
+  }
 }
 
 module.exports = new AuthService();

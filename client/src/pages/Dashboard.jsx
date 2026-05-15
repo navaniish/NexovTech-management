@@ -12,7 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import API_URL from '../config';
 
 const CardSparkline = ({ data, color, index }) => (
-   <ResponsiveContainer width="100%" height={45} minWidth={0}>
+   <ResponsiveContainer width="100%" height={45} debounce={50}>
       <AreaChart data={data.map((v, i) => ({ v, i }))}>
          <defs>
             <linearGradient id={`grad-${index}`} x1="0" y1="0" x2="0" y2="1">
@@ -77,106 +77,109 @@ const Dashboard = () => {
    return (
       <div className="w-full flex flex-col space-y-6 animate-in fade-in duration-1000 overflow-y-auto custom-scrollbar">
          {/* OFFICE HEADER */}
-         <section className="relative w-full overflow-hidden rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[200px] group">
+         <section className="relative w-full overflow-hidden rounded-[24px] md:rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[160px] md:min-h-[200px] group">
             <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: "url('/assets/office-bg.png')" }} />
-            <div className="absolute inset-0 bg-white/70 backdrop-blur-[4px]" />
+            <div className="absolute inset-0 bg-white/80 md:bg-white/70 backdrop-blur-[4px]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-white/40 to-transparent md:hidden" />
 
-            <div className="relative z-10 flex-1 p-8 md:p-12 flex flex-col justify-center">
-               <div className="space-y-1 mb-6">
-                  <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter leading-none flex items-center gap-3">
-                     {getGreeting()}, {user?.name?.split(' ')[0] || 'Admin'}! <span className="animate-bounce-slow">👋</span>
+            <div className="relative z-10 flex-1 p-6 md:p-12 flex flex-col justify-center">
+               <div className="space-y-1 mb-4 md:mb-6">
+                  <h1 className="mobile-hero-title font-black text-slate-900 leading-tight">
+                     {getGreeting()}<span className="hidden sm:inline">, {user?.name || 'Nexovtech Admin'}!</span>
+                     <span className="inline-block animate-bounce-slow ml-3">👋</span>
                   </h1>
-                  <p className="text-slate-500 text-sm md:text-base font-medium">Here's what's happening with NexovTech today.</p>
+                  <h2 className="sm:hidden text-lg font-black text-slate-800 -mt-1">{user?.name || 'Nexovtech Admin'}</h2>
+                  <p className="mobile-body-text text-slate-500 font-medium max-w-[280px] md:max-w-none">Here's what's happening with NexovTech today.</p>
                </div>
 
-               <div className="flex flex-wrap gap-4">
-                  <div className="bg-white/60 border border-slate-100 px-6 py-3 rounded-[20px] flex items-center gap-4 shadow-sm backdrop-blur-xl">
-                     <Calendar size={18} className="text-indigo-600" />
-                     <span className="text-sm font-bold text-slate-700">{formatDate(currentTime)}</span>
+               <div className="flex flex-wrap gap-2 md:gap-4">
+                  <div className="bg-white/60 border border-slate-100 px-3 py-2 md:px-6 md:py-3 rounded-xl md:rounded-[20px] flex items-center gap-2 md:gap-4 shadow-sm backdrop-blur-xl">
+                     <Calendar size={14} className="text-indigo-600 md:size-[18px]" />
+                     <span className="text-[11px] md:text-sm font-bold text-slate-700">{formatDate(currentTime)}</span>
                   </div>
-                  <div className="bg-white/60 border border-slate-100 px-6 py-3 rounded-[20px] flex items-center gap-4 shadow-sm backdrop-blur-xl">
-                     <Clock size={18} className="text-brand-600" />
-                     <span className="text-sm font-bold text-slate-700 uppercase">{formatTime(currentTime)}</span>
+                  <div className="bg-white/60 border border-slate-100 px-3 py-2 md:px-6 md:py-3 rounded-xl md:rounded-[20px] flex items-center gap-2 md:gap-4 shadow-sm backdrop-blur-xl">
+                     <Clock size={14} className="text-brand-600 md:size-[18px]" />
+                     <span className="text-[11px] md:text-sm font-bold text-slate-700 uppercase">{formatTime(currentTime)}</span>
                   </div>
                </div>
             </div>
          </section>
 
          {/* KPI GRID */}
-         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+         <section className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-6">
             {kpiStats.map((stat, i) => (
-               <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="glass-card !p-5 flex flex-col relative overflow-hidden group min-h-[130px] border-slate-100 hover:scale-[1.02] transition-all">
-                  <div className="flex items-center gap-3.5 mb-4 relative z-10">
-                     <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: `${stat.color}10`, color: stat.color }}>
-                        <stat.icon size={20} strokeWidth={2.5} />
+               <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="glass-card !p-4 md:!p-5 flex flex-col relative overflow-hidden group min-h-[110px] md:min-h-[130px] border-slate-100 hover:scale-[1.02] transition-all">
+                  <div className="flex items-center gap-2.5 md:gap-3.5 mb-3 md:mb-4 relative z-10">
+                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: `${stat.color}10`, color: stat.color }}>
+                        <stat.icon size={16} md:size={20} strokeWidth={2.5} />
                      </div>
                      <div className="flex flex-col min-w-0">
-                        <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest truncate mb-0.5">{stat.label}</span>
-                        <h3 className="text-xl font-black text-slate-900 leading-none truncate">{loading ? '...' : stat.value}</h3>
+                        <span className="text-[8px] md:text-[9px] text-slate-400 font-black uppercase tracking-widest truncate mb-0.5">{stat.label}</span>
+                        <h3 className="text-lg md:text-xl font-black text-slate-900 leading-none truncate">{loading ? '...' : stat.value}</h3>
                      </div>
                   </div>
-                  <div className="mt-auto -mx-5 -mb-5 h-[45px] opacity-20 group-hover:opacity-60 transition-opacity duration-700">
+                  <div className="mt-auto -mx-4 -mb-4 md:-mx-5 md:-mb-5 h-[35px] md:h-[45px] opacity-20 group-hover:opacity-60 transition-opacity duration-700">
                      <CardSparkline data={stat.data} color={stat.color} index={i} />
                   </div>
                </motion.div>
             ))}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="glass-card !p-5 flex flex-col group justify-center items-center text-center bg-white/40 border-slate-100 min-h-[130px]">
-               <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center shadow-md mb-2 group-hover:scale-110 transition-transform">
-                  <Activity size={20} strokeWidth={2.5} />
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="glass-card !p-4 md:!p-5 flex flex-col group justify-center items-center text-center bg-white/40 border-slate-100 min-h-[110px] md:min-h-[130px] col-span-2 lg:col-span-1">
+               <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center shadow-md mb-2 group-hover:scale-110 transition-transform">
+                  <Activity size={16} md:size={20} strokeWidth={2.5} />
                </div>
-               <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest mb-0.5">Status</span>
-               <h3 className="text-[16px] font-black text-slate-900 uppercase italic">Paid</h3>
+               <span className="text-[8px] md:text-[9px] text-slate-400 font-black uppercase tracking-widest mb-0.5">Status</span>
+               <h3 className="text-[14px] md:text-[16px] font-black text-slate-900 uppercase italic">Operational</h3>
             </motion.div>
          </section>
 
          {/* ANALYTICS HUB */}
-         <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-            <div className="lg:col-span-3 glass-card !p-6 flex flex-col min-h-[300px] border-slate-100">
-               <h4 className="text-[11px] font-black text-slate-900 uppercase mb-6 tracking-tight italic text-center">Unit Allocation</h4>
-               <div className="flex-1 relative min-h-[180px]">
-                  <ResponsiveContainer width="100%" height="100%" minHeight={180}>
+         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 items-stretch">
+            <div className="lg:col-span-3 glass-card !p-6 flex flex-col min-h-[280px] md:min-h-[300px] border-slate-100">
+               <h4 className="mobile-section-title text-slate-900 uppercase mb-6 tracking-tight italic text-center">Unit Allocation</h4>
+               <div className="flex-1 relative min-h-[160px] md:min-h-[180px]">
+                  <ResponsiveContainer width="100%" height={160} md:height={180} debounce={50}>
                      <PieChart>
-                        <Pie data={deptData} innerRadius={55} outerRadius={75} paddingAngle={8} dataKey="value" stroke="none">
+                        <Pie data={deptData} innerRadius={50} outerRadius={70} md:innerRadius={55} md:outerRadius={75} paddingAngle={8} dataKey="value" stroke="none">
                            {deptData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                         </Pie>
                      </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                     <span className="text-2xl font-black text-slate-900 leading-none">{stats?.totalEmployees || '0'}</span>
-                     <span className="text-[8px] text-slate-400 font-black uppercase tracking-widest mt-1">Total</span>
+                     <span className="text-xl md:text-2xl font-black text-slate-900 leading-none">{stats?.totalEmployees || '0'}</span>
+                     <span className="text-[7px] md:text-[8px] text-slate-400 font-black uppercase tracking-widest mt-1">Total</span>
                   </div>
                </div>
             </div>
 
-            <div className="lg:col-span-3 glass-card !p-6 flex flex-col gap-4 min-h-[300px] border-slate-100">
-               <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-tight italic">Intelligence Signal</h4>
-               <div className="space-y-3">
+            <div className="lg:col-span-3 glass-card !p-6 flex flex-col gap-4 min-h-[280px] md:min-h-[300px] border-slate-100">
+               <h4 className="mobile-section-title text-slate-900 uppercase tracking-tight italic">Intelligence</h4>
+               <div className="grid grid-cols-2 md:grid-cols-1 gap-3">
                   {[
                      { label: 'Sentiment', val: 'Positive (88%)', color: 'text-emerald-500' },
                      { label: 'Response', val: '1.4h avg', color: 'text-indigo-500' },
                      { label: 'Nodes', val: 'Secure', color: 'text-slate-400' }
                   ].map((sig, i) => (
-                     <div key={i} className="p-3 bg-slate-50/50 rounded-xl border border-slate-100">
+                     <div key={i} className={`p-3 bg-slate-50/50 rounded-xl border border-slate-100 ${i === 2 ? 'col-span-2 md:col-span-1' : ''}`}>
                         <p className="text-[7px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{sig.label}</p>
-                        <p className={`text-[11px] font-black ${sig.color}`}>{sig.val}</p>
+                        <p className={`text-[10px] md:text-[11px] font-black ${sig.color}`}>{sig.val}</p>
                      </div>
                   ))}
                </div>
             </div>
 
-            <div className="lg:col-span-6 glass-card !p-6 flex flex-col border-slate-100">
-               <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-tight italic mb-6">Event Horizon</h4>
-               <div className="space-y-4">
-                  {(stats?.recentOrders || []).map((ev, i) => (
+            <div className="md:col-span-2 lg:col-span-6 glass-card !p-6 flex flex-col border-slate-100">
+               <h4 className="mobile-section-title text-slate-900 uppercase tracking-tight italic mb-6">Event Horizon</h4>
+               <div className="space-y-3 md:space-y-4">
+                  {(stats?.recentOrders || []).slice(0, 4).map((ev, i) => (
                      <div key={i} className="flex items-center justify-between p-3 bg-slate-50/30 rounded-2xl">
-                        <div className="flex items-center gap-4">
-                           <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black">{ev.avatar}</div>
-                           <div>
-                              <h5 className="text-[11px] font-black text-slate-900 uppercase">{ev.name}</h5>
-                              <span className="text-[8px] font-bold text-slate-400">{ev.status} • {ev.date}</span>
+                        <div className="flex items-center gap-3 md:gap-4">
+                           <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white text-[10px] md:text-[12px] font-black">{ev.avatar}</div>
+                           <div className="min-w-0">
+                              <h5 className="text-[10px] md:text-[11px] font-black text-slate-900 uppercase truncate">{ev.name}</h5>
+                              <span className="text-[7px] md:text-[8px] font-bold text-slate-400 truncate block">{ev.status} • {ev.date}</span>
                            </div>
                         </div>
-                        <span className="text-[11px] font-black text-emerald-600">{ev.price}</span>
+                        <span className="text-[10px] md:text-[11px] font-black text-emerald-600 whitespace-nowrap">{ev.price}</span>
                      </div>
                   ))}
                </div>

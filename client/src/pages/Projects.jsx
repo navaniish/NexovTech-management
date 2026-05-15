@@ -214,7 +214,7 @@ const Projects = () => {
   );
 
   return (
-    <div className="w-full h-full flex flex-col p-10 space-y-10 animate-in fade-in duration-1000 overflow-y-auto scrollbar-hide">
+    <div className="w-full h-full flex flex-col p-4 sm:p-6 md:p-10 space-y-6 md:space-y-10 animate-in fade-in duration-1000 overflow-y-auto scrollbar-hide">
       
       <AnimatePresence>
         {notification && (
@@ -232,53 +232,65 @@ const Projects = () => {
         )}
       </AnimatePresence>
 
-      <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+      <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8">
         <div className="flex flex-col">
-          <h1 className="text-[42px] font-black text-slate-900 tracking-tighter leading-none mb-2">PROJECT HUB</h1>
-          <p className="text-slate-400 text-[14px] font-bold tracking-[0.05em]">Real-time mission tracking and specialist deployment.</p>
+          <h1 className="mobile-hero-title font-black text-slate-900 tracking-tighter leading-none mb-2">PROJECT HUB</h1>
+          <p className="mobile-body-text text-slate-400 font-bold tracking-tight">Real-time mission tracking and specialist deployment.</p>
         </div>
-        <div className="flex items-center gap-6">
-           <div className="relative w-[320px]">
+        <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6">
+           <div className="relative w-full sm:w-[320px]">
               <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-              <input type="text" placeholder="Search parameters..." className="w-full h-12 pl-12 pr-6 bg-white border border-white rounded-2xl text-[13px] font-medium focus:outline-none focus:border-indigo-500 transition-all shadow-sm" />
+              <input type="text" placeholder="Search parameters..." className="w-full h-11 md:h-12 pl-12 pr-6 bg-white border border-slate-100 rounded-xl md:rounded-2xl text-[13px] font-medium focus:outline-none focus:border-indigo-500 transition-all shadow-sm" />
            </div>
-           <button onClick={() => setShowModal(true)} className="h-12 px-8 bg-indigo-600 text-white text-[12px] font-black rounded-2xl hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-100 flex items-center gap-2 uppercase tracking-widest">
+           <button onClick={() => setShowModal(true)} className="w-full sm:w-auto h-11 md:h-12 px-6 md:px-8 bg-indigo-600 text-white text-[11px] md:text-[12px] font-black rounded-xl md:rounded-2xl hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-100 flex items-center justify-center gap-2 uppercase tracking-widest">
               <Plus size={18} /> NEW MISSION
            </button>
         </div>
       </section>
 
-      <div className="lg:hidden flex p-1 bg-white/40 backdrop-blur-xl border border-white rounded-2xl">
+      {/* MOBILE BOARD SCROLL INDICATOR */}
+      <div className="lg:hidden flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
         {Object.values(columns).map((col) => (
-          <button key={col.id} onClick={() => setActiveTab(col.id)} className={`flex-1 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === col.id ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400'}`}>
+          <button 
+            key={col.id} 
+            onClick={() => {
+              setActiveTab(col.id);
+              document.getElementById(`column-${col.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }} 
+            className={`whitespace-nowrap px-4 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === col.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white/60 text-slate-400'}`}
+          >
             {col.title}
           </button>
         ))}
       </div>
 
-      <section className="grid grid-cols-1 lg:grid-cols-4 gap-10 items-start flex-1">
+      <section className="flex lg:grid lg:grid-cols-4 gap-6 md:gap-10 overflow-x-auto lg:overflow-x-visible no-scrollbar -mx-4 px-4 pb-10 snap-x">
         {Object.values(columns).map((column) => (
-          <div key={column.id} className={`flex flex-col gap-8 ${activeTab === column.id ? 'flex' : 'hidden lg:flex'}`}>
+          <div 
+            key={column.id} 
+            id={`column-${column.id}`}
+            className="flex flex-col gap-6 md:gap-8 min-w-[280px] sm:min-w-[320px] lg:min-w-0 snap-center"
+          >
             <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${column.color} shadow-lg shadow-indigo-100`}></div>
-                <h3 className="text-slate-900 font-black text-[14px] uppercase tracking-[0.2em]">{column.title}</h3>
-                <span className="text-[11px] font-black text-slate-300 ml-2">{column.projects.length}</span>
+                <div className={`w-2.5 h-2.5 rounded-full ${column.color} shadow-lg shadow-indigo-100`}></div>
+                <h3 className="text-slate-900 font-black text-[13px] md:text-[14px] uppercase tracking-[0.2em]">{column.title}</h3>
+                <span className="text-[10px] md:text-[11px] font-black text-slate-300 ml-2">{column.projects.length}</span>
               </div>
-              <button className="text-slate-300 hover:text-indigo-600 transition-colors"><MoreHorizontal size={20} /></button>
+              <button className="text-slate-300 hover:text-indigo-600 transition-colors"><MoreHorizontal size={18} /></button>
             </div>
             
-            <div className="space-y-8 min-h-[500px]">
+            <div className="space-y-6 md:space-y-8 min-h-[400px] md:min-h-[500px]">
               <AnimatePresence mode="popLayout">
                 {column.projects.length === 0 ? (
-                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-card flex flex-col items-center justify-center text-center gap-6 min-h-[300px] border-dashed">
-                      <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center relative">
-                         <Globe size={32} className="text-slate-200" />
+                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-card flex flex-col items-center justify-center text-center gap-6 min-h-[260px] border-dashed">
+                      <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center relative">
+                         <Globe size={24} className="text-slate-200" />
                          <div className="absolute inset-0 border-2 border-indigo-500/10 rounded-full animate-ping-slow" />
                       </div>
                       <div>
-                         <p className="text-[12px] font-black text-slate-900 uppercase tracking-widest mb-1">NO ACTIVE MISSIONS</p>
-                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Awaiting Parameter</p>
+                         <p className="text-[10px] md:text-[12px] font-black text-slate-900 uppercase tracking-widest mb-1">NO ACTIVE MISSIONS</p>
+                         <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Awaiting Parameter</p>
                       </div>
                    </motion.div>
                 ) : column.projects.map((project) => (
@@ -286,8 +298,8 @@ const Projects = () => {
                 ))}
               </AnimatePresence>
               
-              <button onClick={() => setShowModal(true)} className="w-full h-16 border-2 border-dashed border-slate-200 rounded-[24px] flex items-center justify-center group hover:border-indigo-600 transition-all">
-                 <span className="text-[11px] font-black text-slate-300 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">Authorize Phase</span>
+              <button onClick={() => setShowModal(true)} className="w-full h-14 md:h-16 border-2 border-dashed border-slate-200 rounded-2xl md:rounded-[24px] flex items-center justify-center group hover:border-indigo-600 transition-all">
+                 <span className="text-[10px] md:text-[11px] font-black text-slate-300 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">Authorize Phase</span>
               </button>
             </div>
           </div>

@@ -124,7 +124,7 @@ const Team = () => {
   const [loading, setLoading] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
   const [search, setSearch] = useState('');
-  const [inviteData, setInviteData] = useState({ name: '', email: '', role: 'Developer' });
+  const [inviteData, setInviteData] = useState({ name: '', email: '', role: 'Developer', phone: '' });
   const [notification, setNotification] = useState(null);
   const [error, setError] = useState(null);
   
@@ -144,12 +144,21 @@ const Team = () => {
       
       if (teamRes.ok) {
         const data = await teamRes.json();
+        const masterAdminEmail = 'nexovtech@myyahoo.com';
         const unique = (data || []).reduce((acc, curr) => {
-          const email = curr.email?.toLowerCase();
-          if (email && !acc.find(item => item.email?.toLowerCase() === email)) {
+          const email = (curr.email || curr.companyEmail || '').toLowerCase().trim();
+          const role = (curr.role || '').toLowerCase();
+          
+          // STRICT EXCLUSION: Skip if empty, if it's the Master Admin, if role is Super Admin, or if already exists
+          if (!email || email === masterAdminEmail || email === 'nexovtech@nexovtech.com' || role.includes('super admin')) return acc;
+          
+          const alreadyExists = acc.some(item => 
+            item.email?.toLowerCase().trim() === email || 
+            item.companyEmail?.toLowerCase().trim() === email
+          );
+
+          if (!alreadyExists) {
             acc.push({ ...curr, email });
-          } else if (!email && !acc.find(item => (item.id === curr.id || item._id === curr._id))) {
-            acc.push(curr);
           }
           return acc;
         }, []);
@@ -182,20 +191,10 @@ const Team = () => {
       });
       
       if (response.ok) {
-        // 2. Sync with Secure Firestore Employees Registry
-        const employeeRef = doc(db, 'employees', inviteData.email.toLowerCase());
-        await setDoc(employeeRef, {
-          email: inviteData.email.toLowerCase(),
-          name: inviteData.name,
-          role: inviteData.role,
-          status: 'active',
-          invitedAt: new Date()
-        });
-
         showNotification('Team invitation dispatched and security record initialized.');
         fetchData();
         setShowInvite(false);
-        setInviteData({ name: '', email: '', role: 'Developer' });
+        setInviteData({ name: '', email: '', role: 'Developer', phone: '' });
       } else {
         const data = await response.json();
         showNotification(data.message || 'Error inviting member', true);
@@ -372,6 +371,11 @@ const Team = () => {
                        <option className="bg-white">AI Specialist</option>
                        <option className="bg-white">Security Analyst</option>
                    </select>
+                </div>
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Phone Number</label>
+                   <input value={inviteData.phone} onChange={(e) => setInviteData({...inviteData, phone: e.target.value})}
+                     className="w-full h-14 px-6 bg-slate-50 border border-slate-100 rounded-2xl text-slate-900 text-sm font-bold focus:outline-none focus:border-indigo-500 transition-all" placeholder="+91 98765 43210" />
                 </div>
                 <button type="submit" className="w-full h-16 bg-slate-900 text-white rounded-[24px] font-black uppercase tracking-[0.3em] text-[11px] hover:bg-indigo-600 transition-all shadow-2xl shadow-slate-900/20 mt-4">Dispatch Activation</button>
               </form>

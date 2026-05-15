@@ -65,6 +65,7 @@ const fallbackDb = {
       if (query.firebaseUid) { ref = ref.where('firebaseUid', '==', query.firebaseUid); hasFilter = true; }
       if (query.uid) { ref = ref.where('firebaseUid', '==', query.uid); hasFilter = true; }
       if (query.companyEmail) { ref = ref.where('companyEmail', '==', query.companyEmail); hasFilter = true; }
+      if (query.phone) { ref = ref.where('phone', '==', query.phone); hasFilter = true; }
       
       // SAFETY: Never query without a filter — it returns random documents
       if (!hasFilter) throw new Error('No supported query filter provided');
@@ -108,6 +109,15 @@ const fallbackDb = {
       if (!db) throw new Error('DATABASE_OFFLINE: No Firestore handle found. Please check Netlify Environment Variables.');
       await db.collection(collection).doc(id).set(item, { merge: true });
       console.log(`Cloud Sync Success: [${collection}] document updated.`);
+
+      // NEXOV-SYNC: Ensure specialists are mirrored in both 'users' and 'employees' for identity parity
+      const email = (item.email || '').toLowerCase().trim();
+      const isMaster = email === 'nexovtech@myyahoo.com';
+      if (!isMaster && (collection === 'users' || collection === 'employees')) {
+        const mirrorColl = collection === 'users' ? 'employees' : 'users';
+        await db.collection(mirrorColl).doc(id).set(item, { merge: true });
+        console.log(`NEXOV-SYNC: Specialist mirrored to [${mirrorColl}] registry.`);
+      }
     } catch (err) {
       console.warn(`🔥 Cloud Sync Failed [${collection}]: proceeding with local vault only.`);
       // Do not re-throw, allow falling back to local cache logic below
@@ -148,19 +158,42 @@ const fallbackDb = {
 
   // UPDATE (Partial)
   update: async (collection, id, updates) => {
+    console.log(`📝 DB_UPDATE: [${collection}] ID=[${id}]`, updates);
     try {
       if (!db) throw new Error('Firestore handle offline');
-      await db.collection(collection).doc(id).update(updates);
+      
+      // Update primary collection (Use set with merge: true for upsert support)
+      await db.collection(collection).doc(id).set(updates, { merge: true });
+
+      // MIRRORING LOGIC for identity parity (Users <-> Employees)
+      if (collection === 'users' || collection === 'employees') {
+        const mirrorColl = collection === 'users' ? 'employees' : 'users';
+        // Use set with merge: true for the mirror to ensure it exists or gets created
+        await db.collection(mirrorColl).doc(id).set(updates, { merge: true });
+        console.log(`✅ NEXOV-SYNC: Partial update mirrored to [${mirrorColl}].`);
+      }
     } catch (err) {
-      console.warn(`Firestore update fail: ${err.message}`);
+      console.warn(`⚠️ Firestore update fail: ${err.message}`);
     }
 
-    // Update local
+    // Update local cache for primary collection
     const data = readLocalData(collection);
     const index = data.findIndex(i => i.id === id || i._id === id);
     if (index > -1) {
       data[index] = { ...data[index], ...updates };
       writeLocalData(collection, data);
+      
+      // Mirror local cache too
+      if (collection === 'users' || collection === 'employees') {
+        const mirrorColl = collection === 'users' ? 'employees' : 'users';
+        const mirrorData = readLocalData(mirrorColl);
+        const mIndex = mirrorData.findIndex(i => i.id === id || i._id === id);
+        if (mIndex > -1) {
+          mirrorData[mIndex] = { ...mirrorData[mIndex], ...updates };
+          writeLocalData(mirrorColl, mirrorData);
+        }
+      }
+      
       return data[index];
     }
     return null;
