@@ -208,10 +208,12 @@ const AdminIDCards = () => {
     (c.userId && c.userId.toString() === userId?.toString())
   );
 
-  const filteredEmployees = employees.filter(e => 
-    e.name.toLowerCase().includes(search.toLowerCase()) || 
-    e.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredEmployees = employees.filter(emp => {
+    const nameMatch = emp.name?.toLowerCase().includes(search.toLowerCase());
+    const emailMatch = emp.email?.toLowerCase().includes(search.toLowerCase());
+    const idMatch = emp.employeeId?.toLowerCase().includes(search.toLowerCase());
+    return nameMatch || emailMatch || idMatch;
+  });
 
   const selectEmployeeForPreview = (emp, card) => {
     setSelectedEmployee({ ...emp, card });
