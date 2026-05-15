@@ -4,7 +4,7 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDYWcXKapkc98w01K4QqjNXdVT8Jx8q75g",
+  apiKey: "AIzaSyCh5gR7GiU5Sq1beZCiGGN8RSTVwiYsooY",
   authDomain: "nexovtech-management.firebaseapp.com",
   projectId: "nexovtech-management",
   storageBucket: "nexovtech-management.firebasestorage.app",
