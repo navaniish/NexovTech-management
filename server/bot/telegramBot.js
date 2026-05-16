@@ -123,6 +123,8 @@ function initBot(token) {
   const bot = new Telegraf(token);
   global.tgBot = bot;
 
+  const IS_SERVERLESS = !!(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+
   // Register Official Menu Commands
   bot.telegram.setMyCommands([
     { command: 'start', description: '🚀 Authenticate / Start Session' },
@@ -131,9 +133,12 @@ function initBot(token) {
     { command: 'help', description: '🆘 Get Assistance' }
   ]);
 
-  // Use persistent session to survive server restarts
-const sessionStore = new LocalSession({ database: 'data/sessions.json' });
-bot.use(sessionStore.middleware());
+  // Use persistent session
+  const sessionStore = new LocalSession({ 
+    database: IS_SERVERLESS ? 'telegram_sessions' : 'data/sessions.json',
+    useFirestore: IS_SERVERLESS 
+  });
+  bot.use(sessionStore.middleware());
   bot.use(stage.middleware());
 
   // Middleware to check if user is authenticated
@@ -218,16 +223,18 @@ bot.use(sessionStore.middleware());
     }
   });
 
-  bot.launch()
-    .then(() => {
-      console.log('🤖 TELEGRAM_BOT: Operational and synchronized.');
-    })
-    .catch((err) => {
-      console.error('❌ TELEGRAM_BOT_LAUNCH_FAILED:', err.message);
-      if (err.message.includes('Unexpected token <')) {
-        console.error('⚠️ DIAGNOSTIC: It appears your network is blocking Telegram API and redirecting to a login/block page.');
-      }
-    });
+  // Only launch polling if NOT serverless
+  if (!IS_SERVERLESS) {
+    bot.launch()
+      .then(() => {
+        console.log('🤖 TELEGRAM_BOT: Operational and synchronized (Polling).');
+      })
+      .catch((err) => {
+        console.error('❌ TELEGRAM_BOT_LAUNCH_FAILED:', err.message);
+      });
+  } else {
+    console.log('🤖 TELEGRAM_BOT: Instance ready for Webhook delivery.');
+  }
 
   // Enable graceful stop
   process.once('SIGINT', () => bot.stop('SIGINT'));

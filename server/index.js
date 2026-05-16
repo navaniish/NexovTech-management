@@ -13,8 +13,9 @@ try { dotenv.config(); } catch (e) { /* no .env in serverless */ }
 
 // Initialize Telegram Bot
 const { initBot } = require('./bot/telegramBot');
-if (!IS_SERVERLESS) {
-  initBot(process.env.TELEGRAM_BOT_TOKEN);
+const tgBot = initBot(process.env.TELEGRAM_BOT_TOKEN);
+if (tgBot && IS_SERVERLESS) {
+  console.log('📡 TELEGRAM_WEBHOOK: Listening on /api/telegram-webhook');
 }
 
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
@@ -69,6 +70,18 @@ app.use('/api/idcard', idCardRoutes);
 app.use('/api/mail', mailRoutes);
 app.use('/api/recruitment', recruitmentRoutes);
 app.use('/api/timesheet', timesheetRoutes);
+
+// Telegram Webhook Endpoint
+app.post('/api/telegram-webhook', async (req, res) => {
+  if (!tgBot) return res.status(503).send('Bot not initialized');
+  try {
+    await tgBot.handleUpdate(req.body, res);
+    if (!res.headersSent) res.sendStatus(200);
+  } catch (err) {
+    console.error('❌ TELEGRAM_WEBHOOK_ERROR:', err.message);
+    res.status(500).send('Webhook Error');
+  }
+});
 
 // Health Check
 app.get('/health', (req, res) => res.json({ status: 'Operational', timestamp: new Date() }));

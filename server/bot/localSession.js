@@ -1,11 +1,15 @@
 const fs = require('fs');
 const path = require('path');
+const { db } = require('../firebaseAdmin');
 
 class LocalSession {
   constructor(options = {}) {
     this.database = options.database || 'data/sessions.json';
+    this.useFirestore = options.useFirestore || false;
     this.sessions = {};
-    this.load();
+    if (!this.useFirestore) {
+      this.load();
+    }
   }
 
   load() {
@@ -18,13 +22,22 @@ class LocalSession {
     }
   }
 
-  save() {
-    try {
-      const dir = path.dirname(this.database);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(this.database, JSON.stringify(this.sessions, null, 2));
-    } catch (e) {
-      console.error('Session save failed:', e.message);
+  async save(key, session) {
+    if (this.useFirestore && db) {
+      try {
+        await db.collection(this.database).doc(key).set(session);
+      } catch (e) {
+        console.error('Cloud Session save failed:', e.message);
+      }
+    } else {
+      try {
+        this.sessions[key] = session;
+        const dir = path.dirname(this.database);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(this.database, JSON.stringify(this.sessions, null, 2));
+      } catch (e) {
+        console.error('Local Session save failed:', e.message);
+      }
     }
   }
 
@@ -33,12 +46,21 @@ class LocalSession {
       if (!ctx.from) return next();
       
       const key = `${ctx.from.id}:${ctx.chat.id}`;
-      ctx.session = this.sessions[key] || {};
+      
+      if (this.useFirestore && db) {
+        try {
+          const doc = await db.collection(this.database).doc(key).get();
+          ctx.session = doc.exists ? doc.data() : {};
+        } catch (e) {
+          ctx.session = {};
+        }
+      } else {
+        ctx.session = this.sessions[key] || {};
+      }
       
       await next();
       
-      this.sessions[key] = ctx.session;
-      this.save();
+      await this.save(key, ctx.session);
     };
   }
 }
