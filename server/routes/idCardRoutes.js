@@ -124,23 +124,28 @@ router.get('/:userId', async (req, res) => {
                  (await fallbackDb.findOne('users', { firebaseUid: userId })) ||
                  (await fallbackDb.findOne('users', { email: userId }));
     
-    const targetUserId = user ? (user.id || user._id) : userId;
+    const targetUserId = user ? (user.firebaseUid || user.id || user._id) : userId;
 
     // 2. Try direct ID lookup on idcards
     let card = await fallbackDb.findById('idcards', targetUserId);
     
-    // 3. Fallback: Search all cards by userId field or original userId
+    // 3. Fallback: Search all cards by userId, id, or email field
     if (!card) {
       const cards = await fallbackDb.find('idcards', {});
       card = cards.find(c => 
         c.userId === targetUserId || 
         c.id === targetUserId ||
         c.userId === userId ||
-        c.id === userId
+        c.id === userId ||
+        (c.email && c.email.toLowerCase() === userId.toLowerCase()) ||
+        (user?.email && c.email && c.email.toLowerCase() === user.email.toLowerCase())
       );
     }
     
-    if (!card) return res.status(404).json({ message: 'No ID card found for this employee' });
+    if (!card) {
+      console.warn(`⚠️ ID_FETCH_FAIL: No card found for identifier=[${userId}] targetUserId=[${targetUserId}]`);
+      return res.status(404).json({ message: 'No ID card found for this employee' });
+    }
     
     res.json({
       ...card,

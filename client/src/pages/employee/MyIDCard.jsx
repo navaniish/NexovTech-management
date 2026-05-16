@@ -62,10 +62,21 @@ const MyIDCard = () => {
       </section>
 
       {error ? (
-        <div className="max-w-md mx-auto theme-card rounded-2xl md:rounded-[32px] p-6 md:p-12 text-center border border-rose-500/10">
-           <AlertTriangle size={32} className="md:hidden text-rose-500 mx-auto mb-4" />
-           <AlertTriangle size={48} className="hidden md:block text-rose-500 mx-auto mb-6" />
-           <p className="text-[11px] md:text-sm font-bold theme-text-primary leading-relaxed">{error}</p>
+        <div className="max-w-2xl mx-auto theme-card rounded-[40px] p-12 text-center border border-slate-200 bg-white/50 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+           <div className="absolute top-0 left-0 w-full h-1 bg-rose-500/20" />
+           <div className="w-20 h-20 bg-rose-50 rounded-[28px] flex items-center justify-center mx-auto mb-8 text-rose-500 shadow-inner">
+              <AlertTriangle size={40} />
+           </div>
+           <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-4">Credential Sync Required</h3>
+           <p className="text-[13px] font-medium text-slate-500 leading-relaxed mb-8 max-w-sm mx-auto">
+             {error}
+           </p>
+           <button 
+             onClick={() => window.location.reload()}
+             className="px-10 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-600 transition-all shadow-xl shadow-slate-200"
+           >
+             Re-Synchronize Identity
+           </button>
         </div>
       ) : (
         <motion.div 

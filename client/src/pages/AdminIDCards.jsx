@@ -97,7 +97,7 @@ const AdminIDCards = () => {
     if (selectedEmployee) {
       const updatedEmp = employees.find(e => (e._id || e.id) === (selectedEmployee._id || selectedEmployee.id));
       if (updatedEmp) {
-        const updatedCard = cards.find(c => c.userId === (updatedEmp._id || updatedEmp.id));
+        const updatedCard = getCardForEmployee(updatedEmp);
         setSelectedEmployee({ ...updatedEmp, card: updatedCard });
       }
     }
@@ -202,11 +202,17 @@ const AdminIDCards = () => {
     }
   };
 
-  const getCardForEmployee = (userId) => cards.find(c => 
-    c.userId === userId || 
-    c.id === userId || 
-    (c.userId && c.userId.toString() === userId?.toString())
-  );
+  const getCardForEmployee = (employee) => {
+    if (!employee) return null;
+    const empId = employee._id || employee.id;
+    const empEmail = employee.email?.toLowerCase();
+
+    return cards.find(c => 
+      c.userId === empId || 
+      c.id === empId || 
+      (c.email && empEmail && c.email.toLowerCase() === empEmail)
+    );
+  };
 
   const filteredEmployees = employees.filter(emp => {
     const nameMatch = emp.name?.toLowerCase().includes(search.toLowerCase());
@@ -310,7 +316,7 @@ const AdminIDCards = () => {
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Synchronizing Biometrics...</p>
                   </div>
                 ) : filteredEmployees.map((emp) => {
-                  const card = getCardForEmployee(emp._id || emp.id);
+                  const card = getCardForEmployee(emp);
                   const isSelected = selectedEmployee && (selectedEmployee._id || selectedEmployee.id) === (emp._id || emp.id);
                   
                   return (

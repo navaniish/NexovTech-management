@@ -85,10 +85,10 @@ const Dashboard = () => {
             <div className="relative z-10 flex-1 p-6 md:p-12 flex flex-col justify-center">
                <div className="space-y-1 mb-4 md:mb-6">
                   <h1 className="mobile-hero-title font-black text-slate-900 leading-tight">
-                     {getGreeting()}<span className="hidden sm:inline">, {user?.name || 'Nexovtech Admin'}!</span>
+                     {getGreeting()}<span className="hidden sm:inline">, <span className="text-[0.55em] font-extrabold opacity-80 tracking-tight">{user?.name || 'Nexovtech Admin'}</span>!</span>
                      <span className="inline-block animate-bounce-slow ml-3">👋</span>
                   </h1>
-                  <h2 className="sm:hidden text-lg font-black text-slate-800 -mt-1">{user?.name || 'Nexovtech Admin'}</h2>
+                  <h2 className="sm:hidden text-sm font-bold text-slate-700 -mt-1">{user?.name || 'Nexovtech Admin'}</h2>
                   <p className="mobile-body-text text-slate-500 font-medium max-w-[280px] md:max-w-none">Here's what's happening with NexovTech today.</p>
                </div>
 

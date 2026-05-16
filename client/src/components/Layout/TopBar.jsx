@@ -200,7 +200,7 @@ const TopBar = ({ onMenuToggle }) => {
              className="flex items-center gap-3 pl-2 group cursor-pointer"
            >
               <div className="text-right hidden lg:block">
-                <p className="text-[13px] font-black text-slate-900 leading-tight uppercase tracking-tighter">
+                <p className="text-[11px] font-black text-slate-900 leading-tight uppercase tracking-tighter">
                   {user?.name || 'Admin User'}
                 </p>
                 <p className={`text-[9px] font-black uppercase tracking-[0.1em] ${
