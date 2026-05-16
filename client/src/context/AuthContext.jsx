@@ -296,7 +296,7 @@ export const AuthProvider = ({ children }) => {
   const adminOverride = async (masterKey) => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/auth/admin-override`, {
+      const response = await fetch(`${API_BASE}/auth/admin-override`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ masterKey })
