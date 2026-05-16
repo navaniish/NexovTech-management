@@ -138,32 +138,50 @@ router.post('/', upload.array('attachments'), async (req, res) => {
     
     console.log('Processed files:', files);
 
-    const newTask = { 
-      ...taskData, 
-      files: files.length > 0 ? files : (taskData.files ? (typeof taskData.files === 'string' ? JSON.parse(taskData.files) : taskData.files) : []),
-      createdAt: new Date() 
+    let attachmentList = [];
+    try {
+      if (files && files.length > 0) {
+        attachmentList = files;
+      } else if (taskData.files) {
+        attachmentList = typeof taskData.files === 'string' ? JSON.parse(taskData.files) : taskData.files;
+      }
+    } catch (parseErr) {
+      console.warn('⚠️ TASK_METADATA_WARNING: Failed to parse attachment list:', parseErr.message);
+      attachmentList = [];
+    }
+
+    const newTask = {
+      ...taskData,
+      files: attachmentList,
+      status: taskData.status || 'Assigned',
+      createdAt: new Date().toISOString()
     };
     
     const saved = await fallbackDb.save('tasks', newTask);
     
-    // Trigger Notification for the assigned specialist
+    // 3. Dispatch Notification
     try {
       await fallbackDb.save('notifications', {
-        id: `nt_${Date.now()}_task`,
         userId: newTask.assignedTo,
+        type: 'TASK_ASSIGNED',
         title: 'New Mission Assigned',
-        message: `You have been assigned a new mission: ${newTask.title}`,
-        type: 'info',
-        link: '/tasks',
+        message: `You have been assigned to: ${newTask.title}`,
+        link: '/employee/tasks',
         read: false,
         createdAt: new Date().toISOString()
       });
-    } catch (nErr) { console.error('Notification trigger failed:', nErr); }
+    } catch (notifErr) {
+      console.warn('⚠️ NOTIFICATION_FAILURE: Task saved but notice dispatch failed.');
+    }
 
     res.status(201).json(saved);
   } catch (err) {
     console.error('❌ MISSION_FAILURE: Task deployment failed:', err);
-    res.status(500).json({ message: 'Failed to deploy new task' });
+    res.status(500).json({ 
+      message: 'Failed to deploy new task', 
+      error: err.message,
+      code: err.message.includes('DATABASE_OFFLINE') ? 'DATABASE_OFFLINE' : 'INTERNAL_ERROR'
+    });
   }
 });
 

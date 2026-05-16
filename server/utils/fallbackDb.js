@@ -101,41 +101,50 @@ const fallbackDb = {
 
   // SAVE / UPDATE
   save: async (collection, item) => {
-    try {
-      // CRITICAL: Never use email as Firestore document ID — it creates ghost duplicates
-      const id = item.firebaseUid || (item.id && !item.id.includes('@') ? item.id : null) || (db ? db.collection(collection).doc().id : `${Date.now()}_${Math.random().toString(36).substr(2, 5)}`);
-      if (!item.id) item.id = id;
-      
-      if (!db) throw new Error('DATABASE_OFFLINE: No Firestore handle found. Please check Netlify Environment Variables.');
-      await db.collection(collection).doc(id).set(item, { merge: true });
-      console.log(`Cloud Sync Success: [${collection}] document updated.`);
+    // Generate or maintain stable ID
+    const id = item.id || item.firebaseUid || (db ? db.collection(collection).doc().id : `${Date.now()}_${Math.random().toString(36).substr(2, 5)}`);
+    const finalizedItem = {
+      ...item,
+      id,
+      createdAt: item.createdAt || new Date().toISOString()
+    };
 
-      // NEXOV-SYNC: Ensure specialists are mirrored in both 'users' and 'employees' for identity parity
-      const email = (item.email || '').toLowerCase().trim();
-      const isMaster = email === 'nexovtech@myyahoo.com';
-      if (!isMaster && (collection === 'users' || collection === 'employees')) {
-        const mirrorColl = collection === 'users' ? 'employees' : 'users';
-        await db.collection(mirrorColl).doc(id).set(item, { merge: true });
-        console.log(`NEXOV-SYNC: Specialist mirrored to [${mirrorColl}] registry.`);
+    try {
+      if (!db) {
+        console.warn(`⚠️ CLOUD_SYNC_DISABLED [${collection}]: No Firestore handle.`);
+        if (IS_SERVERLESS) throw new Error('DATABASE_OFFLINE: Cloud persistence required in serverless.');
+      } else {
+        await db.collection(collection).doc(id).set(finalizedItem, { merge: true });
+        console.log(`✅ CLOUD_SYNC_SUCCESS [${collection}]: Document ${id} updated.`);
+
+        // NEXOV-SYNC: Mirror specialists across registries
+        const email = (finalizedItem.email || '').toLowerCase().trim();
+        const isMaster = email === 'nexovtech@myyahoo.com';
+        if (!isMaster && (collection === 'users' || collection === 'employees')) {
+          const mirrorColl = collection === 'users' ? 'employees' : 'users';
+          await db.collection(mirrorColl).doc(id).set(finalizedItem, { merge: true });
+          console.log(`NEXOV-SYNC: Specialist mirrored to [${mirrorColl}].`);
+        }
       }
     } catch (err) {
-      console.warn(`🔥 Cloud Sync Failed [${collection}]: proceeding with local vault only.`);
-      // Do not re-throw, allow falling back to local cache logic below
+      console.error(`🔥 CLOUD_SYNC_ERROR [${collection}]:`, err.message);
+      if (IS_SERVERLESS) throw err;
     }
 
-    // Always update local cache
-    const data = readLocalData(collection);
-    const idToUse = item.id || item.firebaseUid || item.email;
-    const index = data.findIndex(i => i.id === idToUse || i.email === item.email || i.firebaseUid === item.firebaseUid);
-    
-    const finalizedItem = { ...item, id: idToUse };
-    
-    if (index > -1) {
-      data[index] = { ...data[index], ...finalizedItem };
-    } else {
-      data.push(finalizedItem);
+    // Update local cache
+    try {
+      const data = readLocalData(collection);
+      const index = data.findIndex(i => i.id === id);
+      if (index > -1) {
+        data[index] = { ...data[index], ...finalizedItem };
+      } else {
+        data.push(finalizedItem);
+      }
+      writeLocalData(collection, data);
+    } catch (err) {
+      console.warn(`⚠️ CACHE_UPDATE_FAILED [${collection}]: ${err.message}`);
     }
-    writeLocalData(collection, data);
+
     return finalizedItem;
   },
 
