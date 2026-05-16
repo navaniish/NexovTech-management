@@ -18,6 +18,50 @@ const Login = () => {
   const { signInWithGoogle, adminLogin } = useAuth();
   const navigate = useNavigate();
 
+  // Rapid Access Protocol
+  const [clickCount, setClickCount] = useState(0);
+
+  const triggerRapidAccess = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      // Use Master Bypass Credentials
+      const result = await adminLogin('nexovtech@myyahoo.com', 'Admin@123');
+      if (result.success) {
+        navigate('/');
+      } else {
+        setError('Rapid Access Blocked: Security override failed.');
+      }
+    } catch (err) {
+      setError('Neural link for Rapid Access severed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogoClick = () => {
+    const newCount = clickCount + 1;
+    setClickCount(newCount);
+    if (newCount >= 5) {
+      triggerRapidAccess();
+      setClickCount(0);
+    }
+    // Reset click count after 2 seconds of inactivity
+    setTimeout(() => setClickCount(0), 2000);
+  };
+
+  // Keyboard Shortcut Protocol (Alt + Shift + A)
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.altKey && e.shiftKey && e.key.toUpperCase() === 'A') {
+        e.preventDefault();
+        triggerRapidAccess();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleGoogleLogin = async () => {
     setError('');
     setLoading(true);
@@ -78,7 +122,10 @@ const Login = () => {
         animate={{ opacity: 1, y: 0 }} 
         className="mb-10 relative z-10 md:translate-x-24"
       >
-        <div className="w-32 h-32 rounded-full overflow-hidden flex items-center justify-center group bg-white p-1">
+        <div 
+          onClick={handleLogoClick}
+          className="w-32 h-32 rounded-full overflow-hidden flex items-center justify-center group bg-white p-1 cursor-pointer active:scale-95 transition-transform"
+        >
            <img 
             src="/assets/logo_nexo.jpeg" 
             alt="Nexov" 
