@@ -72,9 +72,17 @@ const recoveryScene = new Scenes.WizardScene(
       return ctx.scene.leave();
     }
 
-    const phone = ctx.message.contact.phone_number;
-    const user = await authService.lookupByPhone(phone);
+    const contact = ctx.message.contact;
+    const phone = contact.phone_number;
+    
+    // SECURITY CHECK: Ensure the shared contact is actually the user's own contact
+    // Telegram sends user_id if the contact belongs to the sender.
+    if (!contact.user_id || contact.user_id !== ctx.from.id) {
+      await ctx.reply('⚠️ *Security Alert*: You must share your *own* contact using the button provided to link your identity. Sharing other people\'s contacts is not permitted for security reasons.', { parse_mode: 'Markdown' });
+      return ctx.scene.leave();
+    }
 
+    const user = await authService.lookupByPhone(phone);
     if (!user) {
       await ctx.reply('❌ This phone number is not linked to any NexovTech account.\n\n💡 *Tip*: If you have an account, please type /start and select "Authenticate via Email" to link your profile.', { parse_mode: 'Markdown' });
       return ctx.scene.leave();
