@@ -23,7 +23,13 @@ router.get('/', async (req, res) => {
       if (!isDuplicate) {
         // Calculate real-time stats from tasks
         const userId = curr.id || curr._id;
-        const userTasks = tasks.filter(t => t.assignedTo === userId);
+        const userEmail = (curr.email || '').toLowerCase().trim();
+        
+        const userTasks = tasks.filter(t => 
+          t.assignedTo === userId || 
+          (userEmail && t.assignedTo === userEmail)
+        );
+        
         const completedTasks = userTasks.filter(t => t.status === 'Completed').length;
         const totalTasks = userTasks.length;
         

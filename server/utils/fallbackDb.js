@@ -47,10 +47,11 @@ const fallbackDb = {
         });
       }
 
+      console.log(`🔍 CLOUD_FIND_INIT [${collection}]: Query:`, JSON.stringify(query));
       const snapshot = await ref.get();
       const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
-      console.log(`✅ CLOUD_FIND_SUCCESS [${collection}]: Found ${docs.length} documents matching query.`);
+      console.log(`✅ CLOUD_FIND_SUCCESS [${collection}]: Found ${docs.length} documents.`);
 
       // Update local cache if not empty (to avoid wiping cache on transient empty results)
       if (docs.length > 0) writeLocalData(collection, docs);
@@ -59,10 +60,15 @@ const fallbackDb = {
     } catch (err) {
       console.warn(`⚠️ Firestore find fail [${collection}]: ${err.message}. Falling back to local vault.`);
       const localData = readLocalData(collection);
-      if (!query || Object.keys(query).length === 0) return localData;
-      return localData.filter(item => {
+      if (!query || Object.keys(query).length === 0) {
+        console.log(`📦 LOCAL_FIND [${collection}]: Returning all ${localData.length} records.`);
+        return localData;
+      }
+      const filtered = localData.filter(item => {
         return Object.keys(query).every(key => item[key] === query[key]);
       });
+      console.log(`📦 LOCAL_FIND [${collection}]: Returning ${filtered.length} matching records.`);
+      return filtered;
     }
   },
 
