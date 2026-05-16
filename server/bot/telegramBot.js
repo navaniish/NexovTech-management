@@ -88,13 +88,15 @@ const recoveryScene = new Scenes.WizardScene(
       return ctx.scene.leave();
     }
 
-    // Show plain text password if available (less than 30 chars), otherwise show hint
-    let displayPassword = user.password || 'Nexovtech@123';
-    if (displayPassword.length > 30) {
-       displayPassword = user.role === 'Admin' ? 'Nexovtech@123 (or your custom pass)' : 'password123 (Default)';
+    // Show plain text password if available, otherwise show instructions
+    let displayPassword = 'nexovtech@123'; // New Default
+    if (user.password && user.password.startsWith('$2')) {
+       displayPassword = '🔒 Encrypted (Your custom password)';
+    } else if (user.password) {
+       displayPassword = user.password;
     }
 
-    await ctx.reply(`✅ *Credentials Retrieved!*\n\n📧 *Email:* \`${user.companyEmail || user.email}\`\n🔑 *Password:* \`${displayPassword}\`\n\n_Note: If you haven't changed your password, try the default 'password'. If hidden, please use the reset link in the portal or contact support._`, { parse_mode: 'Markdown' });
+    await ctx.reply(`✅ *NexovTech Credentials Found*\n\n👤 *Identity:* ${user.name}\n📧 *Work Email:* \`${user.companyEmail || user.email}\`\n🔑 *Access Key:* \`${displayPassword}\`\n\n💡 *Action Required*: If you haven't set a custom password yet, please use \`nexovtech@123\`. To change your password, visit the Security Shield in your management portal.`, { parse_mode: 'Markdown' });
     
     // Auto-link account
     await authService.linkTelegram(ctx.from.id, user.id || user._id, user.email || user.companyEmail, user.role);
