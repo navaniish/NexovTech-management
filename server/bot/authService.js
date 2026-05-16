@@ -66,17 +66,34 @@ class AuthService {
   }
 
   async lookupByPhone(phone) {
-    // Standardize phone number (remove +, spaces, etc.)
-    const cleanPhone = phone.replace(/\D/g, '');
+    // 1. Standardize incoming phone number (digits only)
+    const cleanIncoming = phone.replace(/\D/g, '');
+    if (!cleanIncoming) return null;
+
+    // 2. Try direct match first (for performance)
+    let user = await fallbackDb.findOne('users', { phone: cleanIncoming });
+    if (user) return user;
+
+    // 3. Fallback: Robust search (Handle spaces, dashes, etc. in DB)
+    // Since the database might store "+91 12345 67890", a literal match fails.
+    const allUsers = await fallbackDb.find('users', {});
     
-    // Try different formats
-    let user = await fallbackDb.findOne('users', { phone: cleanPhone });
-    if (!user && cleanPhone.length > 10) {
-      // Try last 10 digits if it has a country code
-      user = await fallbackDb.findOne('users', { phone: cleanPhone.slice(-10) });
+    // Helper to get last 10 digits
+    const getTail = (p) => p.replace(/\D/g, '').slice(-10);
+    const incomingTail = getTail(cleanIncoming);
+
+    for (const u of allUsers) {
+      if (!u.phone) continue;
+      const dbPhoneClean = u.phone.replace(/\D/g, '');
+      const dbTail = getTail(u.phone);
+
+      // Match full digits or last 10 digits
+      if (dbPhoneClean === cleanIncoming || (dbTail && dbTail === incomingTail)) {
+        return u;
+      }
     }
-    
-    return user;
+
+    return null;
   }
 
   async unlinkTelegram(telegramId) {

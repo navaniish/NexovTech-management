@@ -76,14 +76,14 @@ const recoveryScene = new Scenes.WizardScene(
     const user = await authService.lookupByPhone(phone);
 
     if (!user) {
-      await ctx.reply('❌ This phone number is not linked to any NexovTech account. Please contact HR.');
+      await ctx.reply('❌ This phone number is not linked to any NexovTech account.\n\n💡 *Tip*: If you have an account, please type /start and select "Authenticate via Email" to link your profile.', { parse_mode: 'Markdown' });
       return ctx.scene.leave();
     }
 
     // Show plain text password if available (less than 30 chars), otherwise show hint
     let displayPassword = user.password || 'Nexovtech@123';
     if (displayPassword.length > 30) {
-       displayPassword = user.role === 'Admin' ? 'Admin@123 (or your custom pass)' : 'password123 (Default)';
+       displayPassword = user.role === 'Admin' ? 'Nexovtech@123 (or your custom pass)' : 'password123 (Default)';
     }
 
     await ctx.reply(`✅ *Credentials Retrieved!*\n\n📧 *Email:* \`${user.companyEmail || user.email}\`\n🔑 *Password:* \`${displayPassword}\`\n\n_Note: If you haven't changed your password, try the default 'password'. If hidden, please use the reset link in the portal or contact support._`, { parse_mode: 'Markdown' });
