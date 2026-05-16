@@ -140,7 +140,7 @@ router.get('/balance/:employeeId', async (req, res) => {
 router.get('/admin/summary', async (req, res) => {
   try {
     const leaves = await fallbackDb.find('leaves', {});
-    const team = await fallbackDb.find('team', {});
+    const employees = await fallbackDb.find('employees', {});
     
     const stats = {
       pending: leaves.filter(l => l.status === 'Pending').length,
@@ -150,7 +150,7 @@ router.get('/admin/summary', async (req, res) => {
     };
 
     const mapped = leaves.map(l => {
-      const specialist = team.find(s => s.id === l.employeeId) || {};
+      const specialist = employees.find(s => s.id === l.employeeId || s.companyEmail === l.employeeId || s.email === l.employeeId) || {};
       return {
         _id: l._id || l.id,
         name: l.employeeName || specialist.name || 'Unknown',

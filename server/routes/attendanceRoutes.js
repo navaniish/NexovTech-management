@@ -129,7 +129,7 @@ router.delete('/:id', async (req, res) => {
 router.get('/admin/summary', async (req, res) => {
   try {
     const records = await fallbackDb.find('attendance', {});
-    const team = await fallbackDb.find('team', {});
+    const employees = await fallbackDb.find('employees', {});
     
     // Logic for daily stats
     const today = new Date().toISOString().split('T')[0];
@@ -138,16 +138,17 @@ router.get('/admin/summary', async (req, res) => {
     const stats = {
       present: todayRecords.length,
       late: todayRecords.filter(r => r.attendanceStatus === 'Late').length,
-      onLeave: team.length - todayRecords.length,
+      onLeave: employees.length - todayRecords.length,
       avgTime: '09:15 AM'
     };
 
     // Mapping specialists for the grid
     const mapped = todayRecords.map(r => {
-      const specialist = team.find(s => s.id === r.employeeId) || {};
+      const specialist = employees.find(s => s.id === r.employeeId || s.companyEmail === r.employeeId || s.email === r.employeeId) || {};
       return {
         name: specialist.name || 'Unknown',
         role: specialist.role || 'Specialist',
+        avatar: specialist.avatar,
         checkIn: r.checkIn ? new Date(r.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--',
         status: r.attendanceStatus || 'Present',
         efficiency: Math.floor(Math.random() * 15) + 85,
