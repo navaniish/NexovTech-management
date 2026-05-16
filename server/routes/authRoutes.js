@@ -362,9 +362,12 @@ router.put('/update-profile/:id', async (req, res) => {
   if (teamSign !== undefined) updates.teamSign = teamSign;
 
   try {
+    console.log(`👤 PROFILE_UPDATE_REQ: ID=[${req.params.id}] Body=`, req.body);
     const updated = await fallbackDb.update('users', req.params.id, updates);
+    console.log(`✅ PROFILE_UPDATE_SUCCESS: ID=[${req.params.id}]`);
     res.json(updated);
   } catch (err) {
+    console.error(`❌ PROFILE_UPDATE_FAIL: ID=[${req.params.id}]`, err);
     res.status(500).json({ message: 'Profile update failed' });
   }
 });

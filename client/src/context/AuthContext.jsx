@@ -63,9 +63,9 @@ export const AuthProvider = ({ children }) => {
       return { 
         authorized: true, 
         data: { 
-          name: 'NexovTech Administration', 
-          role: 'Admin', 
-          status: 'active', 
+          name: 'NEXOVTECH ADMINISTRATION', // Matches database default
+          role: 'Super Admin', 
+          status: 'Active', 
           isRoot: true,
           department: 'Executive',
           avatar: '/assets/logo_nexo.jpeg'
@@ -185,7 +185,9 @@ export const AuthProvider = ({ children }) => {
             const userData = {
               ...verification.data,
               ...backendData,
-              displayName: firebaseUser.displayName || verification.data.name || backendData.name,
+              // Prioritize Google Display Name, then Backend Name, then Verification Name
+              name: backendData.name || verification.data.name || firebaseUser.displayName,
+              displayName: firebaseUser.displayName || backendData.name || verification.data.name,
               photoURL: firebaseUser.photoURL || verification.data.avatar || backendData.avatar,
               email: firebaseUser.email,
               firebaseUid: firebaseUser.uid,

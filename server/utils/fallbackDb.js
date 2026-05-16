@@ -168,9 +168,26 @@ const fallbackDb = {
       // MIRRORING LOGIC for identity parity (Users <-> Employees)
       if (collection === 'users' || collection === 'employees') {
         const mirrorColl = collection === 'users' ? 'employees' : 'users';
-        // Use set with merge: true for the mirror to ensure it exists or gets created
+        const itemRes = await db.collection(collection).doc(id).get();
+        const itemData = itemRes.data() || {};
+        const email = (updates.email || itemData.email || '').toLowerCase().trim();
+
+        // 1. Try direct ID update
         await db.collection(mirrorColl).doc(id).set(updates, { merge: true });
-        console.log(`✅ NEXOV-SYNC: Partial update mirrored to [${mirrorColl}].`);
+
+        // 2. If email exists, ensure any document with that email is also updated (Identity Reconciliation)
+        if (email) {
+          const mirrorSnap = await db.collection(mirrorColl).where('email', '==', email).get();
+          const mirrorTasks = mirrorSnap.docs.map(doc => {
+            if (doc.id !== id) {
+              console.log(`🔗 RECONCILING: Updating mirror doc [${doc.id}] in [${mirrorColl}] for [${email}]`);
+              return doc.ref.set(updates, { merge: true });
+            }
+            return Promise.resolve();
+          });
+          await Promise.all(mirrorTasks);
+        }
+        console.log(`✅ NEXOV-SYNC: Partial update mirrored and reconciled in [${mirrorColl}].`);
       }
     } catch (err) {
       console.warn(`⚠️ Firestore update fail: ${err.message}`);
@@ -187,10 +204,21 @@ const fallbackDb = {
       if (collection === 'users' || collection === 'employees') {
         const mirrorColl = collection === 'users' ? 'employees' : 'users';
         const mirrorData = readLocalData(mirrorColl);
-        const mIndex = mirrorData.findIndex(i => i.id === id || i._id === id);
-        if (mIndex > -1) {
-          mirrorData[mIndex] = { ...mirrorData[mIndex], ...updates };
+        const itemData = data[index];
+        const email = (updates.email || itemData.email || '').toLowerCase().trim();
+
+        // Update all matching records in mirror cache
+        let mirroredCount = 0;
+        mirrorData.forEach((item, idx) => {
+          if (item.id === id || item._id === id || (email && item.email?.toLowerCase() === email)) {
+            mirrorData[idx] = { ...item, ...updates };
+            mirroredCount++;
+          }
+        });
+
+        if (mirroredCount > 0) {
           writeLocalData(mirrorColl, mirrorData);
+          console.log(`📁 LOCAL-SYNC: Updated ${mirroredCount} records in [${mirrorColl}] cache.`);
         }
       }
       
