@@ -7,12 +7,12 @@ router.get('/', async (req, res) => {
   console.log('👥 TEAM_SYNC: Fetching organization roster...');
   try {
     const users = (await fallbackDb.find('users', {})) || [];
+    const tasks = (await fallbackDb.find('tasks', {})) || [];
     const masterAdminEmail = 'nexovtech@myyahoo.com';
     
-    // Deduplicate by both email fields and exclude Master Admin
+    // Deduplicate and enrich with dynamic performance stats
     const unique = users.reduce((acc, curr) => {
       const email = (curr.email || curr.companyEmail || '').toLowerCase().trim();
-      
       if (!email || email === 'nexovtech@nexovtech.com') return acc;
       
       const isDuplicate = acc.some(item => 
@@ -21,12 +21,26 @@ router.get('/', async (req, res) => {
       );
 
       if (!isDuplicate) {
-        acc.push({ ...curr, email });
+        // Calculate real-time stats from tasks
+        const userId = curr.id || curr._id;
+        const userTasks = tasks.filter(t => t.assignedTo === userId);
+        const completedTasks = userTasks.filter(t => t.status === 'Completed').length;
+        const totalTasks = userTasks.length;
+        
+        // Dynamic performance object
+        const performance = {
+          tasksCompleted: completedTasks,
+          activeTasks: userTasks.filter(t => t.status !== 'Completed').length,
+          onTimeRate: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 100,
+          rating: completedTasks > 5 ? 5 : (completedTasks > 0 ? 4.5 : 4.0)
+        };
+
+        acc.push({ ...curr, email, performance });
       }
       return acc;
     }, []);
 
-    console.log(`✅ TEAM_SYNC: ${unique.length} verified specialists synchronized.`);
+    console.log(`✅ TEAM_SYNC: ${unique.length} specialists synchronized with real-time performance metrics.`);
     res.json(unique);
   } catch (err) {
     console.error('❌ TEAM_SYNC_FAILURE:', err.message);

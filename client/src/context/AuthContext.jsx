@@ -185,6 +185,8 @@ export const AuthProvider = ({ children }) => {
             const userData = {
               ...verification.data,
               ...backendData,
+              // Normalize ID: Firestore DocID (docId) should be prioritized as 'id'
+              id: backendData.id || verification.data.docId,
               // Prioritize Google Display Name, then Backend Name, then Verification Name
               name: backendData.name || verification.data.name || firebaseUser.displayName,
               displayName: firebaseUser.displayName || backendData.name || verification.data.name,
@@ -216,6 +218,7 @@ export const AuthProvider = ({ children }) => {
             // Fallback to frontend-only data if backend fails
             const userData = {
               ...verification.data,
+              id: verification.data.docId, // Critical: Maintain ID even on sync failure
               displayName: firebaseUser.displayName || verification.data.name,
               photoURL: firebaseUser.photoURL || verification.data.avatar,
               email: firebaseUser.email,

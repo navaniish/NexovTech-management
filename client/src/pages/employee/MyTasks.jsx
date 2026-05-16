@@ -20,14 +20,22 @@ const MyTasks = () => {
   const [activeTab, setActiveTab] = useState('All');
 
   const fetchTasks = async () => {
+    // Priority: id (DocID) > _id > firebaseUid
     const userId = user?.id || user?._id || user?.firebaseUid;
-    if (!userId) return;
+    if (!userId) {
+      console.warn('⚠️ MISSION_SYNC: No valid Specialist ID found in session.');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
+      console.log(`📋 MISSION_SYNC: Requesting task registry for specialist [${userId}]...`);
       const response = await fetch(`${API_URL}/tasks/my?userId=${userId}`);
-      if (!response.ok) throw new Error('Failed to synchronize task queue');
+      if (!response.ok) throw new Error('Mission Control Link Severed');
       const data = await response.json();
+      console.log(`✅ MISSION_SYNC: ${data.length} assignments synchronized.`);
       setTasks(data);
     } catch (err) {
       setError(err.message);

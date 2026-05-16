@@ -58,6 +58,8 @@ router.get('/stats', async (req, res) => {
       onSiteRatio: '100%',
       activeVacancies: candidates.filter(c => c.status === 'Interviewing').length || 0,
       totalApplicants: candidates.length,
+      totalTasks: tasks.length,
+      pendingTasks: tasks.filter(t => t.status !== 'Completed').length,
       pendingLeaves: leaves.filter(l => l.status === 'Pending').length,
       totalProjects: projectsCount,
       salesData,

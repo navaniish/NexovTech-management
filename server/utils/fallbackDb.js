@@ -35,15 +35,29 @@ const fallbackDb = {
     try {
       // 1. Try Firestore
       if (!db) throw new Error('Firestore DB handle is missing');
-      const snapshot = await db.collection(collection).get();
+      
+      let ref = db.collection(collection);
+      
+      // Simple filtering support for Firestore
+      if (query && Object.keys(query).length > 0) {
+        Object.keys(query).forEach(key => {
+          if (query[key] !== undefined && query[key] !== null) {
+            ref = ref.where(key, '==', query[key]);
+          }
+        });
+      }
+
+      const snapshot = await ref.get();
       const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
-      // Update local cache
-      writeLocalData(collection, docs);
+      console.log(`✅ CLOUD_FIND_SUCCESS [${collection}]: Found ${docs.length} documents matching query.`);
+
+      // Update local cache if not empty (to avoid wiping cache on transient empty results)
+      if (docs.length > 0) writeLocalData(collection, docs);
       
       return docs;
     } catch (err) {
-      console.warn(`Firestore fail [${collection}]: falling back to local vault.`);
+      console.warn(`⚠️ Firestore find fail [${collection}]: ${err.message}. Falling back to local vault.`);
       const localData = readLocalData(collection);
       if (!query || Object.keys(query).length === 0) return localData;
       return localData.filter(item => {

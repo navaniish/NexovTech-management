@@ -34,14 +34,22 @@ const EmployeeDashboard = () => {
   const [error, setError] = useState(null);
 
   const fetchDashboardData = async () => {
+    // Priority: id (DocID) > _id > firebaseUid
     const userId = user?.id || user?._id || user?.firebaseUid;
-    if (!userId) return;
+    if (!userId) {
+      console.warn('⚠️ DASHBOARD_SYNC: No valid Specialist ID found in session.');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
+      console.log(`📋 DASHBOARD_SYNC: Synchronizing missions for [${userId}]...`);
       const response = await fetch(`${API_URL}/tasks/my?userId=${userId}`);
       if (!response.ok) throw new Error('Failed to synchronize mission intelligence');
       const data = await response.json();
+      console.log(`✅ DASHBOARD_SYNC: ${data.length} missions active.`);
       setTasks(data);
     } catch (err) {
       setError(err.message);

@@ -63,7 +63,7 @@ const Dashboard = () => {
    const kpiStats = [
       { label: 'Units', value: stats?.totalEmployees || '0', trend: '+12%', color: '#6366f1', icon: Users, data: [20, 35, 30, 45, 60] },
       { label: 'Projects', value: stats?.totalProjects || '0', trend: '+8%', color: '#10b981', icon: Briefcase, data: [30, 25, 45, 35, 50] },
-      { label: 'Missions', value: stats?.totalApplicants || '0', trend: '+18%', color: '#f59e0b', icon: Target, data: [40, 50, 45, 65, 75] },
+      { label: 'Missions', value: stats?.totalTasks || '0', trend: '+18%', color: '#f59e0b', icon: Target, data: [40, 50, 45, 65, 75] },
       { label: 'Payload', value: `₹${(stats?.mrr || 0).toLocaleString()}`, trend: '+15%', color: '#8b5cf6', icon: IndianRupee, data: [25, 40, 35, 55, 70] },
    ];
 

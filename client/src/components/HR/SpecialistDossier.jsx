@@ -210,10 +210,10 @@ const SpecialistDossier = ({ member, onClose }) => {
                        <p className="text-xs text-white/40 font-black uppercase tracking-widest mb-8">Real-time Efficiency Metrics</p>
                        
                        <div className="grid grid-cols-2 gap-8">
-                          <StatBox label="Efficiency" value="98%" />
+                          <StatBox label="Efficiency" value={`${member.performance?.onTimeRate || 0}%`} />
                           <StatBox label="Deadlines" value="100%" />
-                          <StatBox label="Projects" value="12" />
-                          <StatBox label="Missions" value="48" />
+                          <StatBox label="Active" value={member.performance?.activeTasks || 0} />
+                          <StatBox label="Missions" value={member.performance?.tasksCompleted || 0} />
                        </div>
                     </div>
                  </div>
