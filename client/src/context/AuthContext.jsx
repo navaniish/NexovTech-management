@@ -293,6 +293,35 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const adminOverride = async (masterKey) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/auth/admin-override`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ masterKey })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Override Rejected');
+
+      // Manual Session Set (Bypasses Firebase Auth State for this session)
+      localStorage.setItem('nexov_token', data.token);
+      localStorage.setItem('nexov_user', JSON.stringify(data.user));
+      setUser(data.user);
+
+      toast.success('Neural Link Established: Admin Override Active', {
+        style: { background: '#000', color: '#fff', fontSize: '10px', fontWeight: '900' }
+      });
+      return { success: true };
+    } catch (err) {
+      console.error("Override Error:", err);
+      return { success: false, message: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const updateUser = (newData) => {
     setUser(prev => {
       const updated = { ...prev, ...newData };
@@ -314,7 +343,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, signInWithGoogle, adminLogin, logout, updateUser, loading }}>
+    <AuthContext.Provider value={{ user, signInWithGoogle, adminLogin, adminOverride, logout, updateUser, loading }}>
       {loading ? (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center relative overflow-hidden">
           {/* Subtle Background Asset */}

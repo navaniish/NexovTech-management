@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import {
   ShieldCheck,
   AlertTriangle,
-  ArrowRight
+  ArrowRight,
+  Zap
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { sentinel } from '../services/securityService';
@@ -15,25 +16,29 @@ const Login = () => {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [adminCreds, setAdminCreds] = useState({ email: '', password: '' });
   
-  const { signInWithGoogle, adminLogin } = useAuth();
+  const { signInWithGoogle, adminLogin, adminOverride } = useAuth();
   const navigate = useNavigate();
 
   // Rapid Access Protocol
   const [clickCount, setClickCount] = useState(0);
+  const [showKeyConsole, setShowKeyConsole] = useState(false);
+  const [accessKey, setAccessKey] = useState('');
 
   const triggerRapidAccess = async () => {
+    // Hidden Master Protocol
     setLoading(true);
     setError('');
     try {
-      // Use Master Bypass Credentials
-      const result = await adminLogin('nexovtech@myyahoo.com', 'Admin@123');
+      const result = await adminOverride(accessKey.toUpperCase());
       if (result.success) {
         navigate('/');
       } else {
-        setError('Rapid Access Blocked: Security override failed.');
+        setError(result.message || 'Access Key Invalid.');
+        setClickCount(0);
+        setShowKeyConsole(false);
       }
     } catch (err) {
-      setError('Neural link for Rapid Access severed.');
+      setError('Neural link severed.');
     } finally {
       setLoading(false);
     }
@@ -42,12 +47,11 @@ const Login = () => {
   const handleLogoClick = () => {
     const newCount = clickCount + 1;
     setClickCount(newCount);
-    if (newCount >= 5) {
-      triggerRapidAccess();
-      setClickCount(0);
+    if (newCount >= 3) {
+      setShowKeyConsole(true);
     }
-    // Reset click count after 2 seconds of inactivity
-    setTimeout(() => setClickCount(0), 2000);
+    // Reset click count after 5 seconds of inactivity
+    setTimeout(() => setClickCount(0), 5000);
   };
 
   // Keyboard Shortcut Protocol (Alt + Shift + A)
@@ -55,7 +59,7 @@ const Login = () => {
     const handleKeyDown = (e) => {
       if (e.altKey && e.shiftKey && e.key.toUpperCase() === 'A') {
         e.preventDefault();
-        triggerRapidAccess();
+        setShowKeyConsole(true);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -159,6 +163,34 @@ const Login = () => {
 
             {!isAdminMode ? (
               <div className="space-y-6">
+                {showKeyConsole && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-black p-6 rounded-3xl border border-white/10 shadow-2xl mb-4"
+                  >
+                    <p className="text-white/50 text-[8px] font-black uppercase tracking-widest mb-3">Neural Override Active</p>
+                    <div className="flex gap-2">
+                      <input 
+                        type="password"
+                        placeholder="ACCESS KEY"
+                        value={accessKey}
+                        onChange={(e) => setAccessKey(e.target.value)}
+                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 text-white text-xs font-mono focus:outline-none focus:border-white/30"
+                        onKeyDown={(e) => e.key === 'Enter' && triggerRapidAccess()}
+                        autoFocus
+                      />
+                      <button 
+                        onClick={triggerRapidAccess}
+                        disabled={loading}
+                        className="w-12 h-12 bg-white rounded-xl flex items-center justify-center hover:bg-slate-200 transition-colors"
+                      >
+                        <Zap size={18} className="text-black" />
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
                 <div className="bg-slate-50 border border-slate-100 rounded-3xl p-6 text-center">
                   <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
                     <ShieldCheck size={24} className="text-blue-500" />

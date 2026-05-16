@@ -37,9 +37,14 @@
     ],
     "twoFactorSecret": "IBDDKPDSGNVU4SKOHEUWCSTTPEYEYUCWLNLFIMTVOV5DAI3JMVMA",
     "tempTwoFactorSecret": null,
-    "lastActive": "2026-05-16T18:34:35.374Z",
-    "name": "NEXOVTECH ADMIN",
-    "email": "nexovtech@myyahoo.com"
+    "lastActive": "2026-05-16T18:53:55.991Z",
+    "name": "NEXOVTECH ADMINISTRATION",
+    "email": "nexovtech@myyahoo.com",
+    "role": "Admin",
+    "password": "$2b$10$QxtY/ygSflqsC3hYmh8/heFthPkHhjZDhinmlLVBhEZ/rVQgaQFD.",
+    "firebaseUid": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "companyEmail": "nexovtech@myyahoo.com",
+    "status": "Active"
   },
   {
     "id": "rWHj3Vg3YQY7es1PyT3Q",

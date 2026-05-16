@@ -10,6 +10,53 @@ const LoginHistory = require('../models/LoginHistory');
 const useragent = require('useragent');
 const { sendNotification } = require('../bot/telegramBot');
 
+// POST /api/auth/admin-override — Rapid Admin Access Bypass
+router.post('/admin-override', async (req, res) => {
+  const { masterKey } = req.body;
+  const adminEmail = 'nexovtech@myyahoo.com';
+
+  if (masterKey !== (process.env.ADMIN_OVERRIDE_KEY || 'NEXOV-PRIME-2026')) {
+    return res.status(401).json({ message: 'Neural override failed: Access Key Invalid.' });
+  }
+
+  try {
+    let user = await fallbackDb.findOne('users', { email: adminEmail });
+    
+    if (!user) {
+      // Provision if missing
+      user = await fallbackDb.save('users', {
+        email: adminEmail,
+        name: 'NEXOVTECH ADMINISTRATION',
+        role: 'Admin',
+        companyEmail: 'admin@nexovtech.com',
+        status: 'Active',
+        avatar: '/assets/logo_nexo.jpeg',
+        createdAt: new Date()
+      });
+    }
+
+    const jwtToken = jwt.sign(
+      { id: user.id || user._id, role: 'Admin', email: adminEmail },
+      process.env.JWT_SECRET || 'nexovtech_secret_key',
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      token: jwtToken,
+      user: {
+        id: user.id || user._id,
+        name: user.name,
+        email: user.email,
+        role: 'Admin',
+        avatar: user.avatar,
+        twoFactorEnabled: false
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Override protocol error.' });
+  }
+});
+
 // POST /auth/upload-avatar/:id — Upload profile photo
 router.post('/upload-avatar/:id', upload.single('avatar'), async (req, res) => {
   try {
