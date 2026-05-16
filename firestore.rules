@@ -28,6 +28,14 @@ service cloud.firestore {
       allow write: if isRoot();
     }
 
+    // Audit Trail: Allow creation of logs for security monitoring
+    match /admin_logs/{logId} {
+      // Anyone can create a log (needed for tracking auth failures)
+      allow create: if true;
+      // Only root admin can read or manage the logs
+      allow read, update, delete: if isRoot();
+    }
+
     // Global rule for security-critical infrastructure
     match /{document=**} {
       // Root admin has total sovereignty

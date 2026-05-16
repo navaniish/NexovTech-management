@@ -29,15 +29,17 @@ try {
 
   if (serviceAccount && !admin.apps.length) {
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
+      credential: admin.credential.cert(serviceAccount),
+      storageBucket: "nexovtech-management.firebasestorage.app"
     });
   }
 
   db = admin.apps.length ? admin.firestore() : null;
+  const bucket = admin.apps.length ? admin.storage().bucket() : null;
 } catch (err) {
   console.error('🔥 FIREBASE_FATAL_ERROR:', err.message);
   admin = null;
   db = null;
 }
 
-module.exports = { admin, db };
+module.exports = { admin, db, bucket: admin?.apps?.length ? admin.storage().bucket() : null };

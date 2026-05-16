@@ -3,59 +3,63 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fallbackDb = require('../utils/fallbackDb');
+const { bucket } = require('../firebaseAdmin');
  
- // GET /tasks — get all tasks (Admin)
- router.get('/', async (req, res) => {
-   try {
-     const tasks = await fallbackDb.find('tasks', {});
-     const projects = await fallbackDb.find('projects', {});
-     const users = await fallbackDb.find('users', {});
-     
-     const populated = tasks.map(task => {
-       const project = projects.find(p => p.id === task.projectId || p._id === task.projectId);
-       const user = users.find(u => u.id === task.assignedTo || u._id === task.assignedTo);
-       return { 
-         ...task, 
-         project: project || { title: 'No Project', sector: 'General' },
-         assignedUser: user || { name: 'Unknown Specialist', avatar: '' }
-       };
-     });
-     res.json(populated);
-   } catch (err) {
-     res.status(500).json({ message: 'Failed to retrieve global task queue' });
-   }
- });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadPath = path.join(__dirname, '..', 'uploads');
-    console.log('📂 MISSION_CONTROL: Saving to:', uploadPath);
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + file.originalname;
-    console.log('📄 MISSION_CONTROL: Generated filename:', uniqueName);
-    cb(null, uniqueName);
+// GET /tasks — get all tasks (Admin)
+router.get('/', async (req, res) => {
+  try {
+    const tasks = await fallbackDb.find('tasks', {});
+    const projects = await fallbackDb.find('projects', {});
+    const users = await fallbackDb.find('users', {});
+    
+    const populated = tasks.map(task => {
+      const project = projects.find(p => p.id === task.projectId || p._id === task.projectId);
+      const user = users.find(u => u.id === task.assignedTo || u._id === task.assignedTo);
+      return { 
+        ...task, 
+        project: project || { title: 'No Project', sector: 'General' },
+        assignedUser: user || { name: 'Unknown Specialist', avatar: '' }
+      };
+    });
+    res.json(populated);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to retrieve global task queue' });
   }
 });
 
+// Use Memory Storage for Serverless environments
 const upload = multer({ 
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
 });
 
-// GET /tasks/download/:filename — Download task attachments
-router.get('/download/:filename', (req, res) => {
+// GET /tasks/download/:filename — Redirect to Cloud Storage
+router.get('/download/:filename', async (req, res) => {
   const fileName = req.params.filename;
-  const filePath = path.join(__dirname, '..', 'uploads', fileName);
-  res.download(filePath, fileName, (err) => {
-    if (err) {
-      console.error('Download failed:', err);
-      if (!res.headersSent) {
-        res.status(404).json({ message: 'File not found' });
-      }
+  
+  if (!bucket) {
+    return res.status(503).json({ message: 'Cloud storage engine offline' });
+  }
+
+  try {
+    const file = bucket.file(`tasks/${fileName}`);
+    const [exists] = await file.exists();
+    
+    if (!exists) {
+      return res.status(404).json({ message: 'File not found in mission archive' });
     }
-  });
+
+    // Generate a signed URL that expires in 1 hour
+    const [url] = await file.getSignedUrl({
+      action: 'read',
+      expires: Date.now() + 60 * 60 * 1000, // 1 hour
+    });
+
+    res.redirect(url);
+  } catch (err) {
+    console.error('❌ DOWNLOAD_ERROR:', err);
+    res.status(500).json({ message: 'Failed to generate secure download link' });
+  }
 });
 
 // GET /tasks/my — tasks assigned to logged-in user
@@ -111,6 +115,13 @@ router.post('/:id/comment', async (req, res) => {
 // DELETE /tasks/:id — remove task
 router.delete('/:id', async (req, res) => {
   try {
+    // Optional: Delete from Firebase Storage too
+    const task = await fallbackDb.findById('tasks', req.params.id);
+    if (task && task.files && bucket) {
+      for (const f of task.files) {
+        try { await bucket.file(`tasks/${f.filename}`).delete(); } catch(e) {}
+      }
+    }
     await fallbackDb.deleteOne('tasks', req.params.id);
     res.json({ message: 'Task terminated successfully' });
   } catch (err) {
@@ -118,48 +129,50 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// POST /tasks — create new task (Admin) with file support
+// POST /tasks — create new task (Admin) with CLOUD file support
 router.post('/', upload.array('attachments'), async (req, res) => {
-  console.log('🚀 MISSION_CONTROL: Received task assignment request');
-  console.log('Body:', req.body);
-  console.log('Files received:', req.files?.length || 0);
+  console.log('🚀 MISSION_CONTROL: Received cloud task assignment request');
   
   try {
     const taskData = req.body;
-    
-    // Parse files if they exist
-    const files = (req.files || []).map(f => ({
-      name: f.originalname,
-      filename: f.filename,
-      path: f.path,
-      url: `/uploads/${f.filename}`,
-      size: (f.size / 1024).toFixed(1) + 'KB'
-    }));
-    
-    console.log('Processed files:', files);
+    const files = [];
 
-    let attachmentList = [];
-    try {
-      if (files && files.length > 0) {
-        attachmentList = files;
-      } else if (taskData.files) {
-        attachmentList = typeof taskData.files === 'string' ? JSON.parse(taskData.files) : taskData.files;
+    if (req.files && req.files.length > 0) {
+      if (!bucket) throw new Error('DATABASE_OFFLINE: Cloud Storage unavailable');
+
+      for (const file of req.files) {
+        const uniqueName = `${Date.now()}-${file.originalname}`;
+        const blob = bucket.file(`tasks/${uniqueName}`);
+        const blobStream = blob.createWriteStream({
+          metadata: { contentType: file.mimetype },
+          resumable: false
+        });
+
+        await new Promise((resolve, reject) => {
+          blobStream.on('error', reject);
+          blobStream.on('finish', resolve);
+          blobStream.end(file.buffer);
+        });
+
+        files.push({
+          name: file.originalname,
+          filename: uniqueName,
+          url: `/api/tasks/download/${uniqueName}`, // Proxy URL for signed access
+          size: (file.size / 1024).toFixed(1) + 'KB'
+        });
       }
-    } catch (parseErr) {
-      console.warn('⚠️ TASK_METADATA_WARNING: Failed to parse attachment list:', parseErr.message);
-      attachmentList = [];
     }
 
     const newTask = {
       ...taskData,
-      files: attachmentList,
+      files: files.length > 0 ? files : (typeof taskData.files === 'string' ? JSON.parse(taskData.files || '[]') : taskData.files || []),
       status: taskData.status || 'Assigned',
       createdAt: new Date().toISOString()
     };
     
     const saved = await fallbackDb.save('tasks', newTask);
     
-    // 3. Dispatch Notification
+    // Dispatch Notification
     try {
       await fallbackDb.save('notifications', {
         userId: newTask.assignedTo,
@@ -171,16 +184,15 @@ router.post('/', upload.array('attachments'), async (req, res) => {
         createdAt: new Date().toISOString()
       });
     } catch (notifErr) {
-      console.warn('⚠️ NOTIFICATION_FAILURE: Task saved but notice dispatch failed.');
+      console.warn('⚠️ NOTIFICATION_FAILURE');
     }
 
     res.status(201).json(saved);
   } catch (err) {
-    console.error('❌ MISSION_FAILURE: Task deployment failed:', err);
+    console.error('❌ MISSION_FAILURE:', err);
     res.status(500).json({ 
       message: 'Failed to deploy new task', 
-      error: err.message,
-      code: err.message.includes('DATABASE_OFFLINE') ? 'DATABASE_OFFLINE' : 'INTERNAL_ERROR'
+      error: err.message
     });
   }
 });
