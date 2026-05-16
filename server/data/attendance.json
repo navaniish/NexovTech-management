@@ -64,5 +64,16 @@
     "checkOut": null,
     "attendanceStatus": "Present",
     "remarks": "Marked by Admin as Present"
+  },
+  {
+    "id": "att_1778912944198",
+    "date": "2026-05-16",
+    "createdAt": "2026-05-16T06:29:04.198Z",
+    "checkIn": "2026-05-16T06:29:04.198Z",
+    "totalHours": 0,
+    "employeeId": "tPjcv5Z4RbfkshESoh4B",
+    "remarks": "",
+    "checkOut": "2026-05-16T06:29:10.338Z",
+    "attendanceStatus": "Absent"
   }
 ]

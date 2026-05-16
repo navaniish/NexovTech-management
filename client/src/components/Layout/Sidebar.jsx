@@ -77,66 +77,102 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
       <div
         style={{ 
-          width: isCollapsed ? '80px' : '240px', 
-          minWidth: isCollapsed ? '80px' : '240px' 
+          width: isCollapsed ? '80px' : '280px', 
+          minWidth: isCollapsed ? '80px' : '280px' 
         }}
-        className={`h-full bg-slate-900/95 backdrop-blur-2xl border-r border-white/10 flex flex-col fixed md:relative z-[110] shrink-0 transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${
-          mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        className={`h-full bg-slate-900/98 backdrop-blur-3xl border-r border-white/5 flex flex-col fixed md:relative z-[110] shrink-0 transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1) ${
+          mobileOpen ? 'translate-x-0 shadow-2xl shadow-black/50' : '-translate-x-full md:translate-x-0'
         }`}
       >
-        {/* MOBILE CLOSE BUTTON */}
+        {/* MOBILE CLOSE BUTTON - INTEGRATED */}
         <button 
           onClick={() => setMobileOpen(false)}
-          className="md:hidden absolute top-4 right-4 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white"
+          className="md:hidden absolute top-6 right-6 w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-all active:scale-95 z-20"
         >
-          <X size={20} />
+          <X size={22} />
         </button>
+        
+        <div className="h-full flex flex-col pt-8">
+          {/* LOGO AREA - REFINED */}
+          <div className="px-7 mb-8">
+             <div className="flex items-center gap-3.5 group cursor-pointer" onClick={() => navigate('/')}>
+                <div className="w-11 h-11 bg-white rounded-2xl p-1.5 flex items-center justify-center shadow-2xl shadow-indigo-500/20 transition-transform group-hover:scale-105">
+                   <img src="/assets/company-logo.jpeg" alt="NexovTech" className="w-full h-full object-contain" />
+                </div>
+                <div className="flex flex-col">
+                   <span className="text-white font-black uppercase tracking-[-0.05em] text-xl leading-none">NexovTech</span>
+                   <span className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.2em] mt-1 opacity-80">Management</span>
+                </div>
+             </div>
+          </div>
 
-        {/* LOGO AREA - ONLY FOR MOBILE DRAWER */}
-        <div className="md:hidden p-6 mb-2">
-           <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-lg p-1.5 flex items-center justify-center">
-                 <img src="/assets/company-logo.jpeg" alt="NexovTech" className="w-full h-full object-contain" />
-              </div>
-              <span className="text-white font-black uppercase tracking-tighter text-lg">NexovTech</span>
-           </div>
-        </div>
+          {/* NAVIGATION ITEMS - OPTIMIZED TOUCH TARGETS */}
+          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-8">
+             <div className="mb-4 px-3">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Primary Ops</span>
+             </div>
+             
+             <nav className="space-y-1">
+                {menuItems.map((item, idx) => (
+                  <React.Fragment key={item.path}>
+                    {/* Visual Divider for Security */}
+                    {item.label === 'Security Shield' && (
+                      <div className="mt-6 mb-3 px-3">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Safety Protocol</span>
+                      </div>
+                    )}
 
-        <div className="h-4 shrink-0 hidden md:block" />
+                    <NavLink
+                      to={item.path}
+                      onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) => `
+                        flex items-center gap-4 px-4 h-[52px] rounded-[18px] transition-all group sidebar-link
+                        ${isActive 
+                          ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/20' 
+                          : 'text-slate-400 hover:bg-white/5 hover:text-white active:bg-white/10'}
+                      `}
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <item.icon size={20} className={`shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'group-hover:text-indigo-400'}`} />
+                          {(!isCollapsed || mobileOpen) && (
+                            <span className="text-[14px] font-bold tracking-tight">{item.label}</span>
+                          )}
+                          {(!isCollapsed || mobileOpen) && item.badge !== undefined && (
+                            <span className={`ml-auto px-2.5 py-1 rounded-lg text-[10px] font-black min-w-[24px] text-center ${
+                              item.label === 'Employees' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-rose-500 text-white'
+                            }`}>
+                              {item.badge}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </NavLink>
+                  </React.Fragment>
+                ))}
+             </nav>
+          </div>
 
-        {/* NAVIGATION ITEMS */}
-        <div className="flex-1 overflow-y-auto no-scrollbar py-4 px-3">
-           <nav className="space-y-1.5">
-              {menuItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setMobileOpen(false)}
-                  className={({ isActive }) => `
-                    flex items-center gap-3.5 px-4 h-[46px] rounded-xl transition-all group sidebar-link
-                    ${isActive 
-                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' 
-                      : 'text-slate-400 hover:bg-white/5 hover:text-white'}
-                  `}
-                >
-                  <item.icon size={18} className="shrink-0" />
-                  {(!isCollapsed || mobileOpen) && <span className="text-[13px] font-semibold tracking-wide">{item.label}</span>}
-                  {(!isCollapsed || mobileOpen) && item.badge && (
-                    <span className="ml-auto px-2 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black">
-                      {item.badge}
-                    </span>
-                  )}
-                </NavLink>
-              ))}
-           </nav>
+          {/* SYSTEM FOOTER */}
+          <div className="p-6 border-t border-white/5 bg-black/20">
+             <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-slate-500">
+                   <Settings size={16} />
+                </div>
+                <div className="flex flex-col">
+                   <span className="text-[11px] font-black text-white uppercase tracking-wider">v1.2.4-PRO</span>
+                   <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Secure Link Active</span>
+                </div>
+             </div>
+          </div>
         </div>
 
         {/* COLLAPSE TOGGLE - HIDDEN ON MOBILE */}
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden md:flex absolute -right-3 top-10 w-6 h-6 rounded-full bg-slate-800 border border-white/10 text-slate-400 hover:text-indigo-400 transition-all shadow-lg items-center justify-center z-[110]"
+          className="hidden md:flex absolute -right-3.5 top-12 w-7 h-7 rounded-full bg-slate-900 border border-white/10 text-slate-400 hover:text-indigo-400 transition-all shadow-xl items-center justify-center z-[110] group"
         >
-          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          {isCollapsed ? <ChevronRight size={14} className="group-active:translate-x-1 transition-transform" /> : <ChevronLeft size={14} className="group-active:-translate-x-1 transition-transform" />}
         </button>
       </div>
     </>

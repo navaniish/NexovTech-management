@@ -58,6 +58,13 @@ body {
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+@media (max-width: 640px) {
+  .glass-card {
+    padding: 18px 16px !important;
+    border-radius: 20px;
+  }
+}
+
 @media (min-width: 768px) {
   .glass-card {
     padding: 24px !important;
@@ -284,7 +291,38 @@ h1 {
 }
 
 .mobile-outer-padding {
-  @apply px-4 sm:px-6 md:px-10;
+  @apply px-3 sm:px-6 md:px-10;
+}
+
+/* Mobile-First Grid Optimization */
+.responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Touch Target Optimization */
+.touch-target {
+  @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
 }
 
 @media (max-width: 640px) {
