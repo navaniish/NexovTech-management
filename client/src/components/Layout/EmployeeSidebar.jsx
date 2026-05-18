@@ -51,16 +51,16 @@ const EmployeeSidebar = ({ mobileOpen, setMobileOpen }) => {
         }`}
         style={{ flexShrink: 0 }}
       >
-        {/* MOBILE CLOSE BUTTON */}
+        {/* MOBILE CLOSE BUTTON - REMOVED */}
         <button 
           onClick={() => setMobileOpen(false)}
-          className="md:hidden absolute top-4 right-4 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white"
+          className="hidden absolute top-4 right-4 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white"
         >
           <X size={20} />
         </button>
 
-        {/* LOGO AREA - ONLY FOR MOBILE DRAWER */}
-        <div className="md:hidden p-6 mb-2">
+        {/* LOGO AREA - REMOVED ON MOBILE DRAWER */}
+        <div className="hidden p-6 mb-2">
            <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white rounded-lg p-1.5 flex items-center justify-center">
                  <img src="/assets/company-logo.jpeg" alt="NexovTech" className="w-full h-full object-contain" />

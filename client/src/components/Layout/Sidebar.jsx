@@ -84,17 +84,17 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
           mobileOpen ? 'translate-x-0 shadow-2xl shadow-black/50' : '-translate-x-full md:translate-x-0'
         }`}
       >
-        {/* MOBILE CLOSE BUTTON - INTEGRATED */}
+        {/* MOBILE CLOSE BUTTON - INTEGRATED - REMOVED ON MOBILE DRAWER */}
         <button 
           onClick={() => setMobileOpen(false)}
-          className="md:hidden absolute top-6 right-6 w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-all active:scale-95 z-20"
+          className="hidden absolute top-6 right-6 w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-all active:scale-95 z-20"
         >
           <X size={22} />
         </button>
         
         <div className="h-full flex flex-col pt-8">
-          {/* LOGO AREA - REFINED */}
-          <div className="px-7 mb-8">
+          {/* LOGO AREA - REFINED - REMOVED ON MOBILE DRAWER */}
+          <div className="hidden md:block px-7 mb-8">
              <div className="flex items-center gap-3.5 group cursor-pointer" onClick={() => navigate('/')}>
                 <div className="w-11 h-11 bg-white rounded-2xl p-1.5 flex items-center justify-center shadow-2xl shadow-indigo-500/20 transition-transform group-hover:scale-105">
                    <img src="/assets/company-logo.jpeg" alt="NexovTech" className="w-full h-full object-contain" />
