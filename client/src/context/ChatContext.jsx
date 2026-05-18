@@ -18,6 +18,16 @@ export const ChatProvider = ({ children }) => {
 
   useEffect(() => {
     if (user && !socketRef.current) {
+      // Check if we are running in Netlify (serverless) where WebSockets/Socket.io are unsupported
+      const isNetlifyProduction = API_URL.includes('netlify.app');
+      
+      if (isNetlifyProduction) {
+        console.warn('⚠️ WEBSOCKETS_SYNC: Socket.io disabled in Netlify serverless production environment.');
+        // Initial announcements fetch
+        fetchAnnouncements();
+        return;
+      }
+
       // Connect to the socket server
       const newSocket = io(API_URL.replace('/api', ''));
 
