@@ -1,5 +1,9 @@
 {
   "appId": "com.NexovTech.app",
   "appName": "NexovTech",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "url": "https://nexovtech-management.netlify.app",
+    "cleartext": true
+  }
 }
