@@ -237,7 +237,100 @@ const assignTaskScene = new Scenes.WizardScene(
   }
 );
 
-const stage = new Scenes.Stage([authScene, recoveryScene, assignTaskScene]);
+// 4. Scene for Distributing APK to Specialist (Admin Feature)
+const distributeApkScene = new Scenes.WizardScene(
+  'DISTRIBUTE_APK_SCENE',
+  // Step 1: Select Specialist
+  async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      await ctx.reply('⚠️ *Access Denied*: APK distribution is restricted to Administrators.');
+      return ctx.scene.leave();
+    }
+    await ctx.reply('⏳ *Retrieving linked specialists roster...*', { parse_mode: 'Markdown' });
+    
+    // Find all linked Telegram users
+    const linkedUsers = await fallbackDb.find('telegram_users', {}) || [];
+    if (linkedUsers.length === 0) {
+      await ctx.reply('❌ No linked Telegram profiles found in the registry.');
+      return ctx.scene.leave();
+    }
+
+    // Map them to employees directory to get their actual names
+    const employees = await fallbackDb.find('employees', {}) || [];
+    const roster = linkedUsers.map(link => {
+      const emp = employees.find(e => e.email?.toLowerCase() === link.companyEmail?.toLowerCase() || e.companyEmail?.toLowerCase() === link.companyEmail?.toLowerCase());
+      return {
+        name: emp ? emp.name : link.companyEmail,
+        telegramId: link.telegramId,
+        role: link.role
+      };
+    }).filter(r => r.telegramId !== ctx.from.id); // Exclude the admin themselves
+
+    if (roster.length === 0) {
+      await ctx.reply('📭 No other specialists are currently linked to Telegram.');
+      return ctx.scene.leave();
+    }
+
+    ctx.wizard.state.roster = roster;
+    const keyboard = roster.map(r => [{ text: `👤 ${r.name} (${r.role})` }]);
+    keyboard.push([{ text: '❌ Cancel' }]);
+
+    await ctx.reply('📤 *Mission Control: APK Distribution Wizard*\n\nPlease select the specialist to send the Android APK to:', {
+      reply_markup: {
+        keyboard,
+        resize_keyboard: true,
+        one_time_keyboard: true
+      }
+    });
+    return ctx.wizard.next();
+  },
+  // Step 2: Confirm Selection & Send!
+  async (ctx) => {
+    const selection = ctx.message.text.trim();
+    if (selection === '❌ Cancel') {
+      await ctx.reply('❌ APK distribution cancelled.', { reply_markup: { remove_keyboard: true } });
+      return ctx.scene.leave();
+    }
+
+    const roster = ctx.wizard.state.roster;
+    const match = roster.find(r => selection.includes(r.name));
+    if (!match) {
+      await ctx.reply('⚠️ Please select a valid specialist from the keyboard or type /start to reset.');
+      return;
+    }
+
+    await ctx.reply(`⏳ *Preparing payload...* Dispatching nexovtech.apk to *${match.name}*...`, { parse_mode: 'Markdown', reply_markup: { remove_keyboard: true } });
+
+    const fs = require('fs');
+    const path = require('path');
+    const apkPath = path.resolve(__dirname, '../../nexovtech.apk');
+
+    if (!fs.existsSync(apkPath)) {
+      await ctx.reply('❌ Error: The compiled `nexovtech.apk` file is missing from the server root.');
+      return ctx.scene.leave();
+    }
+
+    try {
+      await ctx.telegram.sendDocument(match.telegramId, {
+        source: fs.createReadStream(apkPath),
+        filename: 'nexovtech.apk'
+      }, {
+        caption: `🛡️ *NexovTech Live Production Android APK*\n\nHello *${match.name}*, your Administrator has sent you the latest production-ready Android APK with the circular logo, live Netlify API integration, and staggered entrance animations. Ready for installation!`,
+        parse_mode: 'Markdown'
+      });
+
+      await ctx.reply(`🎉 *APK Successfully Dispatched!* 🚀\n\nLatest binary payload has been uploaded and delivered directly to *${match.name}* on Telegram.`);
+    } catch (err) {
+      console.error(err);
+      await ctx.reply(`❌ Failed to send APK to *${match.name}*: ${err.message}`, { parse_mode: 'Markdown' });
+    }
+
+    return ctx.scene.leave();
+  }
+);
+
+const stage = new Scenes.Stage([authScene, recoveryScene, assignTaskScene, distributeApkScene]);
 
 const MAIN_MENU = {
   reply_markup: {
@@ -255,7 +348,8 @@ const ADMIN_MENU = {
     keyboard: [
       [{ text: '📊 Dashboard Summary' }, { text: '📅 Today\'s Attendance' }],
       [{ text: '👥 Personnel List' }, { text: '🚀 Leave Requests' }],
-      [{ text: '🎯 Assign Task' }, { text: '🤖 AI Workspace Assistant' }]
+      [{ text: '🎯 Assign Task' }, { text: '📤 Distribute APK' }],
+      [{ text: '🤖 AI Workspace Assistant' }]
     ],
     resize_keyboard: true
   }
@@ -284,6 +378,7 @@ function initBot(token) {
     { command: 'menu', description: '📊 Open Command Center' },
     { command: 'dashboard', description: '📊 Live Analytics Briefing (Admin)' },
     { command: 'assign_task', description: '🚀 Deploy Task to Specialist (Admin)' },
+    { command: 'send_apk', description: '📤 Distribute APK to Specialist (Admin)' },
     { command: 'attendance_alert', description: '📅 Daily Attendance Briefing' },
     { command: 'specialists', description: '👥 View Specialist Directory (Admin)' },
     { command: 'leaves', description: '🚀 View Pending Leaves (Admin)' },
@@ -386,6 +481,14 @@ function initBot(token) {
       return ctx.reply('⚠️ *Access Denied*: Restricted to administrators.', { parse_mode: 'Markdown' });
     }
     await ctx.scene.enter('ASSIGN_TASK_SCENE');
+  });
+
+  bot.command('send_apk', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: Restricted to administrators.', { parse_mode: 'Markdown' });
+    }
+    await ctx.scene.enter('DISTRIBUTE_APK_SCENE');
   });
 
   bot.command('dashboard', async (ctx) => {
@@ -610,6 +713,14 @@ function initBot(token) {
       return ctx.reply('⚠️ *Access Denied*: Restricted to administrators.');
     }
     await ctx.scene.enter('ASSIGN_TASK_SCENE');
+  });
+
+  bot.hears('📤 Distribute APK', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: Restricted to administrators.');
+    }
+    await ctx.scene.enter('DISTRIBUTE_APK_SCENE');
   });
 
   // Default fallback to AI Assistant
