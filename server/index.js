@@ -9,7 +9,7 @@ const rateLimit = require('express-rate-limit');
 
 const IS_SERVERLESS = !!(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 
-try { dotenv.config(); } catch (e) { /* no .env in serverless */ }
+try { dotenv.config({ path: path.join(__dirname, '.env') }); } catch (e) { /* no .env in serverless */ }
 
 // Initialize Telegram Bot
 const { initBot } = require('./bot/telegramBot');
