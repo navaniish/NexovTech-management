@@ -18,6 +18,10 @@ const SERVER_BASE = API_URL.replace('/api', '');
 const getAvatarUrl = (avatar) => {
   if (!avatar) return 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
   if (avatar.startsWith('http') || avatar.startsWith('data:')) return avatar;
+  // If raw base64 data without prefix, auto-wrap it
+  if (/^[A-Za-z0-9+/=]+$/.test(avatar.trim()) && avatar.length > 100) {
+    return `data:image/jpeg;base64,${avatar.trim()}`;
+  }
   return `${SERVER_BASE}${avatar}`;
 };
 
@@ -46,40 +50,75 @@ const AdminIDCards = () => {
     setLoading(true);
     try {
       // 1. Fetch from Legacy Backend
-      const [legacyEmpRes, cardRes] = await Promise.all([
-        fetch(`${API_URL}/team`),
-        fetch(`${API_URL}/idcard/list/all`)
-      ]);
-      
       let legacyEmployees = [];
-      if (legacyEmpRes.ok) {
-        legacyEmployees = await legacyEmpRes.json();
+      let cardData = [];
+      
+      try {
+        const [legacyEmpRes, cardRes] = await Promise.all([
+          fetch(`${API_URL}/team`),
+          fetch(`${API_URL}/idcard/list/all`)
+        ]);
+        
+        if (legacyEmpRes.ok) {
+          legacyEmployees = await legacyEmpRes.json();
+        }
+        if (cardRes.ok) {
+          cardData = await cardRes.json();
+        }
+      } catch (err) {
+        console.warn("Legacy backend registry synchronization failed:", err);
       }
 
-      // 2. Fetch from Firestore (Source of Truth)
-      const fsSnap = await getDocs(collection(db, 'employees'));
-      const fsEmployees = fsSnap.docs.map(d => ({ ...d.data(), id: d.id, _id: d.id }));
+      // 2. Fetch from Firestore (Source of Truth) with resilient exception wrapping
+      let fsEmployees = [];
+      try {
+        const fsSnap = await getDocs(collection(db, 'employees'));
+        fsEmployees = fsSnap.docs.map(d => ({ ...d.data(), id: d.id, _id: d.id }));
+      } catch (fsErr) {
+        console.warn("Firestore registry sync failed (falling back to cache/legacy):", fsErr.message || fsErr);
+        // Resilient Fallback to local storage registry
+        const savedEmp = localStorage.getItem('nexov_admin_employees');
+        if (savedEmp) {
+          try {
+            fsEmployees = JSON.parse(savedEmp);
+          } catch (e) {
+            console.error("Local registry parsing failure:", e);
+          }
+        }
+      }
 
-      // 3. Merge: Prioritize Firestore, but include unique legacy users (filter revoked)
+      // 3. Merge: Prioritize Firestore/Cache, but include unique legacy users (filter revoked)
       const mergedEmployees = fsEmployees.filter(e => e.status !== 'revoked' && e.status !== 'Revoked');
       legacyEmployees.forEach(lUser => {
         const lEmail = lUser.email?.toLowerCase();
-        // Only add from legacy if they aren't already in Firestore (prevents duplicates and respects deletions)
         if (lEmail && !mergedEmployees.find(m => m.email?.toLowerCase() === lEmail) && lUser.status !== 'revoked' && lUser.status !== 'Revoked') {
           mergedEmployees.push(lUser);
         }
       });
 
+      // If we got absolutely zero records (e.g. clean start with offline firestore), try to merge from legacy directly
+      if (mergedEmployees.length === 0 && legacyEmployees.length > 0) {
+        mergedEmployees.push(...legacyEmployees.filter(e => e.status !== 'revoked' && e.status !== 'Revoked'));
+      }
+
       setEmployees(mergedEmployees);
       localStorage.setItem('nexov_admin_employees', JSON.stringify(mergedEmployees));
 
-      if (cardRes.ok) {
-        const cardData = await cardRes.json();
+      // Handle Card Data State
+      if (cardData && cardData.length > 0) {
         setCards(cardData);
         localStorage.setItem('nexov_admin_cards', JSON.stringify(cardData));
+      } else {
+        const savedCards = localStorage.getItem('nexov_admin_cards');
+        if (savedCards) {
+          try {
+            const parsedCards = JSON.parse(savedCards);
+            if (parsedCards && parsedCards.length > 0) setCards(parsedCards);
+          } catch {}
+        }
       }
     } catch (err) {
-      console.error("Data synchronization failed:", err);
+      console.error("Critical Admin ID Card Sync Failure:", err);
     } finally {
       setLoading(false);
     }
@@ -233,10 +272,10 @@ const AdminIDCards = () => {
       {/* 1. HIGH-FIDELITY OFFICE HEADER */}
       <section className="relative w-full overflow-hidden rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[220px] group">
          <div 
-           className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+           className="absolute inset-0 bg-cover bg-center transition-all duration-700 blur-[8px] scale-105 group-hover:scale-110"
            style={{ backgroundImage: "url('/assets/office-bg.png')" }}
          />
-         <div className="absolute inset-0 bg-white/70 backdrop-blur-[4px]" />
+         <div className="absolute inset-0 bg-white/40 backdrop-blur-[12px]" />
          
          <div className="relative z-10 flex-1 p-6 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2">
@@ -338,15 +377,15 @@ const AdminIDCards = () => {
                              <p className="text-sm md:text-base font-black text-slate-900 tracking-tighter leading-none truncate">{emp.name}</p>
                              <div className="flex items-center gap-2 mt-2">
                                <p className="text-[10px] text-slate-400 font-bold truncate uppercase tracking-widest">{emp.role}</p>
-                               <span className="w-1 h-1 rounded-full bg-slate-200" />
-                               <p className="text-[9px] text-slate-300 font-bold truncate">{emp.email}</p>
+                               <span className="w-1 h-1 rounded-full bg-slate-400" />
+                               <p className="text-[9px] text-slate-500 font-bold truncate">{emp.email}</p>
                              </div>
                           </div>
                        </div>
 
                        <div className="flex items-center gap-4 md:gap-8 shrink-0">
                           <div className="hidden sm:block text-right">
-                             <p className="text-[9px] font-black uppercase text-slate-300 tracking-widest mb-1.5">Status</p>
+                             <p className="text-[9px] font-black uppercase text-slate-500 tracking-widest mb-1.5">Status</p>
                              {card ? (
                                <div className="flex items-center justify-end gap-2">
                                   <span className={`text-[10px] font-black uppercase tracking-widest ${card.status === 'Active' ? 'text-emerald-500' : 'text-rose-500'}`}>
@@ -354,7 +393,7 @@ const AdminIDCards = () => {
                                   </span>
                                </div>
                              ) : (
-                               <span className="text-[10px] font-black text-slate-200 uppercase tracking-widest italic">Pending Issue</span>
+                               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">Pending Issue</span>
                              )}
                           </div>
 
@@ -444,7 +483,7 @@ const AdminIDCards = () => {
                         </button>
                       )}
 
-                      {currentUser?.role === 'Admin' && (
+                      {(currentUser?.role === 'Admin' || currentUser?.role === 'Super Admin') && (
                         <button 
                           onClick={() => {
                             setEditForm({

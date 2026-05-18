@@ -139,7 +139,7 @@ function AppRoutes() {
       <Route path="/team-access" element={<TeamAccess />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
-      <Route path="*" element={<Navigate to={user ? (user.role === 'Admin' || user.role === 'Manager' ? '/' : '/employee/dashboard') : '/login'} />} />
+      <Route path="*" element={<Navigate to={user ? (user.role === 'Admin' || user.role === 'Super Admin' || user.role === 'Manager' ? '/' : '/employee/dashboard') : '/login'} />} />
     </Routes>
   );
 }

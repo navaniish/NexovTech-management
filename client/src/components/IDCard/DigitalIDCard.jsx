@@ -25,7 +25,16 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const verificationUrl = `${window.location.origin}/#/verify/${cardData?.qrToken}`;
+  const dummyCardData = {
+    employeeId: employee.employeeId || 'NEX-PENDING',
+    issueDate: new Date(),
+    expiryDate: new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000),
+    qrToken: 'pending',
+    status: 'Pending',
+    ...cardData
+  };
+
+  const verificationUrl = `${window.location.origin}/#/verify/${dummyCardData.qrToken}`;
 
   const downloadCard = async (side = 'front') => {
     const ref = side === 'front' ? frontRef : backRef;
@@ -53,16 +62,14 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
     link.click();
   };
 
-  if (!cardData) return null;
-
   const parseDate = (val) => {
     if (!val) return new Date();
     if (val._seconds) return new Date(val._seconds * 1000);
     if (val.seconds) return new Date(val.seconds * 1000);
     return new Date(val);
   };
-  const issueDate = parseDate(cardData.issueDate);
-  const expiryDate = parseDate(cardData.expiryDate);
+  const issueDate = parseDate(dummyCardData.issueDate);
+  const expiryDate = parseDate(dummyCardData.expiryDate);
   const fmtDate = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
   const nameParts = employee.name?.split(' ') || ['Employee'];
@@ -171,7 +178,15 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
                     overflow: 'hidden',
                   }}>
                     <img
-                      src={employee.avatar ? (employee.avatar.startsWith('http') || employee.avatar.startsWith('data:') ? employee.avatar : `${API_URL.replace('/api', '')}${employee.avatar}`) : '/assets/admin_dp.jpg'}
+                      src={(() => {
+                        const avatar = employee.avatar;
+                        if (!avatar) return '/assets/admin_dp.jpg';
+                        if (avatar.startsWith('http') || avatar.startsWith('data:')) return avatar;
+                        if (/^[A-Za-z0-9+/=]+$/.test(avatar.trim()) && avatar.length > 100) {
+                          return `data:image/jpeg;base64,${avatar.trim()}`;
+                        }
+                        return `${API_URL.replace('/api', '')}${avatar}`;
+                      })()}
                       alt={employee.name}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
@@ -201,7 +216,7 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
 
               {/* Info Grid */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 9, paddingBottom: 6 }}>
-                <InfoRow icon="person" label="EMP ID" value={cardData.employeeId} />
+                <InfoRow icon="person" label="EMP ID" value={dummyCardData.employeeId} />
                 <InfoRow icon="phone" label="PHONE" value={employee.phone || '+91 XXXXXXXXXX'} />
                 <InfoRow icon="email" label="EMAIL" value={employee.email || 'N/A'} />
               </div>

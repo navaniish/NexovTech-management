@@ -125,6 +125,10 @@ if (!IS_SERVERLESS) {
     });
   });
 
+  // Start the background cron scheduler for daily 10:00 AM notifications
+  const { startScheduler } = require('./services/schedulerService');
+  startScheduler();
+
   const PORT = process.env.PORT || 5006;
   server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);

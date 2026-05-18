@@ -162,4 +162,15 @@ router.get('/admin/summary', async (req, res) => {
   }
 });
 
+// --- ADMIN: Trigger Daily Telegram Attendance Alert ---
+router.post('/trigger-telegram-alert', async (req, res) => {
+  try {
+    const { sendDailyAttendanceAlert } = require('../services/schedulerService');
+    const result = await sendDailyAttendanceAlert();
+    res.json({ success: true, message: 'Daily Telegram attendance alert triggered successfully', result });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to trigger Telegram attendance alert', error: err.message });
+  }
+});
+
 module.exports = router;

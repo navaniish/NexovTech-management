@@ -187,6 +187,33 @@ router.post('/', upload.array('attachments'), async (req, res) => {
       console.warn('⚠️ NOTIFICATION_FAILURE');
     }
 
+    // Dynamic Telegram Push Alert (If employee is linked to bot)
+    try {
+      const { sendNotification } = require('../bot/telegramBot');
+      const targetUserMapping = await fallbackDb.findOne('telegram_users', { companyEmail: newTask.assignedTo }) ||
+                                await fallbackDb.findOne('telegram_users', { companyEmail: newTask.assignedTo?.toLowerCase().trim() }) ||
+                                await fallbackDb.findOne('telegram_users', { firebaseUid: newTask.assignedTo });
+      
+      if (targetUserMapping && targetUserMapping.telegramId) {
+        const regEmp = await fallbackDb.findOne('employees', { email: targetUserMapping.companyEmail }) ||
+                       await fallbackDb.findOne('employees', { companyEmail: targetUserMapping.companyEmail }) ||
+                       await fallbackDb.findOne('users', { email: targetUserMapping.companyEmail });
+        
+        const name = regEmp?.name || targetUserMapping.companyEmail.split('@')[0];
+        const directAlert = `🚀 *New Mission Assigned!* 🎯\n\n` +
+                            `Hello *${name}*, you have just been assigned a new task directly from the NexovTech Portal:\n\n` +
+                            `📋 *Mission:* ${newTask.title}\n` +
+                            `📖 *Objective:* _${newTask.description || 'None provided'}_\n` +
+                            `📅 *Target Due Date:* ${newTask.dueDate || '--'}\n\n` +
+                            `Please review details on the workspace and mark your check-in!`;
+        
+        await sendNotification(targetUserMapping.telegramId, directAlert);
+        console.log(`💬 TELEGRAM_ALERT: Dispatched portal task alert to ${name}`);
+      }
+    } catch (tgAlertErr) {
+      console.warn('⚠️ TELEGRAM_TASK_ALERT_FAILURE:', tgAlertErr.message);
+    }
+
     res.status(201).json(saved);
   } catch (err) {
     console.error('❌ MISSION_FAILURE:', err);

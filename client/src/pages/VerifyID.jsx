@@ -123,7 +123,15 @@ const VerifyID = () => {
 
               <div className="w-32 h-32 rounded-[32px] bg-gray-50 p-1 shadow-2xl mb-6 border-4 border-gray-200 overflow-hidden backdrop-blur-xl">
                 <img
-                  src={data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`}
+                  src={(() => {
+                    const avatar = data.avatar;
+                    if (!avatar) return `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`;
+                    if (avatar.startsWith('http') || avatar.startsWith('data:')) return avatar;
+                    if (/^[A-Za-z0-9+/=]+$/.test(avatar.trim()) && avatar.length > 100) {
+                      return `data:image/jpeg;base64,${avatar.trim()}`;
+                    }
+                    return `${API_URL.replace('/api', '')}${avatar}`;
+                  })()}
                   className="w-full h-full object-cover rounded-[26px]"
                   alt=""
                   onError={(e) => {

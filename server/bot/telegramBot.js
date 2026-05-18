@@ -46,7 +46,8 @@ const authScene = new Scenes.WizardScene(
     await ctx.reply(`✅ *Identity Verified!*\n\nWelcome to the NexovTech ecosystem, ${name}. Your account is now securely linked.\n\n🤖 *NexovAI* is now active and ready to assist you.`, { parse_mode: 'Markdown' });
     
     // Show main menu
-    await ctx.reply('How can I assist you today?', MAIN_MENU);
+    const menu = (role === 'Admin' || role === 'Super Admin' || role === 'Manager') ? ADMIN_MENU : MAIN_MENU;
+    await ctx.reply('How can I assist you today?', menu);
     
     return ctx.scene.leave();
   }
@@ -100,12 +101,143 @@ const recoveryScene = new Scenes.WizardScene(
     
     // Auto-link account
     await authService.linkTelegram(ctx.from.id, user.id || user._id, user.email || user.companyEmail, user.role);
-    await ctx.reply(`🔗 *Identity Linked*\n\nYour Telegram account is now linked to your NexovTech profile. You can now use the management menu.`, MAIN_MENU);
+    const menu = (user.role === 'Admin' || user.role === 'Super Admin' || user.role === 'Manager') ? ADMIN_MENU : MAIN_MENU;
+    await ctx.reply(`🔗 *Identity Linked*\n\nYour Telegram account is now linked to your NexovTech profile. You can now use the management menu.`, menu);
     return ctx.scene.leave();
   }
 );
 
-const stage = new Scenes.Stage([authScene, recoveryScene]);
+// 3. Scene for Task Assignment via Telegram (Admin Feature)
+const assignTaskScene = new Scenes.WizardScene(
+  'ASSIGN_TASK_SCENE',
+  // Step 1: Select Specialist
+  async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      await ctx.reply('⚠️ *Access Denied*: Task assignment is restricted to Administrators.');
+      return ctx.scene.leave();
+    }
+    await ctx.reply('⏳ *Retrieving specialist roster...*', { parse_mode: 'Markdown' });
+    const employees = await fallbackDb.find('employees', {}) || [];
+    if (employees.length === 0) {
+      await ctx.reply('❌ No specialists found in the database registry. Task allocation aborted.');
+      return ctx.scene.leave();
+    }
+
+    ctx.wizard.state.employees = employees;
+    const keyboard = employees.map(emp => [{ text: `👤 ${emp.name} (${emp.role})` }]);
+    keyboard.push([{ text: '❌ Cancel' }]);
+
+    await ctx.reply('🎯 *Mission Control: Task Allocation Wizard*\n\nPlease select the specialist to assign the task to:', {
+      reply_markup: {
+        keyboard,
+        resize_keyboard: true,
+        one_time_keyboard: true
+      }
+    });
+    return ctx.wizard.next();
+  },
+  // Step 2: Receive Specialist selection & Ask Title
+  async (ctx) => {
+    const selection = ctx.message.text.trim();
+    if (selection === '❌ Cancel') {
+      await ctx.reply('❌ Task assignment cancelled.', { reply_markup: { remove_keyboard: true } });
+      return ctx.scene.leave();
+    }
+
+    const employees = ctx.wizard.state.employees;
+    const match = employees.find(emp => selection.includes(emp.name));
+    if (!match) {
+      await ctx.reply('⚠️ Please select a valid specialist from the keyboard or type /start to reset.');
+      return;
+    }
+
+    ctx.wizard.state.targetEmployee = match;
+    await ctx.reply(`👤 *Selected Specialist:* ${match.name}\n\n📝 Please enter the *Task Title* (e.g. "Optimize API Gateway"):`, { parse_mode: 'Markdown', reply_markup: { remove_keyboard: true } });
+    return ctx.wizard.next();
+  },
+  // Step 3: Receive Title & Ask Description
+  async (ctx) => {
+    const title = ctx.message.text.trim();
+    if (title.length < 3) {
+      await ctx.reply('⚠️ Task title must be at least 3 characters. Please enter a valid title:');
+      return;
+    }
+    ctx.wizard.state.title = title;
+    await ctx.reply(`📝 *Selected Title:* ${title}\n\n📖 Please enter the *Task Description* / Mission Objectives:`, { parse_mode: 'Markdown' });
+    return ctx.wizard.next();
+  },
+  // Step 4: Receive Description & Ask Due Date
+  async (ctx) => {
+    const description = ctx.message.text.trim();
+    ctx.wizard.state.description = description;
+    await ctx.reply(`📖 *Description Captured.*\n\n📅 Please enter the *Due Date* (e.g. "2026-05-25", "tomorrow", or "next Friday"):`);
+    return ctx.wizard.next();
+  },
+  // Step 5: Save Task & Notify!
+  async (ctx) => {
+    const dueDate = ctx.message.text.trim();
+    const { targetEmployee, title, description } = ctx.wizard.state;
+
+    try {
+      const taskId = `task_${Date.now()}`;
+      const newTask = {
+        id: taskId,
+        title,
+        description,
+        assignedTo: targetEmployee.id || targetEmployee._id || targetEmployee.email || targetEmployee.companyEmail,
+        dueDate,
+        status: 'Assigned',
+        projectId: 'general',
+        createdAt: new Date().toISOString()
+      };
+
+      await fallbackDb.save('tasks', newTask);
+
+      // Log UI notification
+      try {
+        await fallbackDb.save('notifications', {
+          userId: newTask.assignedTo,
+          type: 'TASK_ASSIGNED',
+          title: 'New Mission Assigned',
+          message: `You have been assigned to: ${newTask.title}`,
+          link: '/employee/tasks',
+          read: false,
+          createdAt: new Date().toISOString()
+        });
+      } catch (e) {}
+
+      await ctx.reply(`🎉 *Mission Deployed Successfully!* 🚀\n\n` +
+                      `📋 *Task:* ${title}\n` +
+                      `👤 *Assigned To:* ${targetEmployee.name}\n` +
+                      `📅 *Due Date:* ${dueDate}\n\n` +
+                      `🤖 Task has been saved to the centralized workspace registry.`, { parse_mode: 'Markdown' });
+
+      // Synergistic Telegram Push Notification to Target Employee!
+      const targetUserMapping = await fallbackDb.findOne('telegram_users', { companyEmail: targetEmployee.email }) ||
+                                await fallbackDb.findOne('telegram_users', { companyEmail: targetEmployee.companyEmail });
+      
+      if (targetUserMapping && targetUserMapping.telegramId) {
+        const directAlert = `🚀 *New Mission Assigned!* 🎯\n\n` +
+                            `Hello *${targetEmployee.name}*, you have just been assigned a new task directly from the Admin Command Center:\n\n` +
+                            `📋 *Mission:* ${title}\n` +
+                            `📖 *Objective:* _${description}_\n` +
+                            `📅 *Target Due Date:* ${dueDate}\n\n` +
+                            `Please review details on the workspace and mark your check-in!`;
+        
+        await sendNotification(targetUserMapping.telegramId, directAlert);
+        await ctx.reply(`💬 *Real-time Alert Dispatched*: Specialist has been notified directly on Telegram!`);
+      }
+    } catch (err) {
+      console.error(err);
+      await ctx.reply('❌ Failed to deploy the task due to an internal system error.');
+    }
+
+    return ctx.scene.leave();
+  }
+);
+
+const stage = new Scenes.Stage([authScene, recoveryScene, assignTaskScene]);
 
 const MAIN_MENU = {
   reply_markup: {
@@ -113,6 +245,17 @@ const MAIN_MENU = {
       [{ text: '📊 Dashboard Summary' }, { text: '📅 My Schedule' }],
       [{ text: '📄 View Payslip' }, { text: '🚀 AI Workspace Assistant' }],
       [{ text: '🔐 Security Status' }]
+    ],
+    resize_keyboard: true
+  }
+};
+
+const ADMIN_MENU = {
+  reply_markup: {
+    keyboard: [
+      [{ text: '📊 Dashboard Summary' }, { text: '📅 Today\'s Attendance' }],
+      [{ text: '👥 Personnel List' }, { text: '🚀 Leave Requests' }],
+      [{ text: '🎯 Assign Task' }, { text: '🤖 AI Workspace Assistant' }]
     ],
     resize_keyboard: true
   }
@@ -139,6 +282,11 @@ function initBot(token) {
   bot.telegram.setMyCommands([
     { command: 'start', description: '🚀 Authenticate / Start Session' },
     { command: 'menu', description: '📊 Open Command Center' },
+    { command: 'dashboard', description: '📊 Live Analytics Briefing (Admin)' },
+    { command: 'assign_task', description: '🚀 Deploy Task to Specialist (Admin)' },
+    { command: 'attendance_alert', description: '📅 Daily Attendance Briefing' },
+    { command: 'specialists', description: '👥 View Specialist Directory (Admin)' },
+    { command: 'leaves', description: '🚀 View Pending Leaves (Admin)' },
     { command: 'reset', description: '🔄 Unlink Account / Reset' },
     { command: 'help', description: '🆘 Get Assistance' }
   ]);
@@ -171,7 +319,131 @@ function initBot(token) {
     return next();
   });
 
-  bot.command('menu', (ctx) => ctx.reply('NexovTech Command Center:', MAIN_MENU));
+  bot.command('menu', (ctx) => {
+    const user = ctx.state.user;
+    const menu = (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) ? MAIN_MENU : ADMIN_MENU;
+    ctx.reply('NexovTech Command Center:', menu);
+  });
+
+  bot.command('attendance_alert', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: This intelligence briefing is restricted to NexovTech Administrators.', { parse_mode: 'Markdown' });
+    }
+    await ctx.reply('⏳ *Processing...* Compiling today\'s attendance stats.', { parse_mode: 'Markdown' });
+    const { generateAttendanceReport } = require('../services/schedulerService');
+    const report = await generateAttendanceReport();
+    await ctx.reply(report, { parse_mode: 'Markdown' });
+  });
+
+  bot.command('specialists', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: Restricted to administrators.', { parse_mode: 'Markdown' });
+    }
+    await ctx.reply('⏳ *Retrieving personnel database...*', { parse_mode: 'Markdown' });
+    const employees = await fallbackDb.find('employees', {}) || [];
+    if (employees.length === 0) {
+      return ctx.reply('📭 The personnel database is currently empty.');
+    }
+    let msg = `👥 *NexovTech Specialist Directory* 🏢\n\n`;
+    employees.forEach((emp, idx) => {
+      const phone = emp.phone || emp.phoneNumber || 'Not linked';
+      msg += `${idx + 1}. *${emp.name}*\n` +
+             `   • Role: ${emp.role || 'Specialist'}\n` +
+             `   • Email: \`${emp.email || emp.companyEmail || 'No email'}\`\n` +
+             `   • Contact: \`${phone}\`\n\n`;
+    });
+    await ctx.reply(msg, { parse_mode: 'Markdown' });
+  });
+
+  bot.command('leaves', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: Restricted to administrators.', { parse_mode: 'Markdown' });
+    }
+    await ctx.reply('⏳ *Fetching pending leaves...*', { parse_mode: 'Markdown' });
+    const leaves = await fallbackDb.find('leaves', {}) || [];
+    const pendingLeaves = leaves.filter(l => l.status === 'Pending');
+    if (pendingLeaves.length === 0) {
+      return ctx.reply('✅ *All Leaves Reconciled*\n\nThere are no pending leave requests awaiting approval.', { parse_mode: 'Markdown' });
+    }
+    let msg = `🚀 *Pending Leave Requests* 📂\n\n`;
+    pendingLeaves.forEach((leave, idx) => {
+      const start = leave.startDate ? new Date(leave.startDate).toLocaleDateString() : '--';
+      const end = leave.endDate ? new Date(leave.endDate).toLocaleDateString() : '--';
+      msg += `${idx + 1}. *${leave.employeeName || 'Specialist'}*\n` +
+             `   • Type: ${leave.leaveType}\n` +
+             `   • Duration: ${leave.totalDays || 1} Days (${start} to ${end})\n` +
+             `   • Reason: _${leave.reason || 'None provided'}_\n\n`;
+    });
+    await ctx.reply(msg, { parse_mode: 'Markdown' });
+  });
+
+  bot.command('assign_task', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: Restricted to administrators.', { parse_mode: 'Markdown' });
+    }
+    await ctx.scene.enter('ASSIGN_TASK_SCENE');
+  });
+
+  bot.command('dashboard', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: Restricted to administrators.', { parse_mode: 'Markdown' });
+    }
+    await ctx.reply('⏳ *Aggregating real-time operational metrics...*', { parse_mode: 'Markdown' });
+    
+    try {
+      const employees = await fallbackDb.find('employees', {}) || [];
+      const projects = await fallbackDb.find('projects', {}) || [];
+      const tasks = await fallbackDb.find('tasks', {}) || [];
+      const leaves = await fallbackDb.find('leaves', {}) || [];
+      const attendance = await fallbackDb.find('attendance', {}) || [];
+      
+      const today = new Date().toISOString().split('T')[0];
+      const todayAtt = attendance.filter(r => r.date === today);
+
+      const activeProjects = projects.filter(p => p.status === 'Active').length;
+      const completedProjects = projects.filter(p => p.status === 'Completed').length;
+
+      const pendingTasks = tasks.filter(t => t.status !== 'Completed' && t.status !== 'Terminated').length;
+      const completedTasks = tasks.filter(t => t.status === 'Completed').length;
+
+      const pendingLeaves = leaves.filter(l => l.status === 'Pending').length;
+
+      const presentCount = todayAtt.filter(r => r.attendanceStatus === 'Present').length;
+      const lateCount = todayAtt.filter(r => r.attendanceStatus === 'Late').length;
+      const totalPresent = presentCount + lateCount;
+      const absentees = Math.max(0, employees.length - totalPresent);
+
+      const healthIndex = employees.length > 0 ? Math.round((totalPresent / employees.length) * 100) : 100;
+      const healthEmoji = healthIndex > 80 ? '🟢 Excellent' : (healthIndex > 50 ? '🟡 Average' : '🔴 Critical');
+
+      const dashboardMsg = `📊 *NexovTech Real-time Dashboard Analytics* 📈\n` +
+                           `*Operational Intelligence Briefing*\n\n` +
+                           `🏢 *Specialist Registry:*\n` +
+                           `• Total Staff: ${employees.length} Members\n` +
+                           `• Present: ${presentCount} ✅ | Late: ${lateCount} ⚠️\n` +
+                           `• Absent/On Leave: ${absentees} 💤\n` +
+                           `• *Workspace Health Index:* ${healthIndex}% (${healthEmoji})\n\n` +
+                           `🚀 *Mission Dispatch (Tasks):*\n` +
+                           `• Active Missions: ${pendingTasks} Pending\n` +
+                           `• Terminated/Completed: ${completedTasks} Completed\n\n` +
+                           `📂 *Operational Milestones (Projects):*\n` +
+                           `• Active Campaigns: ${activeProjects} Projects\n` +
+                           `• Completed Campaigns: ${completedProjects} Projects\n\n` +
+                           `📂 *Leaves Registry:*\n` +
+                           `• Pending Applications: ${pendingLeaves} Requests\n\n` +
+                           `🤖 *NexovAI Systems Management Online*`;
+
+      await ctx.reply(dashboardMsg, { parse_mode: 'Markdown' });
+    } catch (err) {
+      console.error(err);
+      await ctx.reply('❌ Failed to compile dashboard analytics.');
+    }
+  });
 
   bot.command('reset', async (ctx) => {
     const success = await authService.unlinkTelegram(ctx.from.id);
@@ -185,7 +457,8 @@ function initBot(token) {
   bot.start(async (ctx) => {
     const tgUser = await authService.getTelegramUser(ctx.from.id);
     if (tgUser) {
-      return ctx.reply(`🚀 *NexovAI System Online*\n\nWelcome back, ${tgUser.name || tgUser.companyEmail}. I am your Operational Intelligence Engine.\n\nYou can use the menu below for quick actions, or simply chat with me naturally for any workspace assistance.`, { ...MAIN_MENU, parse_mode: 'Markdown' });
+      const menu = (tgUser.role === 'Admin' || tgUser.role === 'Super Admin' || tgUser.role === 'Manager') ? ADMIN_MENU : MAIN_MENU;
+      return ctx.reply(`🚀 *NexovAI System Online*\n\nWelcome back, ${tgUser.name || tgUser.companyEmail}. I am your Operational Intelligence Engine.\n\nYou can use the menu below for quick actions, or simply chat with me naturally for any workspace assistance.`, { ...menu, parse_mode: 'Markdown' });
     }
     
     return ctx.reply('👋 Welcome to NexovTech Management Assistant.\n\nPlease share your contact to retrieve your credentials and link your account:', {
@@ -204,8 +477,59 @@ function initBot(token) {
   // Handle Menu Actions
   bot.hears('📊 Dashboard Summary', async (ctx) => {
     const user = ctx.state.user;
-    // Mock dashboard data - in real app, fetch from Firestore
-    ctx.reply(`🏢 *NexovTech Workspace Summary*\n\nRole: ${user.role}\nStatus: ${user.workspaceStatus}\nPending Tasks: 3\nRecent Notifications: 2`, { parse_mode: 'Markdown' });
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply(`🏢 *NexovTech Workspace Summary*\n\nRole: ${user.role}\nStatus: ${user.workspaceStatus}\nPending Tasks: 3\nRecent Notifications: 2`, { parse_mode: 'Markdown' });
+    }
+
+    await ctx.reply('⏳ *Aggregating real-time operational metrics...*', { parse_mode: 'Markdown' });
+    try {
+      const employees = await fallbackDb.find('employees', {}) || [];
+      const projects = await fallbackDb.find('projects', {}) || [];
+      const tasks = await fallbackDb.find('tasks', {}) || [];
+      const leaves = await fallbackDb.find('leaves', {}) || [];
+      const attendance = await fallbackDb.find('attendance', {}) || [];
+      
+      const today = new Date().toISOString().split('T')[0];
+      const todayAtt = attendance.filter(r => r.date === today);
+
+      const activeProjects = projects.filter(p => p.status === 'Active').length;
+      const completedProjects = projects.filter(p => p.status === 'Completed').length;
+
+      const pendingTasks = tasks.filter(t => t.status !== 'Completed' && t.status !== 'Terminated').length;
+      const completedTasks = tasks.filter(t => t.status === 'Completed').length;
+
+      const pendingLeaves = leaves.filter(l => l.status === 'Pending').length;
+
+      const presentCount = todayAtt.filter(r => r.attendanceStatus === 'Present').length;
+      const lateCount = todayAtt.filter(r => r.attendanceStatus === 'Late').length;
+      const totalPresent = presentCount + lateCount;
+      const absentees = Math.max(0, employees.length - totalPresent);
+
+      const healthIndex = employees.length > 0 ? Math.round((totalPresent / employees.length) * 100) : 100;
+      const healthEmoji = healthIndex > 80 ? '🟢 Excellent' : (healthIndex > 50 ? '🟡 Average' : '🔴 Critical');
+
+      const dashboardMsg = `📊 *NexovTech Real-time Dashboard Analytics* 📈\n` +
+                           `*Operational Intelligence Briefing*\n\n` +
+                           `🏢 *Specialist Registry:*\n` +
+                           `• Total Staff: ${employees.length} Members\n` +
+                           `• Present: ${presentCount} ✅ | Late: ${lateCount} ⚠️\n` +
+                           `• Absent/On Leave: ${absentees} 💤\n` +
+                           `• *Workspace Health Index:* ${healthIndex}% (${healthEmoji})\n\n` +
+                           `🚀 *Mission Dispatch (Tasks):*\n` +
+                           `• Active Missions: ${pendingTasks} Pending\n` +
+                           `• Terminated/Completed: ${completedTasks} Completed\n\n` +
+                           `📂 *Operational Milestones (Projects):*\n` +
+                           `• Active Campaigns: ${activeProjects} Projects\n` +
+                           `• Completed Campaigns: ${completedProjects} Projects\n\n` +
+                           `📂 *Leaves Registry:*\n` +
+                           `• Pending Applications: ${pendingLeaves} Requests\n\n` +
+                           `🤖 *NexovAI Systems Management Online*`;
+
+      await ctx.reply(dashboardMsg, { parse_mode: 'Markdown' });
+    } catch (err) {
+      console.error(err);
+      await ctx.reply('❌ Failed to compile dashboard analytics.');
+    }
   });
 
   bot.hears('📅 My Schedule', async (ctx) => {
@@ -223,6 +547,69 @@ function initBot(token) {
 
   bot.hears('🚀 AI Workspace Assistant', (ctx) => {
     ctx.reply('🤖 AI Assistant Activated. Ask me anything about your workspace, tasks, or company policies.');
+  });
+
+  bot.hears('📅 Today\'s Attendance', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: Restricted to administrators.');
+    }
+    await ctx.reply('⏳ *Compiling real-time statistics...*', { parse_mode: 'Markdown' });
+    const { generateAttendanceReport } = require('../services/schedulerService');
+    const report = await generateAttendanceReport();
+    await ctx.reply(report, { parse_mode: 'Markdown' });
+  });
+
+  bot.hears('👥 Personnel List', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: Restricted to administrators.');
+    }
+    await ctx.reply('⏳ *Retrieving personnel database...*', { parse_mode: 'Markdown' });
+    const employees = await fallbackDb.find('employees', {}) || [];
+    if (employees.length === 0) {
+      return ctx.reply('📭 The personnel database is currently empty.');
+    }
+    let msg = `👥 *NexovTech Specialist Directory* 🏢\n\n`;
+    employees.forEach((emp, idx) => {
+      const phone = emp.phone || emp.phoneNumber || 'Not linked';
+      msg += `${idx + 1}. *${emp.name}*\n` +
+             `   • Role: ${emp.role || 'Specialist'}\n` +
+             `   • Email: \`${emp.email || emp.companyEmail || 'No email'}\`\n` +
+             `   • Contact: \`${phone}\`\n\n`;
+    });
+    await ctx.reply(msg, { parse_mode: 'Markdown' });
+  });
+
+  bot.hears('🚀 Leave Requests', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: Restricted to administrators.');
+    }
+    await ctx.reply('⏳ *Fetching pending leaves...*', { parse_mode: 'Markdown' });
+    const leaves = await fallbackDb.find('leaves', {}) || [];
+    const pendingLeaves = leaves.filter(l => l.status === 'Pending');
+    if (pendingLeaves.length === 0) {
+      return ctx.reply('✅ *All Leaves Reconciled*\n\nThere are no pending leave requests awaiting approval at this time.', { parse_mode: 'Markdown' });
+    }
+    let msg = `🚀 *Pending Leave Requests* 📂\n\n`;
+    pendingLeaves.forEach((leave, idx) => {
+      const start = leave.startDate ? new Date(leave.startDate).toLocaleDateString() : '--';
+      const end = leave.endDate ? new Date(leave.endDate).toLocaleDateString() : '--';
+      msg += `${idx + 1}. *${leave.employeeName || 'Specialist'}*\n` +
+             `   • Type: ${leave.leaveType}\n` +
+             `   • Duration: ${leave.totalDays || 1} Days (${start} to ${end})\n` +
+             `   • Reason: _${leave.reason || 'None provided'}_\n\n`;
+    });
+    await ctx.reply(msg, { parse_mode: 'Markdown' });
+  });
+
+  bot.hears('🎯 Assign Task', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: Restricted to administrators.');
+    }
+    await ctx.scene.enter('ASSIGN_TASK_SCENE');
   });
 
   // Default fallback to AI Assistant

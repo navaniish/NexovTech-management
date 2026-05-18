@@ -34,3 +34,6 @@ server/data/telegram_users.json
 # Diagnostic / Scratch Scripts
 server/scratch_*
 server/purge_cloud_duplicates.js
+
+# Local Netlify folder
+.netlify

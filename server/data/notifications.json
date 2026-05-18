@@ -12,12 +12,12 @@
   {
     "id": "R6tpKUM6QQrZ7PZd4cTG",
     "createdAt": "2026-05-16T18:37:03.835Z",
-    "read": false,
     "link": "/employee/tasks",
     "message": "You have been assigned to: learn and send to admin",
     "title": "New Mission Assigned",
     "type": "TASK_ASSIGNED",
-    "userId": "rWHj3Vg3YQY7es1PyT3Q"
+    "userId": "rWHj3Vg3YQY7es1PyT3Q",
+    "read": true
   },
   {
     "id": "gp9zPFhUzGEWeUAWsd9N",
@@ -32,11 +32,11 @@
   {
     "id": "nt_1778954164854_task",
     "createdAt": "2026-05-16T17:56:04.854Z",
-    "read": false,
     "link": "/tasks",
     "message": "You have been assigned a new mission: make the videos as per attachment",
     "title": "New Mission Assigned",
     "type": "info",
-    "userId": "rWHj3Vg3YQY7es1PyT3Q"
+    "userId": "rWHj3Vg3YQY7es1PyT3Q",
+    "read": true
   }
 ]

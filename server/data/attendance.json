@@ -66,14 +66,25 @@
     "remarks": "Marked by Admin as Present"
   },
   {
-    "id": "att_1778912944198",
+    "id": "att_1778923408329",
     "date": "2026-05-16",
-    "createdAt": "2026-05-16T06:29:04.198Z",
-    "checkIn": "2026-05-16T06:29:04.198Z",
-    "totalHours": 0,
-    "employeeId": "tPjcv5Z4RbfkshESoh4B",
+    "createdAt": "2026-05-16T09:23:28.329Z",
+    "checkIn": "2026-05-16T09:23:28.329Z",
+    "employeeId": "rWHj3Vg3YQY7es1PyT3Q",
     "remarks": "",
-    "checkOut": "2026-05-16T06:29:10.338Z",
-    "attendanceStatus": "Absent"
+    "totalHours": 8.48,
+    "checkOut": "2026-05-16T17:52:07.221Z",
+    "attendanceStatus": "Late"
+  },
+  {
+    "id": "att_1778999062225",
+    "date": "2026-05-17",
+    "createdAt": "2026-05-17T06:24:22.225Z",
+    "checkIn": "2026-05-17T06:24:22.225Z",
+    "totalHours": 0,
+    "employeeId": "rWHj3Vg3YQY7es1PyT3Q",
+    "checkOut": null,
+    "attendanceStatus": "Present",
+    "remarks": ""
   }
 ]

@@ -78,8 +78,8 @@ const Dashboard = () => {
       <div className="w-full flex flex-col space-y-6 animate-in fade-in duration-1000 overflow-y-auto custom-scrollbar">
          {/* OFFICE HEADER */}
          <section className="relative w-full overflow-hidden rounded-[24px] md:rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[160px] md:min-h-[200px] group">
-            <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: "url('/assets/office-bg.png')" }} />
-            <div className="absolute inset-0 bg-white/80 md:bg-white/70 backdrop-blur-[4px]" />
+            <div className="absolute inset-0 bg-cover bg-center transition-all duration-700 blur-[8px] scale-105 group-hover:scale-110" style={{ backgroundImage: "url('/assets/office-bg.png')" }} />
+            <div className="absolute inset-0 bg-white/40 backdrop-blur-[12px]" />
             <div className="absolute inset-0 bg-gradient-to-r from-white/40 to-transparent md:hidden" />
 
             <div className="relative z-10 flex-1 p-6 md:p-12 flex flex-col justify-center">

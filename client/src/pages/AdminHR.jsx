@@ -87,10 +87,10 @@ const AdminHR = () => {
       {/* 1. HIGH-FIDELITY OFFICE HEADER */}
       <section className="relative w-full overflow-hidden rounded-[24px] md:rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[160px] md:min-h-[220px] group">
          <div 
-           className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+           className="absolute inset-0 bg-cover bg-center transition-all duration-700 blur-[8px] scale-105 group-hover:scale-110"
            style={{ backgroundImage: "url('/assets/office-bg.png')" }}
          />
-         <div className="absolute inset-0 bg-white/80 md:bg-white/70 backdrop-blur-[4px]" />
+         <div className="absolute inset-0 bg-white/40 backdrop-blur-[12px]" />
          <div className="absolute inset-0 bg-gradient-to-r from-white/40 to-transparent md:hidden" />
          
          <div className="relative z-10 flex-1 p-6 md:p-12 flex flex-col justify-center">
@@ -456,7 +456,19 @@ const DirectoryTab = ({ team, search, setSearch, onTeamUpdated }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {filtered.filter(t => (t.role || 'General') === dept).map(emp => (
               <div key={emp.id || emp._id} className="flex items-center gap-4 p-4 rounded-2xl border transition-all hover:shadow-md" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-default)' }}>
-                <img src={emp.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${emp.name}`} className="w-12 h-12 rounded-xl" alt="" />
+                <img
+                  src={(() => {
+                    const avatar = emp.avatar;
+                    if (!avatar) return `https://api.dicebear.com/7.x/avataaars/svg?seed=${emp.name}`;
+                    if (avatar.startsWith('http') || avatar.startsWith('data:')) return avatar;
+                    if (/^[A-Za-z0-9+/=]+$/.test(avatar.trim()) && avatar.length > 100) {
+                      return `data:image/jpeg;base64,${avatar.trim()}`;
+                    }
+                    return `${API_URL.replace('/api', '')}${avatar}`;
+                  })()}
+                  className="w-12 h-12 rounded-xl"
+                  alt=""
+                />
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm truncate text-gray-900">{emp.name}</p>
                   <p className="text-[10px] font-bold text-gray-400">{emp.email}</p>
