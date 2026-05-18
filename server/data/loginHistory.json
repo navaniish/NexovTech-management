@@ -992,5 +992,19 @@
     "application": "NexovTech Web Portal",
     "createdAt": "2026-05-18T09:15:48.709Z",
     "id": "WWo9IeeuElCzQTHUmSAn"
+  },
+  {
+    "userId": "tPjcv5Z4RbfkshESoh4B",
+    "email": "sidhardharekha.nexovtech@gmail.com",
+    "ipAddress": "127.0.0.1",
+    "device": "Other 0.0.0",
+    "browser": "Chrome 148.0.0",
+    "os": "Windows 10.0.0",
+    "loginStatus": "Success",
+    "location": "Remote Gateway",
+    "area": "UTC",
+    "application": "NexovTech Web Portal",
+    "createdAt": "2026-05-18T09:22:07.647Z",
+    "id": "XbkiYX6dVd2T0BU7og5a"
   }
 ]
