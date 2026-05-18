@@ -253,9 +253,46 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          const verification = await verifyEmployee(result.user.email);
+          if (!verification.authorized) {
+            await logout();
+            toast.error(verification.message, { id: 'auth-denied' });
+          } else {
+            toast.success('Access Granted — Welcome to NexovTech');
+          }
+        }
+      } catch (err) {
+        console.error("[AUTH] Redirect Result Error:", err);
+      }
+    };
+    handleRedirectResult();
+  }, []);
+
   const signInWithGoogle = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      let result;
+      try {
+        result = await signInWithPopup(auth, googleProvider);
+      } catch (popupErr) {
+        if (
+          popupErr.code === 'auth/popup-blocked' || 
+          popupErr.code === 'auth/cancelled-popup-request' ||
+          popupErr.code === 'auth/popup-closed-by-user'
+        ) {
+          console.warn("[AUTH] Google Sign-In Popup blocked or interrupted. Transitioning to Redirect mode...");
+          toast.loading('Redirecting to secure login...', { id: 'auth-redirect-loading', duration: 3000 });
+          await signInWithRedirect(auth, googleProvider);
+          return { success: true, redirecting: true };
+        } else {
+          throw popupErr;
+        }
+      }
+
       if (result) {
         const verification = await verifyEmployee(result.user.email);
         if (!verification.authorized) {
@@ -268,7 +305,14 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error("Google Sign-In Error:", error);
-      return { success: false, message: "Could not initiate authentication." };
+      try {
+        console.warn("[AUTH] Triggering absolute redirect fallback.");
+        await signInWithRedirect(auth, googleProvider);
+        return { success: true, redirecting: true };
+      } catch (redirectErr) {
+        console.error("[AUTH] Google Redirect fallback failed completely:", redirectErr);
+      }
+      return { success: false, message: "Authentication failed. Redirect initiated." };
     }
   };
 
@@ -357,14 +401,14 @@ export const AuthProvider = ({ children }) => {
 
           <div className="relative z-10 flex flex-col items-center gap-10">
             <div className="relative">
-              {/* Logo with pulsing shadow */}
-              <div className="w-24 h-24 bg-white rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex items-center justify-center p-4 border border-slate-100">
-                <img src="/assets/logo_nexo.jpeg" alt="Nexov" className="w-full h-full object-contain" />
+              {/* Logo with pulsing shadow, enlarged and perfectly circular */}
+              <div className="w-28 h-28 sm:w-32 sm:h-32 bg-white rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center justify-center p-1 border border-slate-100 overflow-hidden shrink-0">
+                <img src="/assets/logo_nexo.jpeg" alt="Nexov" className="w-full h-full object-cover rounded-full" />
               </div>
               <motion.div 
                 animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.6, 0.3] }}
                 transition={{ repeat: Infinity, duration: 2.5 }}
-                className="absolute -inset-4 bg-indigo-500/10 rounded-[48px] -z-10"
+                className="absolute -inset-4 bg-indigo-500/10 rounded-full -z-10"
               />
             </div>
 

@@ -213,8 +213,8 @@ const MyAttendance = () => {
                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Temporal History</h3>
                <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-brand-600 transition-colors">Export Logs</button>
             </div>
-            <div className="overflow-x-auto">
-               <table className="w-full">
+            <div className="overflow-x-auto w-full">
+               <table className="w-full min-w-[700px]">
                   <thead>
                      <tr className="bg-slate-50/50">
                         <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Date Node</th>

@@ -47,25 +47,39 @@ class SecurityService {
       action,
       performedBy: user?.email || 'System',
       userId: user?.uid || user?.id || 'System',
-      timestamp: serverTimestamp(),
+      timestamp: new Date().toISOString(),
       status,
       deviceInfo: {
         userAgent: navigator.userAgent,
         platform: navigator.platform,
         language: navigator.language
       },
-      ip: 'Capture Pending (Backend)' // Actual IP captured via server-side bridge
+      ip: 'Capture Pending (Backend)'
     };
 
     try {
-      await addDoc(collection(db, 'admin_logs'), logData);
+      // 1. Try direct Firestore Write (Root Sovereign access)
+      await addDoc(collection(db, 'admin_logs'), {
+        ...logData,
+        timestamp: serverTimestamp() // Use Firestore serverTimestamp when writing directly
+      });
       
       // Dispatch Telegram Alert for critical failures
       if (status === 'failure' || action.includes('DELETE') || action.includes('REVOKE')) {
         this.dispatchTelegramAlert(action, logData);
       }
     } catch (err) {
-      console.error('[SENTINEL] Log recording failed:', err);
+      console.warn('[SENTINEL] Firestore logging restricted. Redirecting to Server-Side Identity Ledger...');
+      // 2. Fallback to server-side logging API
+      try {
+        await fetch('/api/audit/log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(logData)
+        });
+      } catch (fallbackErr) {
+        console.error('[SENTINEL] Master Audit Trail connection failure:', fallbackErr);
+      }
     }
   }
 
@@ -74,17 +88,21 @@ class SecurityService {
    * Mock logic for identifying suspicious patterns.
    */
   async runAIScan(user) {
-    const logsQ = query(
-      collection(db, 'admin_logs'), 
-      where('userId', '==', user.uid),
-      where('status', '==', 'failure')
-    );
-    const logsSnap = await getDocs(logsQ);
-    
-    // Logic: If more than 3 failures in 10 minutes, flag account
-    if (logsSnap.size > 3) {
-      await this.logActivity('AI_SUSPICIOUS_ACTIVITY_DETECTED', user, 'warning');
-      return { suspicious: true, alert: 'Multiple failed attempts detected. Sentinel monitoring activated.' };
+    try {
+      const logsQ = query(
+        collection(db, 'admin_logs'), 
+        where('userId', '==', user.uid || user.id || 'Unknown'),
+        where('status', '==', 'failure')
+      );
+      const logsSnap = await getDocs(logsQ);
+      
+      // Logic: If more than 3 failures in 10 minutes, flag account
+      if (logsSnap.size > 3) {
+        await this.logActivity('AI_SUSPICIOUS_ACTIVITY_DETECTED', user, 'warning');
+        return { suspicious: true, alert: 'Multiple failed attempts detected. Sentinel monitoring activated.' };
+      }
+    } catch (err) {
+      console.warn('[SENTINEL] Telemetry scanning restricted for standard identity node.');
     }
 
     return { suspicious: false };

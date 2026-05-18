@@ -433,17 +433,17 @@ const DirectoryTab = ({ team, search, setSearch, onTeamUpdated }) => {
   const departments = [...new Set(filtered.map(t => t.role || 'General'))];
 
   return (
-    <div className="theme-card rounded-2xl p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>Employee Directory</h3>
-        <div className="flex items-center gap-3">
-          <div className="relative">
+    <div className="theme-card rounded-2xl p-4 sm:p-6 space-y-6">
+      <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+        <h3 className="text-base sm:text-lg font-black" style={{ color: 'var(--text-primary)' }}>Employee Directory</h3>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+          <div className="relative w-full sm:w-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2" size={14} style={{ color: 'var(--text-primary)' }} />
             <input placeholder="Search by name or role..." value={search} onChange={e => setSearch(e.target.value)}
-              className="pl-9 pr-4 py-2 rounded-xl text-xs font-bold outline-none border" style={{ background: 'var(--input-bg)', borderColor: 'var(--border-default)', color: 'var(--text-primary)' }} />
+              className="pl-9 pr-4 py-2 rounded-xl text-xs font-bold outline-none border w-full sm:w-48" style={{ background: 'var(--input-bg)', borderColor: 'var(--border-default)', color: 'var(--text-primary)' }} />
           </div>
           <button onClick={() => setShowAdd(true)}
-            className="bg-brand-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-500 transition-all flex items-center gap-2 shadow-lg shadow-brand-600/20">
+            className="bg-brand-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-500 transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-600/20 w-full sm:w-auto">
             <UserPlus size={14} /> Add Employee
           </button>
         </div>

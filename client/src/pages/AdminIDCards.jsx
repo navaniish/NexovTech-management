@@ -268,68 +268,68 @@ const AdminIDCards = () => {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-6 pb-24 md:pb-12">
-      {/* 1. HIGH-FIDELITY OFFICE HEADER */}
-      <section className="relative w-full overflow-hidden rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[220px] group">
-         <div 
-           className="absolute inset-0 bg-cover bg-center transition-all duration-700 blur-[8px] scale-105 group-hover:scale-110"
-           style={{ backgroundImage: "url('/assets/office-bg.png')" }}
-         />
-         <div className="absolute inset-0 bg-white/40 backdrop-blur-[12px]" />
-         
-         <div className="relative z-10 flex-1 p-6 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2">
-               <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none flex items-center gap-3">
-                  E-ID Command Hub <span className="animate-bounce-slow">🪪</span>
-               </h1>
-               <p className="text-slate-500 text-[15px] font-medium">
-                  Identity lifecycle, digital credentialing & secure registry.
-               </p>
-            </div>
+    <div className="w-full h-full flex flex-col p-4 sm:p-6 md:p-10 space-y-6 pb-24 md:pb-12 max-w-[1400px] mx-auto overflow-y-auto scrollbar-hide">
+       {/* 1. HIGH-FIDELITY OFFICE HEADER */}
+       <section className="relative w-full overflow-hidden rounded-[24px] md:rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[200px] group">
+          <div 
+            className="absolute inset-0 bg-cover bg-center transition-all duration-700 blur-[8px] scale-105 group-hover:scale-110"
+            style={{ backgroundImage: "url('/assets/office-bg.png')" }}
+          />
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-[12px]" />
+          
+          <div className="relative z-10 flex-1 p-4 sm:p-6 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+             <div className="space-y-2">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none flex items-center gap-3">
+                   E-ID Command Hub <span className="animate-bounce-slow">🪪</span>
+                </h1>
+                <p className="text-slate-500 text-[13px] sm:text-[15px] font-medium">
+                   Identity lifecycle, digital credentialing & secure registry.
+                </p>
+             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                <input 
-                  placeholder="Personnel lookup..." 
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full md:w-72 pl-12 pr-6 py-4 rounded-[20px] bg-white/60 border border-white text-slate-900 text-sm font-bold shadow-xl backdrop-blur-md outline-none focus:ring-4 focus:ring-brand-500/10 transition-all"
-                />
-              </div>
-              <button className="p-4 bg-white/60 border border-white rounded-[20px] text-slate-400 hover:text-slate-900 shadow-xl backdrop-blur-md transition-all">
-                <Filter size={20} />
-              </button>
-            </div>
-         </div>
-      </section>
+             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+               <div className="relative w-full sm:w-72">
+                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                 <input 
+                   placeholder="Personnel lookup..." 
+                   value={search}
+                   onChange={(e) => setSearch(e.target.value)}
+                   className="w-full pl-12 pr-6 py-4 rounded-[20px] bg-white/60 border border-white text-slate-900 text-sm font-bold shadow-xl backdrop-blur-md outline-none focus:ring-4 focus:ring-brand-500/10 transition-all"
+                 />
+               </div>
+               <button className="p-4 bg-white/60 border border-white rounded-[20px] text-slate-400 hover:text-slate-900 shadow-xl backdrop-blur-md transition-all flex items-center justify-center shrink-0 w-full sm:w-auto">
+                 <Filter size={20} />
+               </button>
+             </div>
+          </div>
+       </section>
 
 
-      {/* Tab Switcher - Now with premium styling */}
-      <div className="xl:hidden flex p-2 bg-white/10 backdrop-blur-md border border-white/5 rounded-[24px]">
-        <button 
-          onClick={() => setActiveTab('registry')}
-          className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'registry' ? 'bg-white text-slate-900 shadow-xl' : 'text-white/40 hover:text-white'}`}
-        >
-          <UserCheck size={14} /> Registry
-        </button>
-        <button 
-          onClick={() => setActiveTab('preview')}
-          className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'preview' ? 'bg-white text-slate-900 shadow-xl' : 'text-white/40 hover:text-white'}`}
-        >
-          <Eye size={14} /> Preview
-        </button>
-      </div>
+       {/* Tab Switcher - Now with premium styling */}
+       <div className="xl:hidden flex p-1.5 bg-slate-900/5 backdrop-blur-md border border-slate-900/10 rounded-[20px]">
+         <button 
+           onClick={() => setActiveTab('registry')}
+           className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'registry' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-slate-900'}`}
+         >
+           <UserCheck size={14} /> Registry
+         </button>
+         <button 
+           onClick={() => setActiveTab('preview')}
+           className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'preview' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-slate-900'}`}
+         >
+           <Eye size={14} /> Preview
+         </button>
+       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        {/* Registry Section */}
-        <div className={`xl:col-span-7 space-y-4 ${activeTab !== 'registry' && 'hidden xl:block'}`}>
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="glass-card !p-0 rounded-[40px] overflow-hidden border-slate-100 shadow-2xl"
-          >
-             <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-white/40 backdrop-blur-xl">
+       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+         {/* Registry Section */}
+         <div className={`xl:col-span-7 space-y-4 ${activeTab !== 'registry' && 'hidden xl:block'}`}>
+           <motion.div 
+             initial={{ opacity: 0, x: -20 }}
+             animate={{ opacity: 1, x: 0 }}
+             className="glass-card !p-0 rounded-[24px] md:rounded-[40px] overflow-hidden border-slate-100 shadow-2xl"
+           >
+              <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between bg-white/40 backdrop-blur-xl">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
                     <UserCheck size={20} />

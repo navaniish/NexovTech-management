@@ -40,9 +40,9 @@ const MyIDCard = () => {
   );
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-6 md:space-y-8 pb-24 md:pb-12 animate-in fade-in duration-1000">
+    <div className="max-w-[1400px] mx-auto space-y-6 md:space-y-8 pb-24 md:pb-12 px-1 sm:px-4 animate-in fade-in duration-1000">
       {/* 1. HIGH-FIDELITY OFFICE HEADER */}
-      <section className="relative w-full overflow-hidden rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[200px] group">
+      <section className="relative w-full overflow-hidden rounded-[24px] md:rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[160px] md:min-h-[200px] group">
          <div 
            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
            style={{ backgroundImage: "url('/assets/office-bg.png')" }}
@@ -51,10 +51,10 @@ const MyIDCard = () => {
          
          <div className="relative z-10 flex-1 p-6 md:p-12 flex flex-col justify-center">
             <div className="space-y-2">
-               <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none flex items-center gap-3">
-                  Digital Identity <span className="animate-pulse">🛡️</span>
+               <h1 className="text-2xl md:text-4xl font-black text-slate-900 tracking-tighter leading-none flex items-center gap-3">
+                  Digital Identity <span className="animate-pulse text-xl md:text-3xl">🛡️</span>
                </h1>
-               <p className="text-slate-500 text-[15px] font-medium">
+               <p className="text-slate-500 text-xs md:text-[15px] font-medium">
                   Official E-ID credentials for NexovTech personnel.
                </p>
             </div>
@@ -62,18 +62,18 @@ const MyIDCard = () => {
       </section>
 
       {error ? (
-        <div className="max-w-2xl mx-auto theme-card rounded-[40px] p-12 text-center border border-slate-200 bg-white/50 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+        <div className="max-w-2xl mx-auto theme-card rounded-[24px] md:rounded-[40px] p-6 md:p-12 text-center border border-slate-200 bg-white/50 backdrop-blur-xl shadow-2xl relative overflow-hidden">
            <div className="absolute top-0 left-0 w-full h-1 bg-rose-500/20" />
-           <div className="w-20 h-20 bg-rose-50 rounded-[28px] flex items-center justify-center mx-auto mb-8 text-rose-500 shadow-inner">
-              <AlertTriangle size={40} />
+           <div className="w-16 h-16 md:w-20 md:h-20 bg-rose-50 rounded-2xl md:rounded-[28px] flex items-center justify-center mx-auto mb-6 md:mb-8 text-rose-500 shadow-inner">
+              <AlertTriangle size={32} className="md:size-[40px]" />
            </div>
-           <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-4">Credential Sync Required</h3>
-           <p className="text-[13px] font-medium text-slate-500 leading-relaxed mb-8 max-w-sm mx-auto">
+           <h3 className="text-lg md:text-xl font-black text-slate-900 uppercase tracking-tight mb-3 md:mb-4">Credential Sync Required</h3>
+           <p className="text-xs md:text-[13px] font-medium text-slate-500 leading-relaxed mb-6 md:mb-8 max-w-sm mx-auto">
              {error}
            </p>
            <button 
              onClick={() => window.location.reload()}
-             className="px-10 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-600 transition-all shadow-xl shadow-slate-200"
+             className="px-8 py-3.5 md:px-10 md:py-4 bg-slate-900 text-white rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-brand-600 transition-all shadow-xl shadow-slate-200"
            >
              Re-Synchronize Identity
            </button>
@@ -82,16 +82,19 @@ const MyIDCard = () => {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex justify-center w-full"
+          className="max-w-xl mx-auto glass-card rounded-[24px] md:rounded-[40px] p-6 md:p-12 border-slate-100 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl shadow-slate-200/50"
         >
-          <DigitalIDCard 
-            employee={{ ...user, avatar: cardData.userAvatar || user.avatar }} 
-            cardData={cardData} 
-          />
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-500/5 to-transparent pointer-events-none" />
+          <div className="relative z-10 w-full flex justify-center">
+            <DigitalIDCard 
+              employee={{ ...user, avatar: cardData.userAvatar || user.avatar }} 
+              cardData={cardData} 
+            />
+          </div>
         </motion.div>
       )}
 
-      <div className="max-w-md mx-auto mt-8 md:mt-12 p-4 md:p-6 rounded-2xl md:rounded-3xl bg-gray-50 border border-gray-200 text-center">
+      <div className="max-w-md mx-auto mt-8 md:mt-12 p-5 md:p-6 rounded-2xl md:rounded-3xl bg-gray-50 border border-gray-200 text-center">
          <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2 md:mb-4">Verification Policy</p>
          <p className="text-[10px] md:text-xs text-gray-500 leading-relaxed font-medium">
             This card is a cryptographically signed digital credential. Scanning the QR code will provide instant verification of your current status.
@@ -102,5 +105,3 @@ const MyIDCard = () => {
 };
 
 export default MyIDCard;
-
-

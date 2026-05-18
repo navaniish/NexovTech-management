@@ -25,7 +25,6 @@ const Login = () => {
   const [accessKey, setAccessKey] = useState('');
 
   const triggerRapidAccess = async () => {
-    // Hidden Master Protocol
     setLoading(true);
     setError('');
     try {
@@ -50,11 +49,9 @@ const Login = () => {
     if (newCount >= 3) {
       setShowKeyConsole(true);
     }
-    // Reset click count after 5 seconds of inactivity
     setTimeout(() => setClickCount(0), 5000);
   };
 
-  // Keyboard Shortcut Protocol (Alt + Shift + A)
   React.useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.altKey && e.shiftKey && e.key.toUpperCase() === 'A') {
@@ -109,26 +106,59 @@ const Login = () => {
     }
   };
 
+  // Stagger variants for premium mobile cascade entrance
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30, scale: 0.96 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: 'spring',
+        stiffness: 90,
+        damping: 14,
+        delayChildren: 0.15,
+        staggerChildren: 0.08,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 15 },
+    },
+  };
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans selection:bg-slate-900 selection:text-white bg-white">
-      {/* ── CLASSIC OFFICE BACKGROUND ── */}
+    <div className="min-h-screen flex flex-col items-center justify-center p-3 sm:p-6 relative overflow-hidden font-sans selection:bg-indigo-650 selection:text-white bg-slate-900">
+      
+      {/* ── CINEMATIC OFFICE GRID BACKGROUND ── */}
       <div className="absolute inset-0 z-0">
         <div
-          className="absolute inset-0 bg-cover bg-left"
-          style={{ backgroundImage: "url('/assets/nexovtech-final-branded.png')", backgroundPosition: 'left center' }}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
+          style={{ backgroundImage: "url('/assets/nexovtech-final-branded.png')" }}
         />
-        <div className="absolute inset-0 bg-black/40" />
+        {/* Crisp premium vignetted gradient overlay for clear, vibrant aesthetics */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-slate-950/80 via-slate-950/30 to-transparent" />
+        <div className="absolute inset-0 bg-slate-950/5 backdrop-blur-[0.5px]" />
       </div>
+
+      {/* Cyber ambient halos */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[280px] sm:w-[500px] h-[280px] sm:h-[500px] bg-indigo-500/5 rounded-full blur-[80px] pointer-events-none -z-10 animate-pulse" />
 
       {/* Identity Logo */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-10 relative z-10 md:translate-x-24"
+        initial={{ opacity: 0, scale: 0.7, y: -30 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 120, damping: 14 }}
+        className="mb-6 md:mb-8 relative z-10"
       >
         <div
           onClick={handleLogoClick}
-          className="w-32 h-32 rounded-full overflow-hidden flex items-center justify-center group bg-white p-1 cursor-pointer active:scale-95 transition-transform"
+          className="w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden flex items-center justify-center group bg-white p-1 cursor-pointer active:scale-95 transition-all shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 shrink-0"
         >
           <img
             src="/assets/logo_nexo.jpeg"
@@ -139,123 +169,160 @@ const Login = () => {
       </motion.div>
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="relative z-10 w-full max-w-[400px] md:translate-x-24"
+        variants={cardVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 w-full max-w-[380px] md:max-w-[400px] bg-white/90 backdrop-blur-2xl rounded-[24px] sm:rounded-[40px] p-5 sm:p-10 border border-white/50 shadow-[0_30px_70px_rgba(15,23,42,0.15)]"
       >
-        <div className="bg-white/95 backdrop-blur-[20px] rounded-[40px] p-10 border border-slate-100 shadow-[0_40px_100px_rgba(0,0,0,0.12)]">
-          <div className="text-center mb-10">
-            <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase mb-1 italic">
-              {isAdminMode ? 'SYSTEM' : 'SECURE'} <span className="text-slate-500">{isAdminMode ? 'ADMIN' : 'GATEWAY'}</span>
-            </h1>
-            <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">NexovTech Management Platform</p>
-          </div>
+        <motion.div variants={itemVariants} className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tighter uppercase mb-1 flex items-center justify-center gap-2 italic">
+            {isAdminMode ? 'SYSTEM' : 'SECURE'} <span className="text-slate-500">{isAdminMode ? 'ADMIN' : 'GATEWAY'}</span>
+          </h1>
+          <p className="text-slate-400 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.25em]">NexovTech Management Platform</p>
+        </motion.div>
 
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-rose-50 border border-rose-100 p-4 rounded-2xl flex items-center gap-3 text-rose-500 text-[9px] font-black uppercase tracking-widest mb-8"
-            >
-              <AlertTriangle size={16} /> {error}
-            </motion.div>
-          )}
+        {error && (
+          <motion.div
+            variants={itemVariants}
+            className="bg-rose-500/10 border border-rose-500/20 p-3.5 rounded-xl flex items-center gap-3 text-rose-600 text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-5"
+          >
+            <AlertTriangle size={15} className="shrink-0" /> {error}
+          </motion.div>
+        )}
 
-          {!isAdminMode ? (
-            <div className="space-y-6">
-              {showKeyConsole && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-black p-6 rounded-3xl border border-white/10 shadow-2xl mb-4"
-                >
-                  <p className="text-white/50 text-[8px] font-black uppercase tracking-widest mb-3">Neural Override Active</p>
-                  <div className="flex gap-2">
-                    <input
-                      type="password"
-                      placeholder="ACCESS KEY"
-                      value={accessKey}
-                      onChange={(e) => setAccessKey(e.target.value)}
-                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 text-white text-xs font-mono focus:outline-none focus:border-white/30"
-                      onKeyDown={(e) => e.key === 'Enter' && triggerRapidAccess()}
-                      autoFocus
-                    />
-                    <button
-                      onClick={triggerRapidAccess}
-                      disabled={loading}
-                      className="w-12 h-12 bg-white rounded-xl flex items-center justify-center hover:bg-slate-200 transition-colors"
-                    >
-                      <Zap size={18} className="text-black" />
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-
-              <div className="bg-slate-50 border border-slate-100 rounded-3xl p-6 text-center">
-                <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
-                  <ShieldCheck size={24} className="text-blue-500" />
-                </div>
-                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider leading-relaxed">
-                  Only authorized NexovTech employees with <br />
-                  <span className="text-slate-900">name.nexovtech@gmail.com</span> <br />
-                  can access this node.
+        {!isAdminMode ? (
+          <div className="space-y-5 sm:space-y-6">
+            {showKeyConsole && (
+              <motion.div
+                variants={itemVariants}
+                className="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-xl mb-3"
+              >
+                <p className="text-indigo-600 text-[8px] font-black uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping" />
+                  Neural Override Active
                 </p>
-              </div>
+                <div className="flex gap-2">
+                  <input
+                    type="password"
+                    placeholder="ACCESS KEY"
+                    value={accessKey}
+                    onChange={(e) => setAccessKey(e.target.value)}
+                    className="flex-1 h-10 sm:h-12 bg-white border border-slate-200 rounded-lg sm:rounded-xl px-3 text-slate-900 text-xs font-mono focus:outline-none focus:border-indigo-400 placeholder-slate-300"
+                    onKeyDown={(e) => e.key === 'Enter' && triggerRapidAccess()}
+                    autoFocus
+                  />
+                  <button
+                    onClick={triggerRapidAccess}
+                    disabled={loading}
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-900 text-white rounded-lg sm:rounded-xl flex items-center justify-center hover:bg-slate-800 transition-colors shrink-0"
+                  >
+                    <Zap size={16} className="text-white" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
 
-              <button
+            <motion.div variants={itemVariants} className="bg-slate-50 border border-slate-100 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-center">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-3 border border-indigo-100 text-indigo-600 shrink-0">
+                <ShieldCheck size={20} className="sm:size-[24px]" />
+              </div>
+              <p className="text-slate-600 text-[11px] sm:text-[13px] font-bold uppercase tracking-wider leading-relaxed">
+                Only authorized NexovTech employees with{' '}
+                <span className="text-slate-900 block mt-0.5 sm:inline font-black">name.nexovtech@gmail.com</span>{' '}
+                can access this node.
+              </p>
+            </motion.div>
+
+            <motion.div variants={itemVariants}>
+              <motion.button
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="w-full h-16 bg-slate-900 hover:bg-slate-800 text-white rounded-[24px] flex items-center justify-between px-8 transition-all active:scale-[0.98] disabled:opacity-50 shadow-xl group"
+                whileHover="hover"
+                whileTap={{ scale: 0.98 }}
+                className="relative overflow-hidden w-full h-14 sm:h-16 bg-slate-950 hover:bg-slate-900 text-white rounded-xl sm:rounded-[24px] flex items-center justify-between px-5 sm:px-8 transition-all disabled:opacity-50 shadow-md group border border-slate-800 cursor-pointer"
               >
-                <div className="flex items-center gap-4">
-                  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
-                  <span className="font-black text-[11px] uppercase tracking-[0.2em]">
+                {/* Premium continuous metallic shine sweep animation */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none"
+                  initial={{ x: '-100%' }}
+                  animate={{ x: '100%' }}
+                  transition={{
+                    repeat: Infinity,
+                    repeatType: 'loop',
+                    duration: 2.5,
+                    ease: 'linear',
+                  }}
+                />
+
+                <div className="flex items-center gap-3.5 min-w-0 relative z-10">
+                  <motion.img
+                    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                    alt="Google"
+                    className="w-5.5 h-5.5 shrink-0 bg-white rounded-full p-0.5"
+                    variants={{
+                      hover: { rotate: 15, scale: 1.05 }
+                    }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                  />
+                  <span className="font-black text-[10px] sm:text-[12px] uppercase tracking-[0.14em] sm:tracking-[0.2em] text-white truncate">
                     {loading ? 'Authenticating...' : 'Sign in with Google'}
                   </span>
                 </div>
-                {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleAdminSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Admin Email</label>
-                <input
-                  required type="email" value={adminCreds.email}
-                  onChange={(e) => setAdminCreds({ ...adminCreds, email: e.target.value })}
-                  placeholder="admin@nexovtech.com"
-                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-slate-900 focus:outline-none focus:border-slate-900 transition-all font-medium text-sm"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Access Key</label>
-                <input
-                  required type="password" value={adminCreds.password}
-                  onChange={(e) => setAdminCreds({ ...adminCreds, password: e.target.value })}
-                  placeholder="••••••••"
-                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 text-slate-900 focus:outline-none focus:border-slate-900 transition-all font-medium text-sm"
-                />
-              </div>
+                {!loading && (
+                  <motion.div
+                    className="text-white shrink-0 relative z-10"
+                    variants={{
+                      hover: { x: 4 }
+                    }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  >
+                    <ArrowRight size={16} />
+                  </motion.div>
+                )}
+              </motion.button>
+            </motion.div>
+          </div>
+        ) : (
+          <form onSubmit={handleAdminSubmit} className="space-y-4">
+            <motion.div variants={itemVariants} className="space-y-1.5">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Admin Email</label>
+              <input
+                required type="email" value={adminCreds.email}
+                onChange={(e) => setAdminCreds({ ...adminCreds, email: e.target.value })}
+                placeholder="admin@nexovtech.com"
+                className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-900 focus:outline-none focus:border-indigo-500 transition-all font-medium text-xs sm:text-sm placeholder-slate-400"
+              />
+            </motion.div>
+            <motion.div variants={itemVariants} className="space-y-1.5">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Access Key</label>
+              <input
+                required type="password" value={adminCreds.password}
+                onChange={(e) => setAdminCreds({ ...adminCreds, password: e.target.value })}
+                placeholder="••••••••"
+                className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-900 focus:outline-none focus:border-indigo-500 transition-all font-medium text-xs sm:text-sm placeholder-slate-400"
+              />
+            </motion.div>
+            <motion.div variants={itemVariants}>
               <button
                 type="submit" disabled={loading}
-                className="w-full h-14 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] mt-4 hover:bg-slate-800 transition-all"
+                className="w-full h-12 sm:h-14 bg-indigo-650 hover:bg-indigo-600 text-white rounded-xl sm:rounded-2xl font-black text-[9px] sm:text-[10px] uppercase tracking-[0.3em] mt-3 transition-all shadow-md shadow-indigo-600/10"
               >
                 {loading ? 'Verifying...' : 'Authorize Access'}
               </button>
-            </form>
-          )}
+            </motion.div>
+          </form>
+        )}
 
-          <div className="mt-10 pt-8 border-t border-slate-50 text-center">
-            <p className="text-[8px] font-black text-slate-300 uppercase tracking-[0.4em]">
-              Identity Verification Required
-            </p>
-          </div>
-        </div>
+        <motion.div variants={itemVariants} className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-slate-100 text-center">
+          <p className="text-[9px] sm:text-[10px] font-black text-slate-350 uppercase tracking-[0.4em]">
+            Identity Verification Required
+          </p>
+        </motion.div>
       </motion.div>
 
       {/* Global Security Branding */}
-      <div className="mt-12 opacity-30 text-center md:translate-x-24">
-        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.5em]">NexovTech Defense Systems &copy; 2026</p>
+      <div className="mt-8 md:mt-12 opacity-30 text-center">
+        <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-[0.5em]">NexovTech Defense Systems &copy; 2026</p>
       </div>
     </div>
   );

@@ -26,6 +26,27 @@ router.get('/logs', async (req, res) => {
   }
 });
 
+// @route   POST /api/audit/log
+// @desc    Record a system audit log
+router.post('/log', async (req, res) => {
+  try {
+    const { action, performedBy, userId, status, deviceInfo } = req.body;
+    const newLog = {
+      action,
+      performedBy: performedBy || 'System',
+      userId: userId || 'System',
+      status: status || 'success',
+      timestamp: new Date().toISOString(),
+      deviceInfo: deviceInfo || {},
+      ip: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1'
+    };
+    await fallbackDb.save('audit_logs', newLog);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: 'Server-side log saving failed' });
+  }
+});
+
 // @route   GET /api/audit/summary
 // @desc    Get executive organizational health summary
 router.get('/summary', async (req, res) => {

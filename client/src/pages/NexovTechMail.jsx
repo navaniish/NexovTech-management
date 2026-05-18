@@ -176,41 +176,59 @@ const NexovTechMail = () => {
   };
 
   return (
-    <div className={`flex flex-col h-[calc(100vh-140px)] gap-4 animate-in fade-in duration-700 transition-colors duration-1000 p-4 ${theme === 'cyber' ? 'bg-[#020617]' : theme === 'midnight' ? 'bg-[#0a0a0a]' : 'bg-transparent'}`}>
+    <div className={`flex flex-col min-h-[calc(100vh-160px)] lg:h-[calc(100vh-140px)] gap-4 animate-in fade-in duration-700 transition-colors duration-1000 p-2 md:p-4 max-w-[1440px] mx-auto w-full ${theme === 'cyber' ? 'bg-[#020617]' : theme === 'midnight' ? 'bg-[#0a0a0a]' : 'bg-transparent'}`}>
       
       {/* 1. VIBRANT HEADER */}
-      <div className={`flex flex-col md:flex-row md:items-center justify-between gap-6 px-4 py-3 rounded-[24px] border transition-all duration-500 ${t.card} ${t.header}`}>
-        <div className="flex items-center gap-6">
-           <h1 className={`text-2xl font-black tracking-tighter leading-none italic ${t.accent}`}>NEXUS MAIL</h1>
-           <div className="flex gap-2 p-1 bg-black/20 rounded-lg">
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4 py-3 rounded-[20px] md:rounded-[24px] border transition-all duration-500 ${t.card} ${t.header}`}>
+        <div className="flex items-center justify-between sm:justify-start gap-4 md:gap-6">
+           <h1 className={`text-xl md:text-2xl font-black tracking-tighter leading-none italic ${t.accent}`}>NEXUS MAIL</h1>
+           <div className="flex gap-1.5 p-1 bg-black/20 rounded-lg">
               {Object.keys(themes).map(th => (
                 <button 
                   key={th} 
                   onClick={() => setTheme(th)}
-                  className={`w-4 h-4 rounded-full transition-all border-2 ${theme === th ? 'scale-110 border-white' : 'opacity-30 hover:opacity-100 border-transparent'}`}
+                  className={`w-3.5 h-3.5 md:w-4 md:h-4 rounded-full transition-all border-2 ${theme === th ? 'scale-110 border-white' : 'opacity-30 hover:opacity-100 border-transparent'}`}
                   style={{ backgroundColor: th === 'cyber' ? '#2563eb' : th === 'midnight' ? '#1e1b4b' : th === 'minimal' ? '#0f172a' : '#bfdbfe' }}
                   title={th.charAt(0).toUpperCase() + th.slice(1)}
                 />
               ))}
            </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between sm:justify-end gap-3">
            <button 
              onClick={() => setComposing(true)}
-             className={`h-9 px-6 rounded-xl flex items-center gap-3 font-black text-[9px] uppercase tracking-widest transition-all shadow-xl active:scale-95 ${theme === 'cyber' ? 'bg-white text-slate-900' : 'bg-slate-900 text-white'}`}
+             className={`h-9 px-4 md:px-6 rounded-xl flex-1 sm:flex-initial flex items-center justify-center gap-2 font-black text-[9px] uppercase tracking-widest transition-all shadow-xl active:scale-95 ${theme === 'cyber' ? 'bg-white text-slate-900' : 'bg-slate-900 text-white'}`}
            >
-             <Zap size={12} className={theme === 'cyber' ? 'text-brand-600' : 'text-amber-400'} /> 
+             <Zap size={11} className={theme === 'cyber' ? 'text-brand-600' : 'text-amber-400'} /> 
              NEW DISPATCH
            </button>
-           <button onClick={fetchMails} className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all shadow-lg ${t.card}`}>
+           <button onClick={fetchMails} className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all shadow-lg ${t.card}`}>
              <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
            </button>
         </div>
       </div>
 
+      {/* MOBILE FOLDER NAVIGATION BAR */}
+      <div className="flex lg:hidden overflow-x-auto custom-scrollbar gap-2 pb-2 px-1 shrink-0">
+         {folders.map(folder => (
+           <button
+             key={folder.id}
+             onClick={() => { setActiveFolder(folder.id); setSelectedMail(null); }}
+             className={`h-9 px-4 rounded-xl flex items-center gap-2 shrink-0 transition-all duration-300 ${
+               activeFolder === folder.id 
+               ? t.itemActive
+               : `text-slate-400 hover:text-slate-200 bg-white/5 border border-white/5`
+             }`}
+           >
+             <folder.icon size={13} className={activeFolder === folder.id ? 'text-current' : `${folder.color}`} />
+             <span className="text-[9px] font-black uppercase tracking-wider">{folder.label}</span>
+           </button>
+         ))}
+      </div>
+
       <div className="flex flex-1 gap-6 overflow-hidden min-h-0">
         
-        {/* 2. NAVIGATION SIDEBAR */}
+        {/* 2. NAVIGATION SIDEBAR (DESKTOP ONLY) */}
         <div className="hidden lg:flex w-48 flex-col gap-2 shrink-0">
            {folders.map(folder => (
              <button
@@ -244,71 +262,71 @@ const NexovTechMail = () => {
         </div>
 
         {/* 3. MESSAGE LIST */}
-        <div className={`flex-[1] min-w-[280px] rounded-[24px] flex flex-col overflow-hidden border transition-all duration-500 shadow-xl ${t.card} ${t.list} ${selectedMail ? 'hidden xl:flex' : 'flex'}`}>
+        <div className={`flex-[1] min-w-[280px] rounded-[20px] md:rounded-[24px] flex flex-col overflow-hidden border transition-all duration-500 shadow-xl ${t.card} ${t.list} ${selectedMail ? 'hidden xl:flex' : 'flex'}`}>
            <div className="p-3 border-b border-slate-50 bg-white/40 backdrop-blur-xl relative z-10">
               <div className="relative group">
-                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-brand-500 transition-colors" size={14} />
-                 <input 
-                   type="text" 
-                   placeholder="SEARCH..." 
-                   value={searchTerm}
-                   onChange={(e) => setSearchTerm(e.target.value)}
-                   className="w-full h-8 bg-white border border-slate-100 rounded-lg pl-9 pr-3 text-[8px] font-black uppercase tracking-widest text-slate-900 outline-none focus:ring-2 focus:ring-brand-500/5 transition-all placeholder:text-slate-200"
-                 />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-brand-500 transition-colors" size={14} />
+                  <input 
+                    type="text" 
+                    placeholder="SEARCH..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full h-8 bg-white border border-slate-100 rounded-lg pl-9 pr-3 text-[8px] font-black uppercase tracking-widest text-slate-900 outline-none focus:ring-2 focus:ring-brand-500/5 transition-all placeholder:text-slate-200"
+                  />
               </div>
            </div>
 
            <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-1 bg-slate-50/30">
              {loading ? (
-               <div className="h-full flex flex-col items-center justify-center p-20 animate-pulse">
-                  <div className="w-20 h-20 bg-indigo-50 rounded-[32px] flex items-center justify-center mb-6">
-                    <RefreshCw size={40} className="text-indigo-600 animate-spin" />
-                  </div>
-                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em]">Syncing Communications...</p>
-               </div>
+                <div className="h-full flex flex-col items-center justify-center py-20 animate-pulse">
+                   <div className="w-16 h-16 bg-indigo-50 rounded-[24px] flex items-center justify-center mb-4">
+                     <RefreshCw size={28} className="text-indigo-600 animate-spin" />
+                   </div>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Syncing Communications...</p>
+                </div>
              ) : mails.length === 0 ? (
-               <div className="h-full flex flex-col items-center justify-center p-20 opacity-30 text-center">
-                  <div className="w-24 h-24 bg-slate-100 rounded-[40px] flex items-center justify-center mb-8">
-                    <Globe size={56} className="text-slate-300" />
-                  </div>
-                  <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Registry Empty</h3>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">No active transmissions detected</p>
-               </div>
+                <div className="h-full flex flex-col items-center justify-center py-20 opacity-30 text-center">
+                   <div className="w-20 h-20 bg-slate-100 rounded-[30px] flex items-center justify-center mb-6">
+                     <Globe size={40} className="text-slate-300" />
+                   </div>
+                   <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Registry Empty</h3>
+                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">No active transmissions detected</p>
+                </div>
              ) : (
-               mails.map((mail, i) => (
-                 <motion.div 
-                   key={mail.id || i}
-                   initial={{ opacity: 0, y: 10 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   transition={{ delay: i * 0.05 }}
-                   onClick={() => setSelectedMail(mail)}
-                   className={`group flex items-center gap-2 px-2 py-2 rounded-lg cursor-pointer transition-all duration-200 ${
-                     selectedMail?.id === mail.id 
-                     ? 'bg-slate-900 text-white shadow-md' 
-                     : 'bg-white hover:bg-slate-50 border border-slate-50'
-                   }`}
-                 >
-                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 shadow-sm transition-transform ${
-                     selectedMail?.id === mail.id ? 'bg-white/10 text-brand-400' : 'bg-slate-50 text-slate-400'
-                   }`}>
-                      <User size={16} />
-                   </div>
-                   <div className="flex-1 min-w-0">
-                     <div className="flex items-center justify-between mb-1.5">
-                        <span className={`text-[11px] font-black uppercase tracking-widest truncate ${selectedMail?.id === mail.id ? 'text-white' : 'text-slate-900'}`}>
-                          {activeFolder === 'sent' ? `TO: ${mail.to}` : mail.senderName}
-                        </span>
-                        <span className={`text-[9px] font-bold uppercase tracking-widest ${selectedMail?.id === mail.id ? 'text-white/40' : 'text-slate-300'}`}>
-                          {mail.timestamp && !isNaN(new Date(mail.timestamp).getTime()) ? `${new Date(mail.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })} ${new Date(mail.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'PENDING'}
-                        </span>
-                     </div>
-                     <p className={`text-sm font-bold tracking-tight truncate ${selectedMail?.id === mail.id ? 'text-white/80' : 'text-brand-600'}`}>
-                        {mail.subject}
-                     </p>
-                   </div>
-                   <ChevronRight size={18} className={`shrink-0 transition-transform ${selectedMail?.id === mail.id ? 'text-white translate-x-1' : 'text-slate-200 opacity-0 group-hover:opacity-100'}`} />
-                 </motion.div>
-               ))
+                mails.map((mail, i) => (
+                  <motion.div 
+                    key={mail.id || i}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    onClick={() => setSelectedMail(mail)}
+                    className={`group flex items-center gap-2.5 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200 ${
+                      selectedMail?.id === mail.id 
+                      ? 'bg-slate-900 text-white shadow-md' 
+                      : 'bg-white hover:bg-slate-50 border border-slate-50'
+                    }`}
+                  >
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 shadow-sm transition-transform ${
+                      selectedMail?.id === mail.id ? 'bg-white/10 text-brand-400' : 'bg-slate-50 text-slate-400'
+                    }`}>
+                       <User size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                         <span className={`text-[10px] font-black uppercase tracking-widest truncate ${selectedMail?.id === mail.id ? 'text-white' : 'text-slate-900'}`}>
+                           {activeFolder === 'sent' ? `TO: ${mail.to}` : mail.senderName}
+                         </span>
+                         <span className={`text-[8px] font-bold uppercase tracking-widest ${selectedMail?.id === mail.id ? 'text-white/40' : 'text-slate-300'}`}>
+                           {mail.timestamp && !isNaN(new Date(mail.timestamp).getTime()) ? `${new Date(mail.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })}` : 'PENDING'}
+                         </span>
+                      </div>
+                      <p className={`text-xs font-bold tracking-tight truncate ${selectedMail?.id === mail.id ? 'text-white/80' : 'text-brand-600'}`}>
+                         {mail.subject}
+                      </p>
+                    </div>
+                    <ChevronRight size={16} className={`shrink-0 transition-transform ${selectedMail?.id === mail.id ? 'text-white translate-x-1' : 'text-slate-200 opacity-0 group-hover:opacity-100'}`} />
+                  </motion.div>
+                ))
              )}
            </div>
         </div>
@@ -320,44 +338,44 @@ const NexovTechMail = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className={`fixed inset-0 lg:relative lg:inset-auto flex-[2] rounded-[24px] z-[110] flex flex-col overflow-hidden shadow-2xl transition-all duration-500 border ${t.card} ${t.preview}`}
+              className={`fixed inset-0 lg:relative lg:inset-auto flex-[2] rounded-none lg:rounded-[24px] z-[220] lg:z-[110] flex flex-col overflow-hidden shadow-2xl transition-all duration-500 border ${t.card} ${t.preview}`}
             >              
-              <div className="p-4 border-b border-slate-50 flex items-center justify-between bg-white/40 backdrop-blur-xl">
-                <button onClick={() => setSelectedMail(null)} className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-400 hover:text-brand-600 transition-all shadow-lg lg:hidden">
-                  <ChevronLeft size={24} />
+              <div className="p-4 border-b border-slate-50 flex items-center justify-between bg-white/40 backdrop-blur-xl shrink-0">
+                <button onClick={() => setSelectedMail(null)} className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 hover:text-brand-600 transition-all shadow-md lg:hidden">
+                  <ChevronLeft size={20} />
                 </button>
-                <div className="flex items-center gap-3 ml-auto">
+                <div className="flex items-center gap-2 ml-auto">
                    {['star', 'archive', 'trash'].map((act) => (
                      <button key={act} className="w-8 h-8 bg-white border border-slate-100 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand-600 transition-all">
-                        {act === 'star' ? <Star size={14} /> : act === 'archive' ? <Archive size={14} /> : <Trash2 size={14} />}
+                        {act === 'star' ? <Star size={13} /> : act === 'archive' ? <Archive size={13} /> : <Trash2 size={13} />}
                      </button>
                    ))}
-                   <div className="w-px h-5 bg-slate-100 mx-1" />
-                   <button onClick={() => setSelectedMail(null)} className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center shadow-md hover:bg-brand-600 transition-colors"><X size={14} /></button>
+                   <div className="w-px h-5 bg-slate-100 mx-1 hidden lg:block" />
+                   <button onClick={() => setSelectedMail(null)} className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center shadow-md hover:bg-brand-600 transition-colors"><X size={13} /></button>
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-slate-50/20">
-                <div className="max-w-3xl mx-auto space-y-6">
-                   <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white text-lg font-black shadow-lg">
+              <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-slate-50/20">
+                <div className="max-w-3xl mx-auto space-y-4 md:space-y-6">
+                   <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center text-white text-base font-black shadow-lg">
                         {selectedMail.senderName?.charAt(0)}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-0.5">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5">
                            <Shield size={10} className="text-brand-600" />
-                           <h2 className="text-[8px] font-black text-brand-600 uppercase tracking-widest">Verified</h2>
+                           <h2 className="text-[7px] font-black text-brand-600 uppercase tracking-widest">Verified</h2>
                         </div>
-                        <p className="text-lg font-black text-slate-900 tracking-tighter leading-none">{selectedMail.senderName}</p>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">{selectedMail.from} • {selectedMail.timestamp ? `${new Date(selectedMail.timestamp).toLocaleDateString()} ${new Date(selectedMail.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}</p>
+                        <p className="text-sm md:text-base font-black text-slate-900 tracking-tighter leading-none truncate">{selectedMail.senderName}</p>
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1 truncate">{selectedMail.from} • {selectedMail.timestamp ? `${new Date(selectedMail.timestamp).toLocaleDateString()} ${new Date(selectedMail.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}</p>
                       </div>
                    </div>
                    
-                   <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm relative">
-                      <div className="absolute -top-2 left-4 px-2 py-0.5 bg-slate-900 text-white rounded-full text-[7px] font-black uppercase tracking-widest">Subject</div>
-                      <h1 className="text-base font-black text-slate-900 tracking-tighter mb-2 leading-tight italic">{selectedMail.subject}</h1>
+                   <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm relative">
+                      <div className="absolute -top-2 left-4 px-2 py-0.5 bg-slate-900 text-white rounded-full text-[6px] font-black uppercase tracking-widest">Subject</div>
+                      <h1 className="text-sm md:text-base font-black text-slate-900 tracking-tighter mb-2 leading-tight italic">{selectedMail.subject}</h1>
                       <div className="prose prose-slate max-w-none">
-                        <p className="text-[13px] font-medium text-slate-700 leading-relaxed whitespace-pre-wrap mb-4">{selectedMail.content}</p>
+                        <p className="text-[12px] md:text-[13px] font-medium text-slate-700 leading-relaxed whitespace-pre-wrap mb-4">{selectedMail.content}</p>
                       </div>
                       
                       {selectedMail.attachments && selectedMail.attachments.length > 0 && (
@@ -374,11 +392,11 @@ const NexovTechMail = () => {
                                   className="px-3 py-2 bg-slate-50 border border-slate-100 rounded-lg flex items-center gap-2 hover:bg-white transition-all group"
                                 >
                                    <div className="w-6 h-6 bg-indigo-50 rounded flex items-center justify-center text-indigo-500">
-                                      <Globe size={12} />
+                                      <Globe size={11} />
                                    </div>
                                    <div className="min-w-0">
-                                      <p className="text-[9px] font-bold text-slate-700 truncate max-w-[120px]">{file.name}</p>
-                                      <p className="text-[7px] text-slate-400">{(file.size / 1024).toFixed(1)} KB</p>
+                                      <p className="text-[8px] font-bold text-slate-700 truncate max-w-[100px]">{file.name}</p>
+                                      <p className="text-[6px] text-slate-400">{(file.size / 1024).toFixed(1)} KB</p>
                                    </div>
                                 </a>
                               ))}
@@ -388,18 +406,18 @@ const NexovTechMail = () => {
                    </div>
 
                    {/* AI-ASSISTED INSIGHTS */}
-                   <div className="p-4 bg-slate-900 rounded-2xl text-white shadow-xl relative overflow-hidden group">
+                   <div className="p-4 bg-slate-900 rounded-xl text-white shadow-xl relative overflow-hidden group">
                      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-50" />
-                     <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
-                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-xl shrink-0">
-                           <Bot size={20} className="text-brand-400" />
+                     <div className="relative z-10 flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+                        <div className="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-xl shrink-0">
+                           <Bot size={18} className="text-brand-400" />
                         </div>
-                        <div className="flex-1 space-y-4">
-                           <div className="flex items-center justify-center md:justify-start gap-3">
-                              <Sparkles size={14} className="text-brand-400" />
-                              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-brand-400">Intelligence Node</span>
+                        <div className="flex-1 space-y-3">
+                           <div className="flex items-center justify-center md:justify-start gap-2">
+                              <Sparkles size={12} className="text-brand-400" />
+                              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-brand-400">Intelligence Node</span>
                            </div>
-                           <p className="text-[11px] font-medium text-slate-300 leading-relaxed italic">
+                           <p className="text-[10px] font-medium text-slate-300 leading-relaxed italic">
                              "SECURITY ANALYSIS: Dispatch requires priority routing to Project Registry."
                            </p>
                            <div className="flex flex-wrap justify-center md:justify-start gap-2">
@@ -413,11 +431,11 @@ const NexovTechMail = () => {
                                   });
                                   setComposing(true);
                                 }}
-                                className="px-4 py-2 bg-white/10 hover:bg-white text-[8px] font-black uppercase tracking-widest text-white hover:text-slate-900 rounded-lg transition-all"
+                                className="px-3 py-1.5 bg-white/10 hover:bg-white text-[7px] font-black uppercase tracking-widest text-white hover:text-slate-900 rounded-md transition-all"
                               >
                                 Quick Reply
                               </button>
-                              <button className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-[8px] font-black uppercase tracking-widest text-white rounded-lg transition-all shadow-md">Push to Registry</button>
+                              <button className="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-[7px] font-black uppercase tracking-widest text-white rounded-md transition-all shadow-md">Push to Registry</button>
                            </div>
                         </div>
                      </div>
@@ -425,7 +443,7 @@ const NexovTechMail = () => {
                 </div>
               </div>
 
-              <div className="p-4 border-t border-slate-50 bg-white backdrop-blur-xl flex gap-3">
+              <div className="p-4 border-t border-slate-50 bg-white backdrop-blur-xl flex gap-3 shrink-0">
                 <button 
                   onClick={() => {
                     setNewMail({
@@ -455,64 +473,65 @@ const NexovTechMail = () => {
           <>
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200]"
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[230]"
               onClick={() => setComposing(false)}
             />
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 60 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 60 }}
-              className="fixed inset-0 m-auto w-full max-w-xl h-[480px] z-[210] glass-card !p-0 overflow-hidden flex flex-col shadow-2xl border-none"
+              initial={{ opacity: 0, y: '100%' }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="fixed inset-x-4 bottom-4 top-[80px] md:inset-auto md:m-auto w-auto md:w-full md:max-w-xl h-auto md:h-[500px] rounded-[20px] md:rounded-[24px] z-[240] bg-white overflow-hidden flex flex-col shadow-2xl border border-slate-100"
             >
-              <div className="p-6 bg-slate-900 text-white flex items-center justify-between relative overflow-hidden">
+              <div className="p-4 md:p-6 bg-slate-900 text-white flex items-center justify-between relative overflow-hidden shrink-0">
                  <div className="absolute inset-0 bg-gradient-to-r from-brand-600/20 to-transparent opacity-50" />
                  <div className="flex items-center gap-3 relative z-10">
-                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shadow-xl backdrop-blur-xl">
-                       <Rocket size={20} className="text-brand-400" />
+                    <div className="w-8 h-8 md:w-10 md:h-10 bg-white/10 rounded-xl flex items-center justify-center shadow-xl backdrop-blur-xl">
+                       <Rocket size={16} className="text-brand-400 md:size-[20px]" />
                     </div>
                     <div>
-                       <h3 className="text-lg font-black uppercase tracking-tighter leading-none italic">New Dispatch</h3>
+                       <h3 className="text-base md:text-lg font-black uppercase tracking-tighter leading-none italic">New Dispatch</h3>
                     </div>
                  </div>
                  <button onClick={() => setComposing(false)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center transition-all relative z-10">
-                    <X size={18} />
+                    <X size={16} />
                  </button>
               </div>
               
-              <form onSubmit={handleSend} className="flex-1 flex flex-col bg-white overflow-hidden">
-                 <div className="p-6 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
-                    <div className="relative">
-                       <span className="absolute -top-2 left-3 px-2 bg-white text-[8px] font-black text-slate-400 uppercase tracking-widest z-10">To</span>
-                       <input 
-                        type="text" required value={newMail.to}
-                        onChange={e => setNewMail({...newMail, to: e.target.value})}
-                        placeholder="COMM@NEXOVTECH.NET"
-                        className="w-full h-12 bg-slate-50/50 border border-slate-100 rounded-xl px-4 pt-1 text-sm font-black text-slate-900 placeholder:text-slate-200 outline-none"
-                       />
-                    </div>
-                    
-                    <div className="relative">
-                       <span className="absolute -top-2 left-3 px-2 bg-white text-[8px] font-black text-slate-400 uppercase tracking-widest z-10">Subject</span>
-                       <input 
-                        type="text" required value={newMail.subject}
-                        onChange={e => setNewMail({...newMail, subject: e.target.value})}
-                        placeholder="SUBJECT"
-                        className="w-full h-12 bg-slate-50/50 border border-slate-100 rounded-xl px-4 pt-1 text-sm font-black text-brand-600 placeholder:text-slate-200 outline-none italic"
-                       />
-                    </div>
+              <form onSubmit={handleSend} className="flex-1 flex flex-col bg-white overflow-hidden min-h-0">
+                  <div className="p-4 md:p-6 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
+                     <div className="relative">
+                        <span className="absolute -top-2 left-3 px-2 bg-white text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest z-10">To</span>
+                        <input 
+                         type="text" required value={newMail.to}
+                         onChange={e => setNewMail({...newMail, to: e.target.value})}
+                         placeholder="COMM@NEXOVTECH.NET"
+                         className="w-full h-11 md:h-12 bg-slate-50/50 border border-slate-100 rounded-xl px-4 pt-1 text-xs md:text-sm font-black text-slate-900 placeholder:text-slate-200 outline-none"
+                        />
+                     </div>
+                     
+                     <div className="relative">
+                        <span className="absolute -top-2 left-3 px-2 bg-white text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest z-10">Subject</span>
+                        <input 
+                         type="text" required value={newMail.subject}
+                         onChange={e => setNewMail({...newMail, subject: e.target.value})}
+                         placeholder="SUBJECT"
+                         className="w-full h-11 md:h-12 bg-slate-50/50 border border-slate-100 rounded-xl px-4 pt-1 text-xs md:text-sm font-black text-brand-600 placeholder:text-slate-200 outline-none italic"
+                        />
+                     </div>
 
-                    <div className="relative flex-1 min-h-[150px]">
-                       <span className="absolute -top-2 left-3 px-2 bg-white text-[8px] font-black text-slate-400 uppercase tracking-widest z-10">Content</span>
-                       <textarea 
-                         required value={newMail.content}
-                         onChange={e => setNewMail({...newMail, content: e.target.value})}
-                         placeholder="MESSAGE..."
-                         className="w-full h-full bg-slate-50/50 border border-slate-100 rounded-2xl p-4 pt-6 text-[14px] font-medium text-slate-700 leading-relaxed resize-none outline-none"
-                       />
-                    </div>
-                 </div>
+                     <div className="relative flex-1 min-h-[160px]">
+                        <span className="absolute -top-2 left-3 px-2 bg-white text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest z-10">Content</span>
+                        <textarea 
+                          required value={newMail.content}
+                          onChange={e => setNewMail({...newMail, content: e.target.value})}
+                          placeholder="MESSAGE..."
+                          className="w-full h-full bg-slate-50/50 border border-slate-100 rounded-2xl p-4 pt-6 text-[13px] md:text-[14px] font-medium text-slate-700 leading-relaxed resize-none outline-none min-h-[140px]"
+                        />
+                     </div>
+                  </div>
 
-                  <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex flex-col gap-4 shrink-0">
+                  <div className="p-4 md:p-6 bg-slate-50/50 border-t border-slate-100 flex flex-col gap-3 md:gap-4 shrink-0 pb-6">
                      {newMail.attachments.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                            {newMail.attachments.map((file, idx) => (
@@ -529,7 +548,7 @@ const NexovTechMail = () => {
                            ))}
                         </div>
                      )}
-                     <div className="flex items-center justify-between">
+                     <div className="flex items-center justify-between pr-16 md:pr-0">
                         <div className="flex items-center gap-2">
                            <label className="w-10 h-10 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-brand-600 transition-all flex items-center justify-center cursor-pointer">
                               <Paperclip size={18} />
@@ -538,9 +557,9 @@ const NexovTechMail = () => {
                         </div>
                         <button 
                           type="submit"
-                          className="h-12 px-8 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 hover:bg-brand-600 transition-all shadow-xl"
+                          className="h-11 md:h-12 px-6 md:px-8 bg-slate-900 text-white rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-widest flex items-center gap-2.5 hover:bg-brand-600 transition-all shadow-xl"
                         >
-                          SEND DISPATCH <SendHorizontal size={16} />
+                          SEND DISPATCH <SendHorizontal size={14} />
                         </button>
                      </div>
                   </div>
