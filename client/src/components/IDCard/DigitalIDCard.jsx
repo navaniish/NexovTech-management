@@ -35,7 +35,9 @@ const DigitalIDCard = ({ employee, cardData, isAdmin = false }) => {
     ...cardData
   };
 
-  const verificationUrl = `${window.location.origin}/#/verify/${dummyCardData.qrToken}`;
+  // Always use the live production site origin for public QR code verification
+  const verificationOrigin = 'https://nexovtech-management.netlify.app';
+  const verificationUrl = `${verificationOrigin}/#/verify/${dummyCardData.qrToken}`;
 
   const downloadCard = async (side = 'front') => {
     const ref = side === 'front' ? frontRef : backRef;
