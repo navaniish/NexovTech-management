@@ -45,7 +45,8 @@ class LocalSession {
     return async (ctx, next) => {
       if (!ctx.from) return next();
       
-      const key = `${ctx.from.id}:${ctx.chat.id}`;
+      const chatId = ctx.chat ? ctx.chat.id : ctx.from.id;
+      const key = `${ctx.from.id}:${chatId}`;
       
       if (this.useFirestore && db) {
         try {

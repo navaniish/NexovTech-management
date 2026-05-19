@@ -75,7 +75,12 @@ app.use('/api/timesheet', timesheetRoutes);
 app.post('/api/telegram-webhook', async (req, res) => {
   if (!tgBot) return res.status(503).send('Bot not initialized');
   try {
-    await tgBot.handleUpdate(req.body, res);
+    const update = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    if (!update || Object.keys(update).length === 0) {
+      if (!res.headersSent) return res.sendStatus(200);
+      return;
+    }
+    await tgBot.handleUpdate(update, res);
     if (!res.headersSent) res.sendStatus(200);
   } catch (err) {
     console.error('❌ TELEGRAM_WEBHOOK_ERROR:', err.message);

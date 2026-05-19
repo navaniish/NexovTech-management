@@ -405,6 +405,8 @@ function initBot(token) {
     
     if (isStart || isRecovery || isContact || isInAuthFlow) return next();
     
+    if (!ctx.from || !ctx.from.id) return next();
+    
     const tgUser = await authService.getTelegramUser(ctx.from.id);
     if (!tgUser) {
       return ctx.reply('🔐 Your session is not authenticated. Please type /start to link your account.');
