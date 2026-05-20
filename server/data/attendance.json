@@ -86,5 +86,16 @@
     "checkOut": null,
     "attendanceStatus": "Present",
     "remarks": ""
+  },
+  {
+    "id": "att_1779097855971",
+    "date": "2026-05-18",
+    "createdAt": "2026-05-18T09:50:55.971Z",
+    "checkIn": "2026-05-18T09:50:55.971Z",
+    "totalHours": 0,
+    "employeeId": "tPjcv5Z4RbfkshESoh4B",
+    "checkOut": null,
+    "attendanceStatus": "Present",
+    "remarks": ""
   }
 ]

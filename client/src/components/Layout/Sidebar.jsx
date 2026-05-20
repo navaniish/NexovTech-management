@@ -94,7 +94,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         
         <div className="h-full flex flex-col pt-8">
           {/* LOGO AREA - REFINED - REMOVED ON MOBILE DRAWER */}
-          <div className="hidden md:block px-7 mb-8">
+          <div className="hidden px-7 mb-8">
              <div className="flex items-center gap-3.5 group cursor-pointer" onClick={() => navigate('/')}>
                 <div className="w-11 h-11 bg-white rounded-2xl p-1.5 flex items-center justify-center shadow-2xl shadow-indigo-500/20 transition-transform group-hover:scale-105">
                    <img src="/assets/company-logo.jpeg" alt="NexovTech" className="w-full h-full object-contain" />

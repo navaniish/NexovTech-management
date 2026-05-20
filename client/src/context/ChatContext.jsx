@@ -22,7 +22,7 @@ export const ChatProvider = ({ children }) => {
       const isNetlifyProduction = API_URL.includes('netlify.app');
       
       if (isNetlifyProduction) {
-        console.warn('⚠️ WEBSOCKETS_SYNC: Socket.io disabled in Netlify serverless production environment.');
+        console.log('📡 WEBSOCKETS_SYNC: Real-time links bypassed in serverless production environment.');
         // Initial announcements fetch
         fetchAnnouncements();
         return;

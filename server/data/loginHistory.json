@@ -1006,5 +1006,33 @@
     "application": "NexovTech Web Portal",
     "createdAt": "2026-05-18T09:22:07.647Z",
     "id": "XbkiYX6dVd2T0BU7og5a"
+  },
+  {
+    "userId": "tPjcv5Z4RbfkshESoh4B",
+    "email": "sidhardharekha.nexovtech@gmail.com",
+    "ipAddress": "10.96.68.113",
+    "device": "Other 0.0.0",
+    "browser": "Chrome 148.0.0",
+    "os": "Windows 10.0.0",
+    "loginStatus": "Success",
+    "location": "Remote Gateway",
+    "area": "UTC",
+    "application": "NexovTech Web Portal",
+    "createdAt": "2026-05-18T09:36:44.807Z",
+    "id": "lLOnoRfDKsUvUMRMkZ07"
+  },
+  {
+    "userId": "tPjcv5Z4RbfkshESoh4B",
+    "email": "sidhardharekha.nexovtech@gmail.com",
+    "ipAddress": "10.96.68.113",
+    "device": "Other 0.0.0",
+    "browser": "Chrome 148.0.0",
+    "os": "Windows 10.0.0",
+    "loginStatus": "Success",
+    "location": "Remote Gateway",
+    "area": "UTC",
+    "application": "NexovTech Web Portal",
+    "createdAt": "2026-05-18T09:37:05.280Z",
+    "id": "58gMywz8IQKN0ClsC22O"
   }
 ]
