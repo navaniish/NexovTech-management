@@ -380,6 +380,7 @@ function initBot(token) {
     { command: 'assign_task', description: '🚀 Deploy Task to Specialist (Admin)' },
     { command: 'send_apk', description: '📤 Distribute APK to Specialist (Admin)' },
     { command: 'attendance_alert', description: '📅 Daily Attendance Briefing' },
+    { command: 'trigger_broadcast', description: '🔔 Trigger Real Alert Broadcast (Admin)' },
     { command: 'specialists', description: '👥 View Specialist Directory (Admin)' },
     { command: 'leaves', description: '🚀 View Pending Leaves (Admin)' },
     { command: 'reset', description: '🔄 Unlink Account / Reset' },
@@ -431,6 +432,25 @@ function initBot(token) {
     const { generateAttendanceReport } = require('../services/schedulerService');
     const report = await generateAttendanceReport();
     await ctx.reply(report, { parse_mode: 'Markdown' });
+  });
+
+  bot.command('trigger_broadcast', async (ctx) => {
+    console.log(`📢 TELEGRAM_BOT: /trigger_broadcast command triggered by user ${ctx.from?.id}`);
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      console.warn(`⚠️ TELEGRAM_BOT: Unauthorized access attempt to /trigger_broadcast by user ${ctx.from?.id}`);
+      return ctx.reply('⚠️ *Access Denied*: Triggering real alerts is restricted to NexovTech Administrators.', { parse_mode: 'Markdown' });
+    }
+    await ctx.reply('⏳ *Processing...* Dispatching command to trigger daily attendance broadcast to all admins and personnel.', { parse_mode: 'Markdown' });
+    try {
+      const { sendDailyAttendanceAlert } = require('../services/schedulerService');
+      const result = await sendDailyAttendanceAlert();
+      console.log(`✅ TELEGRAM_BOT: Broadcast successful. Admins: ${result.adminSuccessCount}/${result.totalAdmins}, Employees reminded: ${result.employeeReminderCount}`);
+      await ctx.reply(`✅ *Broadcast Complete!*\n\n• Admin briefings sent: ${result.adminSuccessCount}/${result.totalAdmins}\n• Employee reminders sent: ${result.employeeReminderCount}`, { parse_mode: 'Markdown' });
+    } catch (err) {
+      console.error('❌ TELEGRAM_BOT: Broadcast failed:', err);
+      await ctx.reply('❌ Failed to trigger daily attendance alert broadcast due to system error.', { parse_mode: 'Markdown' });
+    }
   });
 
   bot.command('specialists', async (ctx) => {
@@ -735,13 +755,22 @@ function initBot(token) {
 
   // Only launch polling if NOT serverless
   if (!IS_SERVERLESS) {
-    bot.launch()
-      .then(() => {
-        console.log('🤖 TELEGRAM_BOT: Operational and synchronized (Polling).');
-      })
-      .catch((err) => {
-        console.error('❌ TELEGRAM_BOT_LAUNCH_FAILED:', err.message);
-      });
+    const launchBotWithRetry = (retries = 5, delay = 3000) => {
+      bot.launch()
+        .then(() => {
+          console.log('🤖 TELEGRAM_BOT: Operational and synchronized (Polling).');
+        })
+        .catch((err) => {
+          console.error(`❌ TELEGRAM_BOT_LAUNCH_FAILED: ${err.message}`);
+          if (retries > 0 && err.message.includes('409')) {
+            console.log(`🔄 Retrying Telegram Bot launch in ${delay / 1000}s... (${retries} retries left)`);
+            setTimeout(() => {
+              launchBotWithRetry(retries - 1, delay * 1.5);
+            }, delay);
+          }
+        });
+    };
+    launchBotWithRetry();
   } else {
     console.log('🤖 TELEGRAM_BOT: Instance ready for Webhook delivery.');
   }
@@ -769,4 +798,4 @@ async function sendNotification(telegramId, message) {
   return false;
 }
 
-module.exports = { initBot, sendNotification };
+module.exports = { initBot, sendNotification }; // Force nodemon restart

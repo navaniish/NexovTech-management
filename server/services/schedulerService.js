@@ -1,5 +1,4 @@
 const fallbackDb = require('../utils/fallbackDb');
-const { sendNotification } = require('../bot/telegramBot');
 
 let lastTriggeredDate = null;
 
@@ -11,13 +10,14 @@ async function generateAttendanceReport() {
     const employees = await fallbackDb.find('employees', {}) || [];
     const records = await fallbackDb.find('attendance', {}) || [];
     
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
     const todayRecords = records.filter(r => r.date === today);
     
     const totalEmployees = employees.length;
     const presentCount = todayRecords.filter(r => r.attendanceStatus === 'Present').length;
     const lateCount = todayRecords.filter(r => r.attendanceStatus === 'Late').length;
-    const totalPresent = presentCount + lateCount;
+    const halfDayCount = todayRecords.filter(r => r.attendanceStatus === 'Half Day').length;
+    const totalPresent = presentCount + lateCount + halfDayCount;
     const absentCount = Math.max(0, totalEmployees - totalPresent);
 
     const checkInItems = [];
@@ -55,6 +55,7 @@ async function generateAttendanceReport() {
            `• Total Personnel: ${totalEmployees}\n` +
            `• Present: ${presentCount} ✅\n` +
            `• Late: ${lateCount} ⚠️\n` +
+           `• Half Day: ${halfDayCount} ⏳\n` +
            `• Absent/On Leave: ${absentCount} 💤\n\n` +
            `📝 *Active Check-Ins:*\n` +
            `${checkInsList}\n\n` +
@@ -76,7 +77,8 @@ async function sendDailyAttendanceAlert() {
   try {
     console.log("⏰ SCHEDULER: Initiating daily 10:00 AM attendance alert sequence...");
     
-    const today = new Date().toISOString().split('T')[0];
+    const { sendNotification } = require('../bot/telegramBot');
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
     const records = await fallbackDb.find('attendance', {}) || [];
     const todayRecords = records.filter(r => r.date === today);
     
@@ -164,15 +166,21 @@ async function sendDailyAttendanceAlert() {
  * Starts the interval ticker loop (checks every 30 seconds).
  */
 function startScheduler() {
-  console.log("⏰ SCHEDULER: Operational. Monitoring ticks for daily 10:00 AM execution...");
+  console.log("⏰ SCHEDULER: Operational. Monitoring ticks for daily 10:00 AM IST execution...");
   
   setInterval(async () => {
     const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
+    
+    // Get hours and minutes in Asia/Kolkata timezone (IST)
+    const kolkataTime = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour12: false });
+    const [hoursStr, minutesStr] = kolkataTime.split(':');
+    const hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+    
+    // Get date in Asia/Kolkata timezone
+    const dateStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 
-    // Trigger exactly at 10:00 AM local time
+    // Trigger exactly at 10:00 AM IST
     if (hours === 10 && minutes === 0 && lastTriggeredDate !== dateStr) {
       lastTriggeredDate = dateStr;
       await sendDailyAttendanceAlert();

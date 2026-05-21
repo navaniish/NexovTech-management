@@ -97,5 +97,38 @@
     "checkOut": null,
     "attendanceStatus": "Present",
     "remarks": ""
+  },
+  {
+    "id": "att_1779100077024",
+    "date": "2026-05-18",
+    "createdAt": "2026-05-18T10:27:57.024Z",
+    "checkIn": "2026-05-18T10:27:57.024Z",
+    "totalHours": 0,
+    "employeeId": "L2CAoeF1K5TuHB71HVzb4oNvzwy2",
+    "checkOut": null,
+    "attendanceStatus": "Present",
+    "remarks": "Marked by Admin as Present"
+  },
+  {
+    "id": "att_1779100083610",
+    "date": "2026-05-18",
+    "createdAt": "2026-05-18T10:28:03.610Z",
+    "checkIn": "2026-05-18T10:28:03.610Z",
+    "totalHours": 0,
+    "employeeId": "rWHj3Vg3YQY7es1PyT3Q",
+    "checkOut": null,
+    "attendanceStatus": "Present",
+    "remarks": "Marked by Admin as Present"
+  },
+  {
+    "id": "att_1779338299355",
+    "date": "2026-05-21",
+    "createdAt": "2026-05-21T04:38:19.355Z",
+    "checkIn": "2026-05-21T04:38:19.355Z",
+    "totalHours": 0,
+    "employeeId": "rWHj3Vg3YQY7es1PyT3Q",
+    "checkOut": null,
+    "attendanceStatus": "Present",
+    "remarks": ""
   }
 ]
