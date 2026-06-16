@@ -157,7 +157,8 @@
     },
     "role": "Security Analyst",
     "name": "Traced Analyst",
-    "email": "test_traced_user@nexovtech.com",
-    "status": "Active"
+    "email": "tracedanalyst.nexovtech@gmail.com",
+    "status": "Active",
+    "companyEmail": "tracedanalyst.nexovtech@gmail.com"
   }
 ]
