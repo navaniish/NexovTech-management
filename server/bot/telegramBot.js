@@ -740,7 +740,7 @@ Please activate the multi-agent network to analyze this deployment failure, reco
   });
 
   bot.hears('📄 View Payslip', async (ctx) => {
-    ctx.reply('📄 *NexovTech Secure Payroll*\n\nYour digital payslips are protected by Netlify Enterprise security. You can access your full financial dossier here:\n\n🔗 [Open NexovTech Payroll Portal](https://nexovtech-management.netlify.app/payslips)', { parse_mode: 'Markdown' });
+    ctx.reply('📄 *NexovTech Secure Payroll*\n\nYour digital payslips are protected by enterprise security. You can access your full financial dossier here:\n\n🔗 [Open Payroll Portal (Netlify)](https://nexovtech-management.netlify.app/payslips)\n🔗 [Open Payroll Portal (Vercel)](https://nexovtech-management.vercel.app/payslips)', { parse_mode: 'Markdown' });
   });
 
   bot.hears('🔐 Security Status', async (ctx) => {

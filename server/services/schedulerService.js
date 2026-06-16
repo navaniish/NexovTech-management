@@ -361,7 +361,8 @@ async function sendDailyAttendanceAlert() {
                             `We noticed you haven't marked your check-in for today's mission yet.\n\n` +
                             `🏢 Core office hours began at *09:00 AM*.\n` +
                             `Please access the management platform immediately to log your attendance and secure your shift credit.\n\n` +
-                            `🔗 [Access NexovTech Web Portal](https://nexovtech-management.netlify.app)\n\n` +
+                            `🔗 [Access Web Portal (Netlify)](https://nexovtech-management.netlify.app)\n` +
+                            `🔗 [Access Web Portal (Vercel)](https://nexovtech-management.vercel.app/)\n\n` +
                             `🤖 *NexovAI Enterprise Security*`;
 
         const reminderHtml = `<div style="font-family: system-ui, -apple-system, sans-serif; background-color: #fffbeb; padding: 20px; color: #78350f; max-width: 500px; margin: 0 auto; border-radius: 16px; border: 1px solid #fde68a; box-sizing: border-box;">
@@ -380,8 +381,11 @@ async function sendDailyAttendanceAlert() {
     <p style="color: #334155;">Please access the management platform immediately to log your attendance and secure your shift credit.</p>
     
     <div style="text-align: center; margin: 24px 0 12px 0;">
-      <a href="https://nexovtech-management.netlify.app" target="_blank" style="background-color: #d97706; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 10px; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; box-shadow: 0 4px 6px rgba(217,119,6,0.15);">
-        Access Web Portal
+      <a href="https://nexovtech-management.netlify.app" target="_blank" style="background-color: #d97706; color: #ffffff; text-decoration: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; box-shadow: 0 4px 6px rgba(217,119,6,0.15); margin-right: 8px;">
+        Netlify Portal
+      </a>
+      <a href="https://nexovtech-management.vercel.app/" target="_blank" style="background-color: #1f2937; color: #ffffff; text-decoration: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; box-shadow: 0 4px 6px rgba(31,41,55,0.15);">
+        Vercel Portal
       </a>
     </div>
   </div>
