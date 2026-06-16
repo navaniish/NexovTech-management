@@ -2,6 +2,7 @@ const fallbackDb = require('../utils/fallbackDb');
 const { pollLinkedInComments } = require('../services/linkedinPollingService');
 const { compileExecutiveBriefingData } = require('../controllers/executiveController');
 const { sendEmail } = require('../utils/mailer');
+const { runMultiAgentOrchestration } = require('../controllers/agentNetworkController');
 
 let lastTriggeredDate = null;
 
@@ -109,41 +110,41 @@ async function sendDailyAttendanceAlert() {
     }
 
     try {
-      const execData = await compileExecutiveBriefingData('org_default');
+      console.log("⏰ SCHEDULER: Invoking NEXA Multi-Agent Orchestration for strategic report...");
+      const userMessage = "Compile the daily strategic executive operations report for NexovTech. Review personnel attendance, active project budgets, task deadlines, lead pipeline, security status, and support/retention logs.";
       
-      const churnText = execData.churnRisks.length > 0
-        ? execData.churnRisks.map(c => `• ${c.clientName} (Probability: ${c.probability}%)\n  Reason: ${c.reason}\n  Action: ${c.recommendedAction}`).join('\n')
-        : '• _No high churn risks flagged._';
+      const finalState = await runMultiAgentOrchestration(userMessage, null, 'org_default');
+      const strategicReport = finalState.response || "No strategic report compiled.";
+      const hops = finalState.hops || [];
+      
+      const formattedHops = hops.map((h, i) => {
+        return `[Hop ${i + 1}] ${h.sender} ➔ ${h.recipient}\n` +
+               `Message:\n${h.message}\n` +
+               `--------------------------------------------`;
+      }).join('\n\n');
 
-      const execBriefText = `🏢 NexovTech AI Executive Briefing Report 📈\n` +
+      const execBriefText = `🏢 NexovTech AI Strategic Operations Report 📈\n` +
+        `Generated via NEXA Multi-Agent Network\n` +
+        `Date: ${today}\n` +
+        `--------------------------------------------\n\n` +
+        `🤖 CONSOLIDATED STRATEGIC CEO BRIEF:\n` +
+        `============================================\n` +
+        `${strategicReport}\n\n` +
+        `============================================\n` +
+        `👥 COLLABORATIVE AGENT DISCUSSION LOGS (HOPS):\n` +
+        `============================================\n\n` +
+        `${formattedHops}\n\n` +
         `--------------------------------------------\n` +
-        `*AI Business Health Score:* ${execData.healthScore}/100\n` +
-        `*Database Sync Status:* ${execData.dbStatus}\n\n` +
-        `📊 Key Performance Indices (KPIs):\n` +
-        `- Attendance Index: ${execData.metrics.attendanceRate}%\n` +
-        `- Task Completion Rate: ${execData.metrics.taskCompletionRate}%\n` +
-        `- Project Success Rate: ${execData.metrics.projectSuccessRate}%\n` +
-        `- Lead Conversion Index: ${execData.metrics.leadConversionRate}%\n` +
-        `- Active Campaigns: ${execData.metrics.activeProjectsCount} Projects\n` +
-        `- Total Leads Count: ${execData.metrics.totalLeadsCount} Leads\n\n` +
-        `💰 Revenue Forecasts (30/60/90 Days):\n` +
-        `- 30-Day Pipeline Projection: ₹${execData.forecasts.days30.toLocaleString()} (weighted)\n` +
-        `- 60-Day Pipeline Projection: ₹${execData.forecasts.days60.toLocaleString()}\n` +
-        `- 90-Day Pipeline Projection: ₹${execData.forecasts.days90.toLocaleString()}\n\n` +
-        `🛡️ Client Churn Risk Assessment:\n` +
-        `${churnText}\n\n` +
-        `🤖 Consolidated Strategic AI COO Report:\n` +
-        `${execData.aiCOOReport}\n\n` +
-        `--------------------------------------------\n` +
-        `🤖 NEXA Agentic AI Systems Manager`;
+        `🤖 NEXA Autonomous Operations Coordinator`;
         
       await sendEmail(
         'daggupatinavaneeswar8980@gmail.com',
         `[Executive brief] NexovTech AI Business & Financial Operations Report - ${today}`,
         execBriefText
       );
+      console.log("⏰ SCHEDULER: Multi-agent strategic email report successfully dispatched.");
     } catch (execErr) {
-      console.error("⏰ SCHEDULER: Failed to email executive report:", execErr.message);
+      console.error("⏰ SCHEDULER: Failed to compile and email agentic executive report:", execErr.message);
     }
     
     // -------------------------------------------------------------

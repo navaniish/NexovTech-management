@@ -193,8 +193,8 @@ const AIModule = () => {
     }
   };
 
-  const handleConnectLinkedIn = () => {
-    window.location.href = `${API_BASE}/linkedin/auth`;
+  const handleConnectLinkedIn = (useCompany = false) => {
+    window.location.href = `${API_BASE}/linkedin/auth?useCompany=${useCompany}`;
   };
 
   const handleSendNetworkMessage = async (e) => {
@@ -1467,15 +1467,21 @@ const AIModule = () => {
                       </p>
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <button 
-                        onClick={handleConnectLinkedIn}
-                        className="w-full bg-[#0077b5] hover:bg-[#006297] text-white p-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md"
+                        onClick={() => handleConnectLinkedIn(false)}
+                        className="w-full bg-[#0077b5] hover:bg-[#006297] text-white p-3 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md"
+                      >
+                        Connect Personal Profile
+                      </button>
+                      <button 
+                        onClick={() => handleConnectLinkedIn(true)}
+                        className="w-full bg-slate-800 hover:bg-slate-700 text-white p-3 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md"
                       >
                         Connect Company Page
                       </button>
-                      <p className="text-[9px] text-surface-400 font-medium leading-relaxed">
-                        Authorize page administration permissions to trigger milestone posts automatically.
+                      <p className="text-[9px] text-slate-400 font-medium leading-relaxed">
+                        Personal Profile is recommended and instantly available. Company Page requires approved Community Management API access.
                       </p>
                     </div>
                   )}

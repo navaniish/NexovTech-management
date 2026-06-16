@@ -27,21 +27,21 @@ exports.redirectToAuth = (req, res) => {
   const clientId = useCompany
     ? (process.env.LINKEDIN_CLIENT_ID_COMPANY || 'placeholder_client_id')
     : (process.env.LINKEDIN_CLIENT_ID_PERSONAL || 'placeholder_client_id');
-  const clientSecret = useCompany
-    ? (process.env.LINKEDIN_CLIENT_SECRET_COMPANY || 'placeholder_client_secret')
-    : (process.env.LINKEDIN_CLIENT_SECRET_PERSONAL || 'placeholder_client_secret');
+  
   // Scopes are already defined globally based on env, recompute if overridden
   const scopes = (useCompany
     ? (process.env.LINKEDIN_SCOPES_COMPANY || 'w_organization_social r_organization_social')
     : (process.env.LINKEDIN_SCOPES_PERSONAL || 'openid profile email w_member_social')).replace(/["']/g, '');
   const scopeEncoded = encodeURIComponent(scopes);
-  const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(CALLBACK_URL)}&state=nexa_autonomous_state&scope=${scopeEncoded}`;
+  
+  const stateVal = useCompany ? 'nexa_company' : 'nexa_personal';
+  const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(CALLBACK_URL)}&state=${stateVal}&scope=${scopeEncoded}`;
   res.redirect(authUrl);
 };
 
 // 2. OAUTH CALLBACK & TOKEN EXCHANGE
 exports.handleCallback = async (req, res) => {
-  const { code, error, error_description } = req.query;
+  const { code, state, error, error_description } = req.query;
 
   if (error) {
     console.error('❌ LinkedIn OAuth error:', error_description || error);
@@ -52,6 +52,14 @@ exports.handleCallback = async (req, res) => {
     return res.status(400).json({ message: 'Authorization code is missing' });
   }
 
+  const useCompany = state === 'nexa_company';
+  const clientId = useCompany
+    ? (process.env.LINKEDIN_CLIENT_ID_COMPANY || 'placeholder_client_id')
+    : (process.env.LINKEDIN_CLIENT_ID_PERSONAL || 'placeholder_client_id');
+  const clientSecret = useCompany
+    ? (process.env.LINKEDIN_CLIENT_SECRET_COMPANY || 'placeholder_client_secret')
+    : (process.env.LINKEDIN_CLIENT_SECRET_PERSONAL || 'placeholder_client_secret');
+
   try {
     // Exchange Auth Code for Access Token
     const tokenResponse = await axios.post(
@@ -60,8 +68,8 @@ exports.handleCallback = async (req, res) => {
         grant_type: 'authorization_code',
         code,
         redirect_uri: CALLBACK_URL,
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
+        client_id: clientId,
+        client_secret: clientSecret,
       }).toString(),
       { 
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -73,35 +81,15 @@ exports.handleCallback = async (req, res) => {
     const expiresAt = new Date(Date.now() + expires_in * 1000);
 
     // Fetch user profile info or roles to get target organization URN
-    // In LinkedIn API v2, we check ACLs to find managed organizations:
     let organizationUrn = 'urn:li:organization:105267232'; // Default mock organization URN if request fails
     let organizationName = 'NexovTech Corp';
     let aclSuccess = false;
 
-    try {
-      const aclResponse = await axios.get(
-        'https://api.linkedin.com/rest/organizationalEntityAcls?q=roleAssignee',
-        {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-            'LinkedIn-Version': '202605',
-            'X-Restli-Protocol-Version': '2.0.0'
-          },
-          timeout: 8000
-        }
-      );
-
-      const elements = aclResponse.data?.elements || [];
-      const orgAcl = elements.find(el => el.organizationalEntity && el.role === 'ADMINISTRATOR');
-      
-      if (orgAcl && orgAcl.organizationalEntity) {
-        organizationUrn = orgAcl.organizationalEntity;
-        aclSuccess = true;
-        
-        // Fetch organization name
-        const orgId = organizationUrn.split(':').pop();
-        const orgInfoResponse = await axios.get(
-          `https://api.linkedin.com/rest/organizations/${orgId}`,
+    // Only query organizational ACLs if we are in company mode
+    if (useCompany) {
+      try {
+        const aclResponse = await axios.get(
+          'https://api.linkedin.com/rest/organizationalEntityAcls?q=roleAssignee',
           {
             headers: {
               Authorization: `Bearer ${access_token}`,
@@ -111,13 +99,35 @@ exports.handleCallback = async (req, res) => {
             timeout: 8000
           }
         );
-        organizationName = orgInfoResponse.data?.localizedName || organizationName;
+
+        const elements = aclResponse.data?.elements || [];
+        const orgAcl = elements.find(el => el.organizationalEntity && el.role === 'ADMINISTRATOR');
+        
+        if (orgAcl && orgAcl.organizationalEntity) {
+          organizationUrn = orgAcl.organizationalEntity;
+          aclSuccess = true;
+          
+          // Fetch organization name
+          const orgId = organizationUrn.split(':').pop();
+          const orgInfoResponse = await axios.get(
+            `https://api.linkedin.com/rest/organizations/${orgId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${access_token}`,
+                'LinkedIn-Version': '202605',
+                'X-Restli-Protocol-Version': '2.0.0'
+              },
+              timeout: 8000
+            }
+          );
+          organizationName = orgInfoResponse.data?.localizedName || organizationName;
+        }
+      } catch (apiErr) {
+        console.warn('⚠️ Could not resolve Organization URN automatically via ACLs:', apiErr.message);
       }
-    } catch (apiErr) {
-      console.warn('⚠️ Could not resolve Organization URN automatically via ACLs:', apiErr.message);
     }
 
-    // Fallback/Standard profile flow: Fetch user profile (OIDC userinfo) if ACLs failed or found no active organization
+    // Fallback/Standard profile flow: Fetch user profile (OIDC userinfo) if ACLs failed/skipped or found no active organization
     if (!aclSuccess) {
       try {
         const userInfoResponse = await axios.get(
