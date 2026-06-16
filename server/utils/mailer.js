@@ -4,14 +4,14 @@ const nodemailer = require('nodemailer');
  * Sends a real email using SMTP (defaulting to Yahoo Mail configuration).
  * Falls back to console logging with a warning if SMTP_PASS is not set.
  */
-async function sendEmail(to, subject, body) {
+async function sendEmail(to, subject, body, html) {
   const host = process.env.SMTP_HOST || 'smtp.mail.yahoo.com';
   const port = parseInt(process.env.SMTP_PORT || '465', 10);
   const secure = process.env.SMTP_SECURE !== 'false'; // true for port 465, false for 587
   const user = process.env.SMTP_USER || 'nexovtech@myyahoo.com';
   const pass = process.env.SMTP_PASS;
 
-  console.log(`✉️ MAILER: Preparing email to [${to}] - Subject: "${subject}"`);
+  console.log(`✉️ MAILER: Preparing email to [${to}] - Subject: "${subject}" (HTML: ${!!html})`);
 
   if (!pass || pass === 'YOUR_YAHOO_APP_PASSWORD_HERE' || pass === 'placeholder' || pass.trim() === '') {
     console.warn(`⚠️ SMTP_PASS is missing or has placeholder value. Real email transmission skipped.`);
@@ -19,7 +19,10 @@ async function sendEmail(to, subject, body) {
     console.log(`To: ${to}`);
     console.log(`From: ${user}`);
     console.log(`Subject: ${subject}`);
-    console.log(`Body:\n${body}`);
+    console.log(`Body (Text):\n${body}`);
+    if (html) {
+      console.log(`Body (HTML):\n${html}`);
+    }
     console.log(`------------------------`);
     return false;
   }
@@ -35,12 +38,18 @@ async function sendEmail(to, subject, body) {
       }
     });
 
-    const info = await transporter.sendMail({
+    const mailOptions = {
       from: `"NexovTech Administration" <${user}>`,
       to,
       subject,
       text: body
-    });
+    };
+
+    if (html) {
+      mailOptions.html = html;
+    }
+
+    const info = await transporter.sendMail(mailOptions);
 
     console.log(`✅ MAILER: Real email dispatched successfully. Message ID: ${info.messageId}`);
     return true;
