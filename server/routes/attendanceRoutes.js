@@ -129,11 +129,16 @@ router.delete('/:id', async (req, res) => {
 router.get('/admin/summary', async (req, res) => {
   try {
     const records = await fallbackDb.find('attendance', {});
-    const employees = await fallbackDb.find('employees', {});
+    const allEmployees = await fallbackDb.find('employees', {});
+    const employees = allEmployees.filter(emp => emp.role !== 'Admin' && emp.role !== 'Super Admin' && emp.role !== 'Manager');
     
     // Logic for daily stats
     const today = new Date().toISOString().split('T')[0];
-    const todayRecords = records.filter(r => r.date === today);
+    const todayRecords = records.filter(r => {
+      if (r.date !== today) return false;
+      const specialist = employees.find(s => s.id === r.employeeId || s.companyEmail === r.employeeId || s.email === r.employeeId);
+      return specialist !== undefined;
+    });
     
     const stats = {
       present: todayRecords.length,
@@ -145,13 +150,25 @@ router.get('/admin/summary', async (req, res) => {
     // Mapping specialists for the grid
     const mapped = todayRecords.map(r => {
       const specialist = employees.find(s => s.id === r.employeeId || s.companyEmail === r.employeeId || s.email === r.employeeId) || {};
+      
+      let efficiency = 100;
+      if (r.checkIn) {
+        const checkInTime = new Date(r.checkIn);
+        const officeTime = new Date(r.checkIn);
+        officeTime.setHours(OFFICE_START, 0, 0, 0);
+        if (checkInTime > officeTime) {
+          const diffMin = Math.floor((checkInTime - officeTime) / (1000 * 60));
+          efficiency = Math.max(50, 100 - Math.floor(diffMin * 0.5));
+        }
+      }
+
       return {
         name: specialist.name || 'Unknown',
         role: specialist.role || 'Specialist',
         avatar: specialist.avatar,
         checkIn: r.checkIn ? new Date(r.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--',
         status: r.attendanceStatus || 'Present',
-        efficiency: Math.floor(Math.random() * 15) + 85,
+        efficiency,
         location: r.location || 'Office'
       };
     });

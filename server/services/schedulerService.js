@@ -1,4 +1,5 @@
 const fallbackDb = require('../utils/fallbackDb');
+const { pollLinkedInComments } = require('../services/linkedinPollingService');
 
 let lastTriggeredDate = null;
 
@@ -7,11 +8,16 @@ let lastTriggeredDate = null;
  */
 async function generateAttendanceReport() {
   try {
-    const employees = await fallbackDb.find('employees', {}) || [];
+    const allEmployees = await fallbackDb.find('employees', {}) || [];
+    const employees = allEmployees.filter(emp => emp.role !== 'Admin' && emp.role !== 'Super Admin' && emp.role !== 'Manager');
     const records = await fallbackDb.find('attendance', {}) || [];
     
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-    const todayRecords = records.filter(r => r.date === today);
+    const todayRecords = records.filter(r => {
+      if (r.date !== today) return false;
+      const specialist = employees.find(s => s.id === r.employeeId || s.companyEmail === r.employeeId || s.email === r.employeeId);
+      return specialist !== undefined;
+    });
     
     const totalEmployees = employees.length;
     const presentCount = todayRecords.filter(r => r.attendanceStatus === 'Present').length;
@@ -185,6 +191,9 @@ function startScheduler() {
       lastTriggeredDate = dateStr;
       await sendDailyAttendanceAlert();
     }
+    
+    // Simpler: always call pollLinkedInComments (it handles its own rate limiting)
+    await pollLinkedInComments();
   }, 30000);
 }
 

@@ -5,7 +5,8 @@ import {
   Clock, Banknote, CreditCard,
   MessageSquare, Settings,
   ChevronLeft, ChevronRight,
-  ChevronDown, X, ShieldCheck, Sparkles, Mail, Target, BookOpen
+  ChevronDown, X, ShieldCheck, Sparkles, Mail, Target, BookOpen,
+  Bot
 } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -19,21 +20,29 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   useEffect(() => {
     const fetchCounts = async () => {
       try {
+        // Get token for authorized requests (optional — /count is public)
+        const token = localStorage.getItem('nexov_token') || '';
+        const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
+
         // Fetch Employee Count
-        const empRes = await fetch(`${API_URL}/auth/count`);
-        const empData = await empRes.json();
+        const empRes = await fetch(`${API_URL}/auth/count`, { headers: authHeaders });
+        const empData = empRes.ok ? await empRes.json() : { count: 0 };
         
         // Fetch Mail Count
         let mailCount = 0;
         if (user?.email) {
-           const mailRes = await fetch(`${API_URL}/mail/unread-count/${user.email}`);
-           const mailData = await mailRes.json();
-           mailCount = mailData.count;
+          try {
+            const mailRes = await fetch(`${API_URL}/mail/unread-count/${user.email}`, { headers: authHeaders });
+            if (mailRes.ok) {
+              const mailData = await mailRes.json();
+              mailCount = mailData.count || 0;
+            }
+          } catch (_) {}
         }
 
-        setCounts({ employees: empData.count, mail: mailCount });
+        setCounts({ employees: empData.count || 0, mail: mailCount });
       } catch (err) {
-        console.error('Sidebar count sync failed');
+        // Fail silently — badges default to 0
       }
     };
     fetchCounts();
@@ -43,6 +52,8 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
   const menuItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/ai', icon: Bot, label: 'NEXA Growth' },
+    { path: '/employee/dashboard', icon: LayoutDashboard, label: 'Employee Workspace' },
     { path: '/hr', icon: Users, label: 'Employees', badge: counts.employees },
     { path: '/tasks', icon: Target, label: 'Work Assignment' },
     { path: '/projects', icon: Briefcase, label: 'Projects' },

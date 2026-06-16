@@ -30,6 +30,14 @@ const EmployeeSidebar = ({ mobileOpen, setMobileOpen }) => {
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
+  const dynamicMenuItems = [
+    ...(user?.role === 'Admin' || user?.role === 'Super Admin' || user?.role === 'Manager' ? [
+      { path: '/', icon: LayoutDashboard, label: 'Admin Command Center', badge: 'TEST' }
+    ] : []),
+    ...menuItems
+  ];
+
+
   return (
     <>
       <AnimatePresence>
@@ -73,7 +81,7 @@ const EmployeeSidebar = ({ mobileOpen, setMobileOpen }) => {
 
         {/* Nav */}
         <nav className="flex-1 px-3 space-y-1.5 overflow-y-auto no-scrollbar pt-4">
-          {menuItems.map((item) => (
+          {dynamicMenuItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}

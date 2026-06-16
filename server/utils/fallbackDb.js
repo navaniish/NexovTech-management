@@ -4,6 +4,9 @@ const { db } = require('../firebaseAdmin');
 
 const IS_SERVERLESS = !!(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 
+// Firestore timeout helper to fail fast (default 3 seconds)
+const timeoutPromise = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore operation timeout')), ms));
+
 const DATA_DIR = path.join(__dirname, '..', 'data');
 try { if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) { /* read-only FS */ }
 
@@ -32,6 +35,12 @@ const writeLocalData = (collection, data) => {
 const fallbackDb = {
   // FIND ALL
   find: async (collection, query) => {
+    // Clone query to prevent mutation, and strip org_admin_override tenant filter
+    const queryCopy = query ? { ...query } : {};
+    if (queryCopy.tenantId === 'org_admin_override') {
+      delete queryCopy.tenantId;
+    }
+
     try {
       // 1. Try Firestore
       if (!db) throw new Error('Firestore DB handle is missing');
@@ -39,16 +48,16 @@ const fallbackDb = {
       let ref = db.collection(collection);
       
       // Simple filtering support for Firestore
-      if (query && Object.keys(query).length > 0) {
-        Object.keys(query).forEach(key => {
-          if (query[key] !== undefined && query[key] !== null) {
-            ref = ref.where(key, '==', query[key]);
+      if (Object.keys(queryCopy).length > 0) {
+        Object.keys(queryCopy).forEach(key => {
+          if (queryCopy[key] !== undefined && queryCopy[key] !== null) {
+            ref = ref.where(key, '==', queryCopy[key]);
           }
         });
       }
 
-      console.log(`🔍 CLOUD_FIND_INIT [${collection}]: Query:`, JSON.stringify(query));
-      const snapshot = await ref.get();
+      console.log(`🔍 CLOUD_FIND_INIT [${collection}]: Query:`, JSON.stringify(queryCopy));
+      const snapshot = await Promise.race([ref.get(), timeoutPromise(3000)]);
       const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
       console.log(`✅ CLOUD_FIND_SUCCESS [${collection}]: Found ${docs.length} documents.`);
@@ -60,12 +69,12 @@ const fallbackDb = {
     } catch (err) {
       console.warn(`⚠️ Firestore find fail [${collection}]: ${err.message}. Falling back to local vault.`);
       const localData = readLocalData(collection);
-      if (!query || Object.keys(query).length === 0) {
+      if (Object.keys(queryCopy).length === 0) {
         console.log(`📦 LOCAL_FIND [${collection}]: Returning all ${localData.length} records.`);
         return localData;
       }
       const filtered = localData.filter(item => {
-        return Object.keys(query).every(key => item[key] === query[key]);
+        return Object.keys(queryCopy).every(key => item[key] === queryCopy[key]);
       });
       console.log(`📦 LOCAL_FIND [${collection}]: Returning ${filtered.length} matching records.`);
       return filtered;
@@ -79,6 +88,9 @@ const fallbackDb = {
       if (!db) throw new Error('Firestore DB handle is missing');
       let ref = db.collection(collection);
       let hasFilter = false;
+      // Support generic 'id' filter
+      if (query.id) { ref = ref.where('id', '==', query.id); hasFilter = true; }
+      if (query.userId) { ref = ref.where('userId', '==', query.userId); hasFilter = true; }
       if (query.email) { ref = ref.where('email', '==', query.email); hasFilter = true; }
       if (query.otp) { ref = ref.where('otp', '==', query.otp); hasFilter = true; }
       if (query.telegramId) { ref = ref.where('telegramId', '==', query.telegramId); hasFilter = true; }
@@ -86,11 +98,10 @@ const fallbackDb = {
       if (query.uid) { ref = ref.where('firebaseUid', '==', query.uid); hasFilter = true; }
       if (query.companyEmail) { ref = ref.where('companyEmail', '==', query.companyEmail); hasFilter = true; }
       if (query.phone) { ref = ref.where('phone', '==', query.phone); hasFilter = true; }
+      if (query.deviceId) { ref = ref.where('deviceId', '==', query.deviceId); hasFilter = true; }
+      if (query.tenantId) { ref = ref.where('tenantId', '==', query.tenantId); hasFilter = true; }
       
-      // SAFETY: Never query without a filter — it returns random documents
-      if (!hasFilter) throw new Error('No supported query filter provided');
-      
-      const snapshot = await ref.limit(1).get();
+      const snapshot = await Promise.race([ref.limit(1).get(), timeoutPromise(3000)]);
       if (!snapshot.empty) {
         const doc = snapshot.docs[0];
         return { id: doc.id, ...doc.data() };
@@ -110,7 +121,7 @@ const fallbackDb = {
   findById: async (collection, id) => {
     try {
       if (!db) throw new Error('Firestore handle offline');
-      const doc = await db.collection(collection).doc(id).get();
+      const doc = await Promise.race([db.collection(collection).doc(id).get(), timeoutPromise(3000)]);
       if (doc.exists) return { id: doc.id, ...doc.data() };
     } catch (err) {
       console.warn(`Firestore findById fail: ${err.message}`);
@@ -134,7 +145,7 @@ const fallbackDb = {
         console.warn(`⚠️ CLOUD_SYNC_DISABLED [${collection}]: No Firestore handle.`);
         if (IS_SERVERLESS) throw new Error('DATABASE_OFFLINE: Cloud persistence required in serverless.');
       } else {
-        await db.collection(collection).doc(id).set(finalizedItem, { merge: true });
+        await Promise.race([db.collection(collection).doc(id).set(finalizedItem, { merge: true }), timeoutPromise(3000)]);
         console.log(`✅ CLOUD_SYNC_SUCCESS [${collection}]: Document ${id} updated.`);
 
         // NEXOV-SYNC: Mirror specialists across registries
@@ -142,7 +153,7 @@ const fallbackDb = {
         const isMaster = email === 'nexovtech@myyahoo.com';
         if (!isMaster && (collection === 'users' || collection === 'employees')) {
           const mirrorColl = collection === 'users' ? 'employees' : 'users';
-          await db.collection(mirrorColl).doc(id).set(finalizedItem, { merge: true });
+          await Promise.race([db.collection(mirrorColl).doc(id).set(finalizedItem, { merge: true }), timeoutPromise(3000)]);
           console.log(`NEXOV-SYNC: Specialist mirrored to [${mirrorColl}].`);
         }
       }
@@ -173,7 +184,7 @@ const fallbackDb = {
     try {
       if (!db) throw new Error('Firestore handle offline');
       // Try Firestore delete
-      await db.collection(collection).doc(id).delete();
+      await Promise.race([db.collection(collection).doc(id).delete(), timeoutPromise(3000)]);
     } catch (err) {
       console.warn(`Firestore delete fail: ${err.message}`);
     }
@@ -192,25 +203,25 @@ const fallbackDb = {
       if (!db) throw new Error('Firestore handle offline');
       
       // Update primary collection (Use set with merge: true for upsert support)
-      await db.collection(collection).doc(id).set(updates, { merge: true });
+      await Promise.race([db.collection(collection).doc(id).set(updates, { merge: true }), timeoutPromise(3000)]);
 
       // MIRRORING LOGIC for identity parity (Users <-> Employees)
       if (collection === 'users' || collection === 'employees') {
         const mirrorColl = collection === 'users' ? 'employees' : 'users';
-        const itemRes = await db.collection(collection).doc(id).get();
+        const itemRes = await Promise.race([db.collection(collection).doc(id).get(), timeoutPromise(3000)]);
         const itemData = itemRes.data() || {};
         const email = (updates.email || itemData.email || '').toLowerCase().trim();
 
         // 1. Try direct ID update
-        await db.collection(mirrorColl).doc(id).set(updates, { merge: true });
+        await Promise.race([db.collection(mirrorColl).doc(id).set(updates, { merge: true }), timeoutPromise(3000)]);
 
         // 2. If email exists, ensure any document with that email is also updated (Identity Reconciliation)
         if (email) {
-          const mirrorSnap = await db.collection(mirrorColl).where('email', '==', email).get();
+          const mirrorSnap = await Promise.race([db.collection(mirrorColl).where('email', '==', email).get(), timeoutPromise(3000)]);
           const mirrorTasks = mirrorSnap.docs.map(doc => {
             if (doc.id !== id) {
               console.log(`🔗 RECONCILING: Updating mirror doc [${doc.id}] in [${mirrorColl}] for [${email}]`);
-              return doc.ref.set(updates, { merge: true });
+              return Promise.race([doc.ref.set(updates, { merge: true }), timeoutPromise(3000)]);
             }
             return Promise.resolve();
           });

@@ -34,10 +34,13 @@ const AdminTasks = () => {
 
   const fetchAll = async () => {
     try {
+      const token = localStorage.getItem('nexov_token') || '';
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      
       const [tRes, tmRes, pRes] = await Promise.all([
-        fetch(`${API_URL}/tasks`),
-        fetch(`${API_URL}/team`),
-        fetch(`${API_URL}/projects`)
+        fetch(`${API_URL}/tasks`, { headers }),
+        fetch(`${API_URL}/team`, { headers }),
+        fetch(`${API_URL}/projects`, { headers })
       ]);
       if (tRes.ok) setTasks(await tRes.json());
       if (tmRes.ok) setTeam(await tmRes.json());
@@ -67,8 +70,12 @@ const AdminTasks = () => {
     });
 
     try {
+      const token = localStorage.getItem('nexov_token') || '';
       const res = await axios.post(`${API_URL}/tasks`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
       });
       if (res.status === 201 || res.status === 200) {
         setShowAssign(false);
@@ -85,7 +92,12 @@ const AdminTasks = () => {
   const deleteTask = async (id) => {
     if (!window.confirm('Confirm task termination?')) return;
     try {
-      const res = await fetch(`${API_URL}/tasks/${id}`, { method: 'DELETE' });
+      const token = localStorage.getItem('nexov_token') || '';
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const res = await fetch(`${API_URL}/tasks/${id}`, { 
+        method: 'DELETE',
+        headers
+      });
       if (res.ok) fetchAll();
     } catch (err) { console.error(err); }
   };
@@ -112,7 +124,7 @@ const AdminTasks = () => {
   );
 
   return (
-    <div className="w-full h-full flex flex-col p-4 md:p-10 space-y-6 md:space-y-8 animate-in fade-in duration-1000 overflow-y-auto custom-scrollbar">
+    <div className="w-full h-full flex flex-col p-4 md:p-10 space-y-6 md:space-y-8 animate-in fade-in duration-1000">
       {/* 1. HIGH-FIDELITY OFFICE HEADER */}
       <section className="relative w-full overflow-hidden rounded-[24px] md:rounded-[40px] bg-white shadow-2xl border border-white flex flex-col min-h-[220px] group">
          {/* Background Image Layer */}

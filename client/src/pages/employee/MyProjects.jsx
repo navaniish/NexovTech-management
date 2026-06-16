@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Briefcase, Calendar, Target, Users, ExternalLink, 
-  ArrowRight, RefreshCw, Layers, Zap, Globe, ShieldCheck, Cpu 
+  ArrowRight, RefreshCw, Layers, Zap, Globe, ShieldCheck, Cpu,
+  Code, FileText
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import API_URL from '../../config';
@@ -18,7 +19,12 @@ const MyProjects = () => {
     else setIsSyncing(true);
 
     try {
-      const response = await fetch(`${API_URL}/projects`);
+      const response = await fetch(`${API_URL}/projects`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('nexov_token') || localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (response.ok) {
         const allProjects = await response.json();
         const myProjects = allProjects.filter(p => 
@@ -168,9 +174,33 @@ const MyProjects = () => {
                     )}
                   </div>
                   
-                  <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-brand-600 hover:text-brand-800 transition-colors">
-                     View Dossier <ArrowRight size={14} />
-                  </button>
+                  <div className="flex items-center gap-4">
+                    {project.githubRepoUrl && (
+                      <a 
+                        href={project.githubRepoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-slate-400 hover:text-brand-600 transition-colors p-1 flex items-center justify-center"
+                        title="GitHub Repository"
+                      >
+                        <Code size={16} />
+                      </a>
+                    )}
+                    {project.invoiceUrl && (
+                      <a 
+                        href={project.invoiceUrl.startsWith('http') ? project.invoiceUrl : `${API_URL.replace('/api', '')}${project.invoiceUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-slate-400 hover:text-brand-600 transition-colors p-1 flex items-center justify-center"
+                        title="Project Invoice"
+                      >
+                        <FileText size={16} />
+                      </a>
+                    )}
+                    <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-brand-600 hover:text-brand-800 transition-colors">
+                       View Dossier <ArrowRight size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>

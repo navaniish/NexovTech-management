@@ -10,6 +10,16 @@
     "userId": "tPjcv5Z4RbfkshESoh4B"
   },
   {
+    "id": "FNeZRyT9TgfdSoDanEtO",
+    "createdAt": "2026-06-13T20:10:17.035Z",
+    "read": false,
+    "link": "/employee/tasks",
+    "message": "You have been assigned to: Hii",
+    "title": "New Mission Assigned",
+    "type": "TASK_ASSIGNED",
+    "userId": "L2CAoeF1K5TuHB71HVzb4oNvzwy2"
+  },
+  {
     "id": "R6tpKUM6QQrZ7PZd4cTG",
     "createdAt": "2026-05-16T18:37:03.835Z",
     "link": "/employee/tasks",

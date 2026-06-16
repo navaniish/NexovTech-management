@@ -102,12 +102,20 @@ const AdminIDCards = () => {
       }
 
       setEmployees(mergedEmployees);
-      localStorage.setItem('nexov_admin_employees', JSON.stringify(mergedEmployees));
+      try {
+        localStorage.setItem('nexov_admin_employees', JSON.stringify(mergedEmployees));
+      } catch (storageErr) {
+        console.warn('⚠️ localStorage quota exceeded for admin employees:', storageErr.message);
+      }
 
       // Handle Card Data State
       if (cardData && cardData.length > 0) {
         setCards(cardData);
-        localStorage.setItem('nexov_admin_cards', JSON.stringify(cardData));
+        try {
+          localStorage.setItem('nexov_admin_cards', JSON.stringify(cardData));
+        } catch (storageErr) {
+          console.warn('⚠️ localStorage quota exceeded for admin cards:', storageErr.message);
+        }
       } else {
         const savedCards = localStorage.getItem('nexov_admin_cards');
         if (savedCards) {
@@ -219,7 +227,11 @@ const AdminIDCards = () => {
       ));
 
       if (editForm.avatar) {
-        localStorage.setItem(`nexov_portrait_${selectedEmployee._id || selectedEmployee.id}`, editForm.avatar);
+        try {
+          localStorage.setItem(`nexov_portrait_${selectedEmployee._id || selectedEmployee.id}`, editForm.avatar);
+        } catch (storageErr) {
+          console.warn('⚠️ localStorage quota exceeded for portrait avatar:', storageErr.message);
+        }
       }
       
       await fetchData();

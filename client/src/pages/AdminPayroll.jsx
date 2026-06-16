@@ -195,7 +195,7 @@ const AdminPayroll = () => {
   );
 
   return (
-    <div className="w-full h-full flex flex-col space-y-6 md:space-y-10 animate-in fade-in duration-1000 overflow-y-auto scrollbar-hide">
+    <div className="w-full h-full flex flex-col space-y-6 md:space-y-10 animate-in fade-in duration-1000">
       
       {/* 1. HEADER SECTION */}
       <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8">

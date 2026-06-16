@@ -130,5 +130,71 @@
     "checkOut": null,
     "attendanceStatus": "Present",
     "remarks": ""
+  },
+  {
+    "id": "att_1779339169112",
+    "date": "2026-05-21",
+    "createdAt": "2026-05-21T04:52:49.112Z",
+    "checkIn": "2026-05-21T04:52:49.112Z",
+    "totalHours": 0,
+    "employeeId": "tPjcv5Z4RbfkshESoh4B",
+    "checkOut": null,
+    "attendanceStatus": "Present",
+    "remarks": ""
+  },
+  {
+    "id": "att_1779339723221",
+    "date": "2026-05-21",
+    "createdAt": "2026-05-21T05:02:03.221Z",
+    "checkIn": "2026-05-21T05:02:03.221Z",
+    "totalHours": 0,
+    "employeeId": "L2CAoeF1K5TuHB71HVzb4oNvzwy2",
+    "checkOut": null,
+    "attendanceStatus": "Present",
+    "remarks": "Marked by Admin as Half Day"
+  },
+  {
+    "id": "att_1780060826301",
+    "date": "2026-05-29",
+    "createdAt": "2026-05-29T13:20:26.301Z",
+    "checkIn": "2026-05-29T13:20:26.301Z",
+    "totalHours": 0,
+    "employeeId": "L2CAoeF1K5TuHB71HVzb4oNvzwy2",
+    "remarks": "",
+    "checkOut": "2026-05-29T13:20:36.442Z",
+    "attendanceStatus": "Absent"
+  },
+  {
+    "id": "att_1781508062649",
+    "date": "2026-06-15",
+    "createdAt": "2026-06-15T07:21:02.649Z",
+    "checkIn": "2026-06-15T07:21:02.649Z",
+    "totalHours": 0,
+    "employeeId": "L2CAoeF1K5TuHB71HVzb4oNvzwy2",
+    "checkOut": null,
+    "attendanceStatus": "Present",
+    "remarks": "Marked by Admin as Present"
+  },
+  {
+    "id": "att_1781508072641",
+    "date": "2026-06-15",
+    "createdAt": "2026-06-15T07:21:12.641Z",
+    "checkIn": "2026-06-15T07:21:12.641Z",
+    "totalHours": 0,
+    "employeeId": "rWHj3Vg3YQY7es1PyT3Q",
+    "checkOut": null,
+    "attendanceStatus": "Present",
+    "remarks": "Marked by Admin as Present"
+  },
+  {
+    "id": "att_1781508083184",
+    "date": "2026-06-15",
+    "createdAt": "2026-06-15T07:21:23.184Z",
+    "checkIn": "2026-06-15T07:21:23.184Z",
+    "totalHours": 0,
+    "employeeId": "tPjcv5Z4RbfkshESoh4B",
+    "checkOut": null,
+    "attendanceStatus": "Present",
+    "remarks": "Marked by Admin as Present"
   }
 ]

@@ -1,4 +1,5 @@
 import { db } from '../firebase';
+import API_URL from '../config';
 import { 
   collection, 
   addDoc, 
@@ -109,18 +110,41 @@ class SecurityService {
   }
 
   /**
-   * 4. TELEGRAM ALERT BRIDGE
+   * 5. GET SECURITY ANOMALIES
    */
-  async dispatchTelegramAlert(action, data) {
-    // This calls the backend bridge which interfaces with the Telegram Bot API
+  async getAnomalies() {
     try {
-      await fetch('/api/security/alert', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, data })
+      const token = localStorage.getItem('nexov_token');
+      const res = await fetch(`${API_URL}/security/anomalies`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
+      if (!res.ok) return [];
+      return await res.json();
     } catch (err) {
-      console.warn('[SENTINEL] Telegram bridge offline');
+      console.error('Failed to fetch anomalies:', err);
+      return [];
+    }
+  }
+
+  /**
+   * 6. LOCK SUSPICIOUS USER NODE
+   */
+  async lockUser(userId) {
+    try {
+      const token = localStorage.getItem('nexov_token');
+      const res = await fetch(`${API_URL}/security/lockout/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!res.ok) return { success: false, message: 'Lockout failed - check admin permissions.' };
+      return await res.json();
+    } catch (err) {
+      console.error('Failed to lock user:', err);
+      return { success: false, message: err.message };
     }
   }
 }

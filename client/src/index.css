@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
 
 @theme {
   --color-brand-50: #eef2ff;
@@ -183,6 +183,13 @@ body {
   box-shadow: 
     0 4px 24px -1px rgba(0, 0, 0, 0.05),
     0 1px 2px -1px rgba(0, 0, 0, 0.02);
+}
+
+/* Momentum scrolling for WebKit touch devices */
+.custom-scrollbar,
+.overflow-y-auto,
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
 }
 
 .custom-scrollbar::-webkit-scrollbar {

@@ -1,0 +1,735 @@
+[
+  {
+    "id": "5cHIAx2w28OcHuqBQFaZ",
+    "createdAt": "2026-06-13T17:07:46.314Z",
+    "website": "luxehome.com",
+    "techStack": [
+      "Magento",
+      "Adobe Analytics",
+      "Vite"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@luxehome.com",
+        "contact@luxehome.com"
+      ],
+      "primaryContactName": "John Doe",
+      "linkedInUrls": [
+        "https://linkedin.com/company/luxehome-decor"
+      ],
+      "phones": [
+        "+1 (555) 019-2834"
+      ]
+    },
+    "companyName": "LuxeHome Decor",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "51-200",
+    "status": "Scored"
+  },
+  {
+    "id": "60D2HB1qkNTwaPa09E85",
+    "createdAt": "2026-06-14T16:54:11.593Z",
+    "website": "k-h-koeln.de",
+    "techStack": [
+      "DNN",
+      "Google Cloud",
+      "Oracle"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@k-h-koeln.de"
+      ],
+      "primaryContactName": "Frau Birgit Schneider",
+      "linkedInUrls": [
+        "https://linkedin.com/company/krankenhaus-k%C3%B6ln"
+      ],
+      "phones": [
+        "+49 (221) 202086-0"
+      ]
+    },
+    "companyName": "Krankenhaus Köln",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "201-500 | Germany",
+    "status": "Archived"
+  },
+  {
+    "id": "C2vrfGxKbCxLm8PqfU3k",
+    "createdAt": "2026-06-14T16:37:43.025Z",
+    "website": "terrastore.com",
+    "techStack": [
+      "Vue.js",
+      "Shopify",
+      "Redis"
+    ],
+    "contactInfo": {
+      "emails": [
+        "contact@terrastore.com"
+      ],
+      "primaryContactName": "Emily Chen",
+      "linkedInUrls": [
+        "https://linkedin.com/company/terrastore"
+      ],
+      "phones": [
+        "+1 (510) 901-2345"
+      ]
+    },
+    "companyName": "Terra Store",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "11-50 | United States",
+    "status": "Archived"
+  },
+  {
+    "id": "H4vY61p2Qtl5yrE2YdyC",
+    "createdAt": "2026-06-10T17:47:32.437Z",
+    "website": "apexdentalcare.com",
+    "techStack": [
+      "React",
+      "WordPress",
+      "Google Analytics"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@apexdentalcare.com",
+        "contact@apexdentalcare.com"
+      ],
+      "primaryContactName": "John Doe",
+      "linkedInUrls": [
+        "https://linkedin.com/company/apex-dental-care"
+      ],
+      "phones": [
+        "+1 (555) 019-2834"
+      ]
+    },
+    "companyName": "Apex Dental Care",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "11-50",
+    "projectId": "CvRT1cdPWkjHPke4wHU2",
+    "status": "Outreach_Sent"
+  },
+  {
+    "id": "IVPtcJQkwlUrkTBKkPRF",
+    "createdAt": "2026-06-14T16:48:46.063Z",
+    "website": "eporch.com",
+    "techStack": [
+      "Shopify Plus",
+      "Azure Functions",
+      "C#"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@eporch.com"
+      ],
+      "primaryContactName": "Eliza Reed",
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/eporch/"
+      ],
+      "phones": [
+        "+1 (416) 999-0223"
+      ]
+    },
+    "companyName": "ePorch",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "21-100 | Canada",
+    "projectId": "phgL2JiHIglKiZUujXRH",
+    "status": "Converted"
+  },
+  {
+    "id": "Kp4PPyHl7XNyqmZSdf4l",
+    "createdAt": "2026-06-14T16:48:40.238Z",
+    "website": "zealcommerce.io",
+    "techStack": [
+      "Headless WordPress",
+      "PostgreSQL",
+      "GraphQL API"
+    ],
+    "contactInfo": {
+      "emails": [
+        "hello@zealcommerce.io"
+      ],
+      "primaryContactName": "Ava Lee",
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/zeal-commerce/"
+      ],
+      "phones": [
+        "+1 (858) 277-3330"
+      ]
+    },
+    "companyName": "Zeal Commerce",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "11-50 | United States",
+    "projectId": "Q7exqutp02xr2aK3optC",
+    "status": "Converted"
+  },
+  {
+    "id": "Luy9L44vHz1F7IXTuKVH",
+    "createdAt": "2026-06-14T16:37:48.546Z",
+    "website": "epicwarehouse.net",
+    "techStack": [
+      "Angular",
+      "BigCommerce",
+      "AWS Lambda"
+    ],
+    "contactInfo": {
+      "emails": [
+        "sales@epicwarehouse.net"
+      ],
+      "primaryContactName": "Kevin Wong",
+      "linkedInUrls": [
+        "https://linkedin.com/company/epicwarehouse"
+      ],
+      "phones": [
+        "+65 (65) 1234-5679"
+      ]
+    },
+    "companyName": "Epic Warehouse",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "51-100 | Singapore",
+    "projectId": "S3UMSfojTW4C1GHLSvVQ",
+    "status": "Converted"
+  },
+  {
+    "id": "QLELEr44KXGEwGLk4I9J",
+    "createdAt": "2026-06-10T17:47:36.124Z",
+    "website": "medvantagelabs.com",
+    "techStack": [
+      "Next.js",
+      "PostgreSQL",
+      "Tailwind"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@medvantagelabs.com",
+        "contact@medvantagelabs.com"
+      ],
+      "primaryContactName": "John Doe",
+      "linkedInUrls": [
+        "https://linkedin.com/company/medvantage-labs"
+      ],
+      "phones": [
+        "+1 (555) 019-2834"
+      ]
+    },
+    "companyName": "MedVantage Labs",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "1-10",
+    "status": "Scored"
+  },
+  {
+    "id": "QPT4tV9ZujEfRIyeJ2P3",
+    "createdAt": "2026-06-13T17:07:40.480Z",
+    "website": "urbanfitthreads.com",
+    "techStack": [
+      "WooCommerce",
+      "MySQL",
+      "Elementor"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@urbanfitthreads.com",
+        "contact@urbanfitthreads.com"
+      ],
+      "primaryContactName": "John Doe",
+      "linkedInUrls": [
+        "https://linkedin.com/company/urbanfit-threads"
+      ],
+      "phones": [
+        "+1 (555) 019-2834"
+      ]
+    },
+    "companyName": "UrbanFit Threads",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "1-10",
+    "status": "Scored"
+  },
+  {
+    "id": "RXEDE3frYsn6oJwiK2NM",
+    "createdAt": "2026-06-14T16:57:06.740Z",
+    "website": "ablebowell.ca",
+    "techStack": [
+      "Salesforce",
+      "Heroku",
+      "Netlify"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@ablebowell.ca"
+      ],
+      "primaryContactName": "Jason Smith",
+      "linkedInUrls": [
+        "https://linkedin.com/company/ablebowell-canada"
+      ],
+      "phones": [
+        "+1 (604) 982-1999"
+      ]
+    },
+    "companyName": "Ablebowell Canada",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "11-50 | Canada",
+    "status": "Archived"
+  },
+  {
+    "id": "WKJLlgMKVOyfyBHai1IL",
+    "createdAt": "2026-06-14T16:54:21.304Z",
+    "website": "uhh.de",
+    "techStack": [
+      "Crownpeak",
+      "Splunk",
+      "Salesforce"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@uhh.de"
+      ],
+      "primaryContactName": "Prof. Dr. rer. nat. Dr. h. c. Volker Schneider",
+      "linkedInUrls": [
+        "https://linkedin.com/company/university-hospital-hamburg"
+      ],
+      "phones": [
+        "+49 (40) 772334-0"
+      ]
+    },
+    "companyName": "University Hospital Hamburg",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "500-1000 | Germany",
+    "projectId": "5lZ2hicH82yeqIZRpDLQ",
+    "status": "Converted"
+  },
+  {
+    "id": "WwvMbSnFGBzsnEweu7ZP",
+    "createdAt": "2026-06-10T17:47:34.180Z",
+    "website": "carefirstclinics.org",
+    "techStack": [
+      "Angular",
+      "PHP",
+      "Salesforce"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@carefirstclinics.org",
+        "contact@carefirstclinics.org"
+      ],
+      "primaryContactName": "John Doe",
+      "linkedInUrls": [
+        "https://linkedin.com/company/carefirst-clinics"
+      ],
+      "phones": [
+        "+1 (555) 019-2834"
+      ]
+    },
+    "companyName": "CareFirst Clinics",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "51-200",
+    "status": "Scored"
+  },
+  {
+    "id": "cMzjmfqxmSOtybMtoYDU",
+    "createdAt": "2026-06-14T16:48:51.665Z",
+    "website": "spreme.io",
+    "techStack": [
+      "Spree Commerce",
+      "Docker",
+      "Kubernetes"
+    ],
+    "contactInfo": {
+      "emails": [
+        "support@spreme.io"
+      ],
+      "primaryContactName": "Hugo Gill",
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/spreme/"
+      ],
+      "phones": [
+        "+44 (20) 3007-0273"
+      ]
+    },
+    "companyName": "SpreeMarket",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "11-50 | United Kingdom",
+    "status": "Archived"
+  },
+  {
+    "id": "jMsffpxEJ6PfBOTH46Ty",
+    "createdAt": "2026-06-14T16:37:37.525Z",
+    "website": "fusionmart.store",
+    "techStack": [
+      "Next.js",
+      "Magento",
+      "Apache Kafka"
+    ],
+    "contactInfo": {
+      "emails": [
+        "support@fusionmart.store"
+      ],
+      "primaryContactName": "Rohan Patel",
+      "linkedInUrls": [
+        "https://linkedin.com/company/fusionmart"
+      ],
+      "phones": [
+        "+91 (44) 1234-5678"
+      ]
+    },
+    "companyName": "Fusion Mart",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "101-200 | India",
+    "status": "Archived"
+  },
+  {
+    "id": "lead_test_1781502109019",
+    "website": "nexovtestingcorp.com",
+    "contactName": "Jane Test Doe",
+    "companyName": "NEXOV Testing Corp",
+    "phones": [
+      "+91 99999 88888"
+    ],
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "51-200 | India",
+    "emails": [
+      "jane@nexovtestingcorp.com"
+    ],
+    "createdAt": "2026-06-15T05:41:49.019Z",
+    "linkedinUrls": [
+      "https://linkedin.com/company/nexovtestingcorp"
+    ],
+    "techStack": [
+      "React",
+      "Next.js",
+      "PostgreSQL"
+    ],
+    "status": "Archived"
+  },
+  {
+    "id": "lead_test_1781502217859",
+    "website": "nexovtestingcorp.com",
+    "contactName": "Jane Test Doe",
+    "companyName": "NEXOV Testing Corp",
+    "phones": [
+      "+1 (555) 999-9999"
+    ],
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "500+ | United States",
+    "emails": [
+      "jane@nexovtestingcorp.com"
+    ],
+    "createdAt": "2026-06-15T05:43:37.859Z",
+    "linkedinUrls": [
+      "https://linkedin.com/company/nexovtestingcorp"
+    ],
+    "techStack": [
+      "React",
+      "Next.js",
+      "PostgreSQL",
+      "Artificial Intelligence",
+      "Large Language Models",
+      "SaaS Architecture"
+    ],
+    "projectId": "s3ZrhzViZ9LylpoGKqj2",
+    "status": "Converted"
+  },
+  {
+    "id": "lead_test_1781502287957",
+    "website": "nexovtestingcorp.com",
+    "contactName": "Jane Test Doe",
+    "companyName": "NEXOV Testing Corp",
+    "phones": [
+      "+1 (555) 999-9999"
+    ],
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "500+ | United States",
+    "emails": [
+      "jane@nexovtestingcorp.com"
+    ],
+    "createdAt": "2026-06-15T05:44:47.957Z",
+    "linkedinUrls": [
+      "https://linkedin.com/company/nexovtestingcorp"
+    ],
+    "techStack": [
+      "React",
+      "Next.js",
+      "PostgreSQL",
+      "Artificial Intelligence",
+      "Large Language Models",
+      "SaaS Architecture"
+    ],
+    "projectId": "mt2NohMdHqvCRiEPVtax",
+    "status": "Converted"
+  },
+  {
+    "id": "lead_test_1781507932528",
+    "createdAt": "2026-06-15T07:18:52.528Z",
+    "techStack": [
+      "Node.js",
+      "React",
+      "MongoDB"
+    ],
+    "contactEmail": "billing@acme.com",
+    "companyName": "Acme Test Corp",
+    "email": "acme_test@gmail.com",
+    "projectId": "o0xYWcAfcChfC9JKdQmp",
+    "status": "Converted"
+  },
+  {
+    "id": "lead_test_1781507973650",
+    "createdAt": "2026-06-15T07:19:33.650Z",
+    "techStack": [
+      "Node.js",
+      "React",
+      "MongoDB"
+    ],
+    "contactEmail": "billing@acme.com",
+    "companyName": "Acme Test Corp",
+    "email": "acme_test@gmail.com",
+    "projectId": "5IuYXrVMAcXHsToB86z7",
+    "status": "Converted"
+  },
+  {
+    "id": "lead_test_1781508132824",
+    "createdAt": "2026-06-15T07:22:12.824Z",
+    "techStack": [
+      "Node.js",
+      "React",
+      "MongoDB"
+    ],
+    "contactEmail": "billing@acme.com",
+    "companyName": "Acme Test Corp",
+    "email": "acme_test@gmail.com",
+    "projectId": "Irw5q7C6IfTSnFXey4rY",
+    "status": "Converted"
+  },
+  {
+    "id": "mCb57BKFGFnxgcl4bB8f",
+    "createdAt": "2026-06-14T16:57:01.907Z",
+    "website": "smileangeldental.com",
+    "techStack": [
+      "DevExpress",
+      "Nuxt",
+      "Sentry"
+    ],
+    "contactInfo": {
+      "emails": [
+        "hello@smileangeldental.com"
+      ],
+      "primaryContactName": "Dr. Samantha Lee",
+      "linkedInUrls": [
+        "https://linkedin.com/company/smileangel-dental"
+      ],
+      "phones": [
+        "+1 (780) 881-0110"
+      ]
+    },
+    "companyName": "SmileAngel Dental",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "11-50 | Canada",
+    "status": "Archived"
+  },
+  {
+    "id": "pSLvEXkAjVPSXKidDouA",
+    "createdAt": "2026-06-14T16:54:26.552Z",
+    "website": "mwfk-frankfurt.de",
+    "techStack": [
+      "Sitecore",
+      "ServiceNow",
+      "VMware"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@mwfk-frankfurt.de"
+      ],
+      "primaryContactName": "Frau Barbara Weidmann",
+      "linkedInUrls": [
+        "https://linkedin.com/company/medical-center-frankfurt"
+      ],
+      "phones": [
+        "+49 (69) 630400-0"
+      ]
+    },
+    "companyName": "Medical Center Frankfurt",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "100-200 | Germany",
+    "status": "Archived"
+  },
+  {
+    "id": "qOrUh6pSONAxc8ECiSLp",
+    "createdAt": "2026-06-13T17:07:34.913Z",
+    "website": "shopglow.co",
+    "techStack": [
+      "Shopify",
+      "Klaviyo",
+      "React"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@shopglow.co",
+        "contact@shopglow.co"
+      ],
+      "primaryContactName": "John Doe",
+      "linkedInUrls": [
+        "https://linkedin.com/company/shopglow-cosmetics"
+      ],
+      "phones": [
+        "+1 (555) 019-2834"
+      ]
+    },
+    "companyName": "ShopGlow Cosmetics",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "11-50",
+    "projectId": "YJZ7ZRvvtOaKpomWwdgF",
+    "status": "Converted"
+  },
+  {
+    "id": "ugZ3HAIAMWQVc31D4oeS",
+    "createdAt": "2026-06-14T16:57:11.698Z",
+    "website": "denturesolutions.ca",
+    "techStack": [
+      "Elementor",
+      "WP Rocket",
+      "Google Tag Manager"
+    ],
+    "contactInfo": {
+      "emails": [
+        "support@denturesolutions.ca"
+      ],
+      "primaryContactName": "Kelsey Williams",
+      "linkedInUrls": [
+        "https://linkedin.com/company/dentures-solutions"
+      ],
+      "phones": [
+        "+1 (902) 444-7847"
+      ]
+    },
+    "companyName": "Dentures Solutions",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "11-50 | Canada",
+    "status": "Archived"
+  },
+  {
+    "id": "ui2xMvl6bvzGvkpGb0lw",
+    "createdAt": "2026-06-14T16:56:56.979Z",
+    "website": "bccancer.bc.ca",
+    "techStack": [
+      "Apache Hadoop",
+      "Python",
+      "TensorFlow"
+    ],
+    "contactInfo": {
+      "emails": [
+        "publicaffairs@bccancer.bc.ca"
+      ],
+      "primaryContactName": "Dr. Brian M. Ferguson",
+      "linkedInUrls": [
+        "https://linkedin.com/company/bccancer"
+      ],
+      "phones": [
+        "+1 (604) 877-6000"
+      ]
+    },
+    "companyName": "BC Cancer Agency",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "51-200 | Canada",
+    "projectId": "FRZI4sQ6TeQ9R7fFfWRW",
+    "status": "Converted"
+  },
+  {
+    "id": "vbANPLATLWLjzgDVUyQT",
+    "createdAt": "2026-06-14T16:54:16.504Z",
+    "website": "charite.de",
+    "techStack": [
+      "Liferay",
+      "Apache Cassandra",
+      "MuleSoft"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@charite.de"
+      ],
+      "primaryContactName": "Dr. Andreas Sturm",
+      "linkedInUrls": [
+        "https://linkedin.com/company/charit%C3%BC-berlin"
+      ],
+      "phones": [
+        "+49 (30) 4505-0"
+      ]
+    },
+    "companyName": "Charité Berlin",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "1000-2000 | Germany",
+    "projectId": "3Hp2LGqjsXIFCPPzdugu",
+    "status": "Converted"
+  },
+  {
+    "id": "z9GNKh4F4K4uGxu2AFLN",
+    "createdAt": "2026-06-14T16:54:05.958Z",
+    "website": "mk-muenchen.de",
+    "techStack": [
+      "Drupal",
+      "Tableau",
+      "Zoho CRM"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@mk-muenchen.de"
+      ],
+      "primaryContactName": "Dr. Michael Schmidt",
+      "linkedInUrls": [
+        "https://linkedin.com/company/medizinische-klinik-m%C3%BCnchen"
+      ],
+      "phones": [
+        "+49 (89) 516030-0"
+      ]
+    },
+    "companyName": "Medizinische Klinik München",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "100-200 | Germany",
+    "status": "Archived"
+  },
+  {
+    "id": "zSOVwtpoDaEJcYVvzPb0",
+    "createdAt": "2026-06-14T16:57:16.462Z",
+    "website": "creomedical.com",
+    "techStack": [
+      "Ruby on Rails",
+      "Bootstrap",
+      "Moodle"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@creomedical.com"
+      ],
+      "primaryContactName": "Tyler Smith",
+      "linkedInUrls": [
+        "https://linkedin.com/company/creomedical"
+      ],
+      "phones": [
+        "+1 (905) 930-6234"
+      ]
+    },
+    "companyName": "Creo Medical",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "51-200 | Canada",
+    "status": "Archived"
+  }
+]

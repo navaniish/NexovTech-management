@@ -1,0 +1,212 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum LeadStatus {
+  Discovered
+  Scored
+  Proposal_Generated
+  Outreach_Sent
+  Responded
+  Converted
+  Archived
+}
+
+enum ServiceType {
+  AISolutions          @map("AI Solutions")
+  WebDevelopment       @map("Web Development")
+  MobileApplications   @map("Mobile Applications")
+  DashboardSystems     @map("Dashboard Systems")
+  AutomationPlatforms  @map("Automation Platforms")
+  VideoEditing         @map("Video Editing")
+}
+
+enum ProposalStatus {
+  Draft
+  Sent
+  Accepted
+  Rejected
+}
+
+enum OutreachChannel {
+  LinkedIn
+  Email
+  WhatsApp
+}
+
+enum OutreachStatus {
+  Pending
+  Sent
+  Failed
+  Delivered
+  Read
+}
+
+enum EngagementLevel {
+  High
+  Medium
+  Critical
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  permissions Json     @default("{}")
+  users       User[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("roles")
+}
+
+model User {
+  id           String      @id @default(uuid()) @db.Uuid
+  email        String      @unique
+  passwordHash String?     @map("password_hash")
+  firebaseUid  String      @unique @map("firebase_uid")
+  name         String
+  roleId       String      @db.Uuid @map("role_id")
+  role         Role        @relation(fields: [roleId], references: [id])
+  leadScores   LeadScore[]
+  auditLogs    AuditLog[]
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Lead {
+  id           String        @id @default(uuid()) @db.Uuid
+  companyName  String        @map("company_name")
+  website      String?
+  industry     String
+  companySize  String        @map("company_size")
+  techStack    Json          @default("[]") @map("tech_stack")
+  source       String
+  status       LeadStatus    @default(Discovered)
+  contactName  String?       @map("contact_name")
+  emails       String[]      @default([])
+  phones       String[]      @default([])
+  linkedinUrls String[]      @default([]) @map("linkedin_urls")
+  leadScores   LeadScore[]
+  proposals    Proposal[]
+  outreachLogs OutreachLog[]
+  client       Client?
+  projectId    String?       @map("project_id") // Reference to the Firestore project bound to this lead
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@map("leads")
+}
+
+model LeadScore {
+  id                       String   @id @default(uuid()) @db.Uuid
+  leadId                   String   @db.Uuid @map("lead_id")
+  lead                     Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  budgetScore              Int      @map("budget_score")
+  complexityScore          Int      @map("complexity_score")
+  readinessScore           Int      @map("readiness_score")
+  urgencyScore             Int      @map("urgency_score")
+  overallOpportunityScore  Int      @map("overall_opportunity_score")
+  confidenceMetric         Float?   @map("confidence_metric")
+  aiRecommendation         String   @map("ai_recommendation")
+  evaluationLog            String?  @map("evaluation_log") @db.Text
+  evaluatorId              String?  @db.Uuid @map("evaluator_id")
+  evaluator                User?    @relation(fields: [evaluatorId], references: [id], onDelete: SetNull)
+  createdAt                DateTime @default(now()) @map("created_at")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  @@map("lead_scores")
+}
+
+model Proposal {
+  id              String         @id @default(uuid()) @db.Uuid
+  leadId          String         @db.Uuid @map("lead_id")
+  lead            Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  serviceType     ServiceType    @map("service_type")
+  proposalText    String         @map("proposal_text") @db.Text
+  quotationAmount Decimal        @db.Decimal(12, 2) @map("quotation_amount")
+  status          ProposalStatus @default(Draft)
+  pdfUrl          String?        @map("pdf_url")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  @@map("proposals")
+}
+
+model OutreachLog {
+  id          String          @id @default(uuid()) @db.Uuid
+  leadId      String          @db.Uuid @map("lead_id")
+  lead        Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  channel     OutreachChannel
+  messageType String          @map("message_type")
+  contentSent String          @map("content_sent") @db.Text
+  status      OutreachStatus  @default(Sent)
+  sentAt      DateTime        @default(now()) @map("sent_at")
+  createdAt   DateTime        @default(now()) @map("created_at")
+
+  @@map("outreach_logs")
+}
+
+model Client {
+  id              String           @id @default(uuid()) @db.Uuid
+  leadId          String?          @unique @db.Uuid @map("lead_id")
+  lead            Lead?            @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  companyName     String           @map("company_name")
+  website         String?
+  contactEmail    String           @map("contact_email")
+  isActive        Boolean          @default(true) @map("is_active")
+  retentionAlerts RetentionAlert[]
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@map("clients")
+}
+
+model RetentionAlert {
+  id              String          @id @default(uuid()) @db.Uuid
+  clientId        String          @db.Uuid @map("client_id")
+  client          Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  inactiveDays    Int             @map("inactive_days")
+  engagementLevel EngagementLevel @map("engagement_level")
+  aiSuggestion    String          @map("ai_suggestion")
+  isResolved      Boolean         @default(false) @map("is_resolved")
+  resolvedAt      DateTime?       @map("resolved_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  @@map("retention_alerts")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @db.Uuid @map("user_id")
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String
+  status     String
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  details    Json     @default("{}")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}
+
+model LinkedInConfig {
+  id               String   @id @default(uuid()) @db.Uuid
+  organizationUrn  String   @map("organization_urn") // e.g., urn:li:organization:123456
+  organizationName String   @map("organization_name")
+  accessToken      String   @map("access_token") @db.Text
+  refreshToken     String?  @map("refresh_token") @db.Text
+  expiresAt        DateTime @map("expires_at")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("linkedin_configs")
+}

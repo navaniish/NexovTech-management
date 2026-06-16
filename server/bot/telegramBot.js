@@ -9,7 +9,7 @@ const authScene = new Scenes.WizardScene(
   'AUTH_SCENE',
   // Step 1: Ask for Email
   async (ctx) => {
-    await ctx.reply('👋 Welcome to NexovTech Management Assistant.\n\nPlease enter your company email to authenticate:');
+    await ctx.reply('👋 Welcome to the NEXA Agentic AI Systems Manager.\n\nPlease enter your company email to authenticate:');
     return ctx.wizard.next();
   },
   // Step 2: Verify Email & Send OTP
@@ -43,7 +43,7 @@ const authScene = new Scenes.WizardScene(
     }
 
     await authService.linkTelegram(ctx.from.id, firebaseUid, email, role);
-    await ctx.reply(`✅ *Identity Verified!*\n\nWelcome to the NexovTech ecosystem, ${name}. Your account is now securely linked.\n\n🤖 *NexovAI* is now active and ready to assist you.`, { parse_mode: 'Markdown' });
+    await ctx.reply(`✅ *Identity Verified!*\n\nWelcome to the NexovTech ecosystem, ${name}. Your account is now securely linked.\n\n🤖 *NEXA Agentic AI Admin* is now active and ready to assist you.`, { parse_mode: 'Markdown' });
     
     // Show main menu
     const menu = (role === 'Admin' || role === 'Super Admin' || role === 'Manager') ? ADMIN_MENU : MAIN_MENU;
@@ -376,6 +376,8 @@ function initBot(token) {
   bot.telegram.setMyCommands([
     { command: 'start', description: '🚀 Authenticate / Start Session' },
     { command: 'menu', description: '📊 Open Command Center' },
+    { command: 'employee_view', description: '🤖 Toggle Employee Test Menu (Admin)' },
+    { command: 'admin_view', description: '🤖 Return to Admin Menu (Admin)' },
     { command: 'dashboard', description: '📊 Live Analytics Briefing (Admin)' },
     { command: 'assign_task', description: '🚀 Deploy Task to Specialist (Admin)' },
     { command: 'send_apk', description: '📤 Distribute APK to Specialist (Admin)' },
@@ -383,6 +385,9 @@ function initBot(token) {
     { command: 'trigger_broadcast', description: '🔔 Trigger Real Alert Broadcast (Admin)' },
     { command: 'specialists', description: '👥 View Specialist Directory (Admin)' },
     { command: 'leaves', description: '🚀 View Pending Leaves (Admin)' },
+    { command: 'rag_search', description: '🔍 Semantic RAG Memory Search (Admin)' },
+    { command: 'security_alerts', description: '🛡️ Geolocational Threat Alerts (Super Admin)' },
+    { command: 'voice_campaigns', description: '📞 View Voice Outreach Campaign Logs' },
     { command: 'reset', description: '🔄 Unlink Account / Reset' },
     { command: 'help', description: '🆘 Get Assistance' }
   ]);
@@ -417,9 +422,39 @@ function initBot(token) {
     return next();
   });
 
+  const getMenuForUser = (ctx, user) => {
+    if (!user) return MAIN_MENU;
+    const isForcedEmployee = ctx.session && ctx.session.viewMode === 'employee';
+    const hasAdminPrivilege = user.role === 'Admin' || user.role === 'Super Admin' || user.role === 'Manager';
+    if (hasAdminPrivilege && !isForcedEmployee) {
+      return ADMIN_MENU;
+    }
+    return MAIN_MENU;
+  };
+
+  bot.command('employee_view', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: This test toggle is restricted to Administrators.');
+    }
+    if (!ctx.session) ctx.session = {};
+    ctx.session.viewMode = 'employee';
+    await ctx.reply('🤖 *Testing Employee View Active*\n\nYour Telegram menu has been switched to the Employee Workspace for testing. Use /admin_view to switch back.', MAIN_MENU);
+  });
+
+  bot.command('admin_view', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: Restricted to Administrators.');
+    }
+    if (!ctx.session) ctx.session = {};
+    ctx.session.viewMode = 'admin';
+    await ctx.reply('🤖 *Admin Command Center Active*\n\nReturned to the Administrator dashboard menu.', ADMIN_MENU);
+  });
+
   bot.command('menu', (ctx) => {
     const user = ctx.state.user;
-    const menu = (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) ? MAIN_MENU : ADMIN_MENU;
+    const menu = getMenuForUser(ctx, user);
     ctx.reply('NexovTech Command Center:', menu);
   });
 
@@ -561,7 +596,7 @@ function initBot(token) {
                            `• Completed Campaigns: ${completedProjects} Projects\n\n` +
                            `📂 *Leaves Registry:*\n` +
                            `• Pending Applications: ${pendingLeaves} Requests\n\n` +
-                           `🤖 *NexovAI Systems Management Online*`;
+                           `🤖 *NEXA Agentic AI Systems Management Online*`;
 
       await ctx.reply(dashboardMsg, { parse_mode: 'Markdown' });
     } catch (err) {
@@ -582,11 +617,11 @@ function initBot(token) {
   bot.start(async (ctx) => {
     const tgUser = await authService.getTelegramUser(ctx.from.id);
     if (tgUser) {
-      const menu = (tgUser.role === 'Admin' || tgUser.role === 'Super Admin' || tgUser.role === 'Manager') ? ADMIN_MENU : MAIN_MENU;
-      return ctx.reply(`🚀 *NexovAI System Online*\n\nWelcome back, ${tgUser.name || tgUser.companyEmail}. I am your Operational Intelligence Engine.\n\nYou can use the menu below for quick actions, or simply chat with me naturally for any workspace assistance.`, { ...menu, parse_mode: 'Markdown' });
+      const menu = getMenuForUser(ctx, tgUser);
+      return ctx.reply(`🚀 *NEXA Agentic AI Admin Online*\n\nWelcome back, ${tgUser.name || tgUser.companyEmail}. I am your Agentic AI Workspace Administrator.\n\nYou can use the menu below for quick actions, or simply chat with me naturally for any workspace assistance.`, { ...menu, parse_mode: 'Markdown' });
     }
     
-    return ctx.reply('👋 Welcome to NexovTech Management Assistant.\n\nPlease share your contact to retrieve your credentials and link your account:', {
+    return ctx.reply('👋 Welcome to the NEXA Agentic AI Systems Manager.\n\nPlease share your contact to retrieve your credentials and link your account:', {
       reply_markup: {
         keyboard: [
           [{ text: '📱 Get My Credentials (Phone)' }]
@@ -602,8 +637,9 @@ function initBot(token) {
   // Handle Menu Actions
   bot.hears('📊 Dashboard Summary', async (ctx) => {
     const user = ctx.state.user;
-    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
-      return ctx.reply(`🏢 *NexovTech Workspace Summary*\n\nRole: ${user.role}\nStatus: ${user.workspaceStatus}\nPending Tasks: 3\nRecent Notifications: 2`, { parse_mode: 'Markdown' });
+    const isForcedEmployee = ctx.session && ctx.session.viewMode === 'employee';
+    if (isForcedEmployee || !user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply(`🏢 *NexovTech Workspace Summary*\n\nRole: ${user.role}\nStatus: ${user.workspaceStatus || 'Active'}\nPending Tasks: 3\nRecent Notifications: 2`, { parse_mode: 'Markdown' });
     }
 
     await ctx.reply('⏳ *Aggregating real-time operational metrics...*', { parse_mode: 'Markdown' });
@@ -648,7 +684,7 @@ function initBot(token) {
                            `• Completed Campaigns: ${completedProjects} Projects\n\n` +
                            `📂 *Leaves Registry:*\n` +
                            `• Pending Applications: ${pendingLeaves} Requests\n\n` +
-                           `🤖 *NexovAI Systems Management Online*`;
+                           `🤖 *NEXA Agentic AI Systems Management Online*`;
 
       await ctx.reply(dashboardMsg, { parse_mode: 'Markdown' });
     } catch (err) {
@@ -670,7 +706,7 @@ function initBot(token) {
     ctx.reply(`🔐 *Security Dossier*\n\nAccount linked: ✅\nRole: ${user.role}\nLast Web Login: ${new Date().toLocaleDateString()}\nStatus: Secure`, { parse_mode: 'Markdown' });
   });
 
-  bot.hears('🚀 AI Workspace Assistant', (ctx) => {
+  bot.hears(['🚀 AI Workspace Assistant', '🤖 AI Workspace Assistant'], (ctx) => {
     ctx.reply('🤖 AI Assistant Activated. Ask me anything about your workspace, tasks, or company policies.');
   });
 
@@ -745,32 +781,181 @@ function initBot(token) {
     await ctx.scene.enter('DISTRIBUTE_APK_SCENE');
   });
 
+  // ─── ADVANCED COMMANDS ─────────────────────────────────────────────────────
+
+  // /rag_search <query> — Semantic search across RAG vector memory
+  bot.command('rag_search', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: RAG Memory access is restricted to administrators.', { parse_mode: 'Markdown' });
+    }
+    const query = ctx.message.text.replace('/rag_search', '').trim();
+    if (!query) {
+      return ctx.reply('🔍 *RAG Memory Search*\n\nUsage: `/rag_search <your query>`\n\nExample: `/rag_search pricing policy`', { parse_mode: 'Markdown' });
+    }
+
+    await ctx.reply(`🔍 *Searching vector memory for:* "${query}"...`, { parse_mode: 'Markdown' });
+    try {
+      const docs = await fallbackDb.find('vector_memory', { tenantId: 'org_default' }) || [];
+      const results = docs
+        .filter(d => (d.text || '').toLowerCase().includes(query.toLowerCase()))
+        .slice(0, 5);
+
+      if (!results.length) {
+        return ctx.reply(`❌ *No matches found* for "${query}" in the RAG knowledge base.`, { parse_mode: 'Markdown' });
+      }
+
+      let msg = `📚 *RAG Memory Search Results* — "${query}"\n\n`;
+      results.forEach((doc, i) => {
+        msg += `*${i + 1}.* [${doc.collection || 'knowledge'}]\n`;
+        msg += `_${(doc.text || '').substring(0, 200)}${doc.text?.length > 200 ? '...' : ''}_\n`;
+        if (doc.metadata?.client) msg += `🏢 Client: ${doc.metadata.client}\n`;
+        msg += '\n';
+      });
+      await ctx.reply(msg, { parse_mode: 'Markdown' });
+    } catch (err) {
+      console.error('❌ RAG search error:', err.message);
+      await ctx.reply('❌ Vector memory search failed. The RAG store may be offline.', { parse_mode: 'Markdown' });
+    }
+  });
+
+  // /security_alerts — Show latest impossible-travel geolocational anomalies
+  bot.command('security_alerts', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin')) {
+      return ctx.reply('⚠️ *Access Denied*: Security alerts are restricted to Super Admins.', { parse_mode: 'Markdown' });
+    }
+
+    await ctx.reply('🛡️ *Fetching Sentinel AI Geolocational Alerts...*', { parse_mode: 'Markdown' });
+    try {
+      // Try to get login history and detect velocity anomalies
+      const loginHistory = await fallbackDb.find('login_history', {}) || [];
+      
+      // Group by userId and check for impossible travel (>800 km/h)
+      const COORDS = {
+        'mumbai': [19.076, 72.8777], 'delhi': [28.6139, 77.2090],
+        'bangalore': [12.9716, 77.5946], 'london': [51.5074, -0.1278],
+        'new york': [40.7128, -74.0060], 'tokyo': [35.6762, 139.6503],
+        'singapore': [1.3521, 103.8198]
+      };
+      function haversine(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2)**2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      }
+
+      const grouped = {};
+      loginHistory.forEach(l => {
+        if (!grouped[l.userId]) grouped[l.userId] = [];
+        grouped[l.userId].push(l);
+      });
+
+      const anomalies = [];
+      Object.entries(grouped).forEach(([uid, logs]) => {
+        const sorted = logs.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        for (let i = 1; i < sorted.length; i++) {
+          const prev = sorted[i-1], curr = sorted[i];
+          const loc1 = (prev.location || '').toLowerCase();
+          const loc2 = (curr.location || '').toLowerCase();
+          const c1 = Object.entries(COORDS).find(([k]) => loc1.includes(k));
+          const c2 = Object.entries(COORDS).find(([k]) => loc2.includes(k));
+          if (c1 && c2 && c1[0] !== c2[0]) {
+            const dist = haversine(...c1[1], ...c2[1]);
+            const hours = (new Date(curr.createdAt) - new Date(prev.createdAt)) / 3600000;
+            if (hours > 0 && dist / hours > 800) {
+              anomalies.push({ uid, loc1: c1[0], loc2: c2[0], velocity: dist / hours });
+            }
+          }
+        }
+      });
+
+      if (!anomalies.length) {
+        return ctx.reply('✅ *Sentinel AI — All Clear*\n\nNo impossible-travel anomalies detected in the current login history dataset.', { parse_mode: 'Markdown' });
+      }
+
+      let msg = `🚨 *Sentinel AI — Geolocational Threat Report*\n\n`;
+      anomalies.slice(0, 5).forEach((a, i) => {
+        msg += `*${i + 1}.* User \`${a.uid}\`\n`;
+        msg += `   📍 ${a.loc1.toUpperCase()} ➔ ${a.loc2.toUpperCase()}\n`;
+        msg += `   ⚡ Velocity: *${a.velocity.toFixed(0)} km/h* (threshold: 800 km/h)\n\n`;
+      });
+      msg += `Use /lockout_<userId> or the Sentinel Shield dashboard to take action.`;
+      await ctx.reply(msg, { parse_mode: 'Markdown' });
+    } catch (err) {
+      console.error('❌ Security alerts error:', err.message);
+      await ctx.reply('❌ Security alert scan failed.', { parse_mode: 'Markdown' });
+    }
+  });
+
+  // /voice_campaigns — List recent outreach campaign logs
+  bot.command('voice_campaigns', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user) {
+      return ctx.reply('🔐 Please authenticate first using /start', { parse_mode: 'Markdown' });
+    }
+
+    await ctx.reply('📞 *Fetching voice campaign logs...*', { parse_mode: 'Markdown' });
+    try {
+      const logs = await fallbackDb.find('outreach_logs', {}) || [];
+      const recent = logs
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 8);
+
+      if (!recent.length) {
+        return ctx.reply('📞 *No voice campaigns found.*\n\nSend outreach campaigns via the NEXA Sales Hub → Outreach section to see records here.', { parse_mode: 'Markdown' });
+      }
+
+      let msg = `📞 *NEXA Voice Campaign Outreach Logs*\n\n`;
+      recent.forEach((log, i) => {
+        const date = log.createdAt ? new Date(log.createdAt).toLocaleDateString() : 'Unknown';
+        msg += `*${i + 1}.* ${log.recipientName || log.companyName || 'Target'}\n`;
+        msg += `   • Channel: ${(log.channel || 'voice').toUpperCase()}\n`;
+        msg += `   • Status: ${log.status || 'sent'} | Date: ${date}\n\n`;
+      });
+      await ctx.reply(msg, { parse_mode: 'Markdown' });
+    } catch (err) {
+      console.error('❌ Voice campaign fetch error:', err.message);
+      await ctx.reply('❌ Failed to retrieve voice campaign logs.', { parse_mode: 'Markdown' });
+    }
+  });
+
   // Default fallback to AI Assistant
   bot.on('text', async (ctx) => {
     if (ctx.state.user) {
       const response = await getAIResponse(ctx.message.text, ctx.state.user);
-      await ctx.reply(response);
+      try {
+        await ctx.reply(response, { parse_mode: 'Markdown' });
+      } catch (err) {
+        console.warn('⚠️ Telegram Markdown parsing failed, falling back to plain text:', err.message);
+        await ctx.reply(response);
+      }
     }
   });
 
-  // Only launch polling if NOT serverless
+  // Only launch polling if NOT serverless and TELEGRAM_POLLING is enabled
   if (!IS_SERVERLESS) {
-    const launchBotWithRetry = (retries = 5, delay = 3000) => {
-      bot.launch()
-        .then(() => {
-          console.log('🤖 TELEGRAM_BOT: Operational and synchronized (Polling).');
-        })
-        .catch((err) => {
-          console.error(`❌ TELEGRAM_BOT_LAUNCH_FAILED: ${err.message}`);
-          if (retries > 0 && err.message.includes('409')) {
-            console.log(`🔄 Retrying Telegram Bot launch in ${delay / 1000}s... (${retries} retries left)`);
-            setTimeout(() => {
-              launchBotWithRetry(retries - 1, delay * 1.5);
-            }, delay);
-          }
-        });
-    };
-    launchBotWithRetry();
+    if (process.env.TELEGRAM_POLLING === 'true') {
+      const launchBotWithRetry = (retries = 5, delay = 3000) => {
+        bot.launch()
+          .then(() => {
+            console.log('🤖 TELEGRAM_BOT: Operational and synchronized (Polling).');
+          })
+          .catch((err) => {
+            console.error(`❌ TELEGRAM_BOT_LAUNCH_FAILED: ${err.message}`);
+            if (retries > 0 && err.message.includes('409')) {
+              console.log(`🔄 Retrying Telegram Bot launch in ${delay / 1000}s... (${retries} retries left)`);
+              setTimeout(() => {
+                launchBotWithRetry(retries - 1, delay * 1.5);
+              }, delay);
+            }
+          });
+      };
+      launchBotWithRetry();
+    } else {
+      console.log('🤖 TELEGRAM_BOT: Polling is disabled locally. Set TELEGRAM_POLLING=true in .env to enable local bot testing.');
+    }
   } else {
     console.log('🤖 TELEGRAM_BOT: Instance ready for Webhook delivery.');
   }

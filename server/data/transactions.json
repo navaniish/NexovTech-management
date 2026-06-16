@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "id": "inv_1781507949891",
+    "date": "2026-06-15T07:19:09.891Z",
+    "createdAt": "2026-06-15T07:19:09.891Z",
+    "amount": 120000,
+    "invoiceUrl": "/uploads/invoices/invoice-o0xYWcAfcChfC9JKdQmp.pdf",
+    "description": "Acme Test Corp - PDF Invoice for Project #o0xYWcAfcChfC9JKdQmp",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "inv_1781507990599",
+    "date": "2026-06-15T07:19:50.599Z",
+    "createdAt": "2026-06-15T07:19:50.599Z",
+    "amount": 120000,
+    "invoiceUrl": "/uploads/invoices/invoice-5IuYXrVMAcXHsToB86z7.pdf",
+    "description": "Acme Test Corp - PDF Invoice for Project #5IuYXrVMAcXHsToB86z7",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "inv_1781508150558",
+    "date": "2026-06-15T07:22:30.558Z",
+    "createdAt": "2026-06-15T07:22:30.558Z",
+    "amount": 120000,
+    "invoiceUrl": "/uploads/invoices/invoice-Irw5q7C6IfTSnFXey4rY.pdf",
+    "description": "Acme Test Corp - PDF Invoice for Project #Irw5q7C6IfTSnFXey4rY",
+    "type": "Revenue",
+    "status": "Pending"
+  }
+]

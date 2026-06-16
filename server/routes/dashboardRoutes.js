@@ -33,7 +33,7 @@ router.get('/stats', async (req, res) => {
       address: t.status || 'Pending',
       date: new Date(t.createdAt || Date.now()).toLocaleDateString(),
       status: t.status === 'Completed' ? 'Delivered' : 'Processed',
-      price: `₹${(Math.random() * 5000 + 1000).toFixed(0)}`
+      price: t.budget || t.amount ? `₹${(Number(t.budget || t.amount)).toLocaleString()}` : '—'
     }));
 
     // Real-time Sales Data (Strictly from transactions)

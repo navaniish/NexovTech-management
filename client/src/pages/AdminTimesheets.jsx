@@ -85,7 +85,7 @@ const AdminTimesheets = () => {
   );
 
   return (
-    <div className="w-full h-full flex flex-col p-4 sm:p-6 md:p-10 space-y-6 md:space-y-10 animate-in fade-in duration-1000 overflow-y-auto scrollbar-hide">
+    <div className="w-full h-full flex flex-col p-4 sm:p-6 md:p-10 space-y-6 md:space-y-10 animate-in fade-in duration-1000">
       
       {/* Header */}
       <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white/40 p-4 sm:p-6 md:p-10 rounded-[24px] md:rounded-[48px] border border-gray-100 backdrop-blur-md shadow-xl shadow-slate-900/5">

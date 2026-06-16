@@ -84,5 +84,142 @@
       "_seconds": 1778577668,
       "_nanoseconds": 326000000
     }
+  },
+  {
+    "id": "1781532274639",
+    "createdAt": "2026-06-15T14:04:34.639Z",
+    "subject": "[NexovTech Security] Verification Code for Untrusted Device Sign-in",
+    "from": "security@nexovtech.com",
+    "to": "biotester@nexovtech.com",
+    "body": "A sign-in attempt with facial biometrics was detected from an untrusted device. Use the following 6-digit code to authorize access: \n\n807717\n\nIf you did not initiate this, please contact administrator immediately.",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": "2026-06-15T14:04:34.639Z"
+  },
+  {
+    "id": "1A6stbmPv2COPLfvAjW6",
+    "createdAt": "2026-06-15T05:45:57.580Z",
+    "subject": "[NEXA] Approval Required: NEXOV Testing Corp",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [NEXOV Testing Corp] with a score of 84/100 and a budget of ₹10,62,500.\n\nThis deal has been queued for your approval.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1781502357,
+      "_nanoseconds": 580000000
+    }
+  },
+  {
+    "id": "3hi1hBfXSliPQhNuf5E8",
+    "createdAt": "2026-06-14T16:49:55.345Z",
+    "subject": "[NEXA] Autonomous Launch: Zeal Commerce",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [Zeal Commerce] with a score of 78/100 and launched it as a project. Specialists have been matched and assigned task milestones.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1781455795,
+      "_nanoseconds": 345000000
+    }
+  },
+  {
+    "id": "AVB6YnLHtYf4F1HaOs1U",
+    "createdAt": "2026-06-14T16:55:01.158Z",
+    "subject": "[NEXA] Autonomous Launch: University Hospital Hamburg",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [University Hospital Hamburg] with a score of 75/100 and launched it as a project. Specialists have been matched and assigned task milestones.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1781456101,
+      "_nanoseconds": 158000000
+    }
+  },
+  {
+    "id": "IUCBxS7YfC5655uW1RxA",
+    "createdAt": "2026-06-14T16:55:29.098Z",
+    "subject": "[NEXA] Autonomous Launch: Charité Berlin",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [Charité Berlin] with a score of 75/100 and launched it as a project. Specialists have been matched and assigned task milestones.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1781456129,
+      "_nanoseconds": 98000000
+    }
+  },
+  {
+    "id": "NLnX4a3A0RHuoTrnkBfY",
+    "createdAt": "2026-06-15T05:45:10.211Z",
+    "subject": "[NEXA] Approval Required: NEXOV Testing Corp",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [NEXOV Testing Corp] with a score of 92/100 and a budget of ₹11,25,000.\n\nThis deal has been queued for your approval.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1781502310,
+      "_nanoseconds": 211000000
+    }
+  },
+  {
+    "id": "boFyrZ63NHhg2cTPgQTd",
+    "createdAt": "2026-06-15T05:44:18.020Z",
+    "subject": "[NEXA] Approval Required: NEXOV Testing Corp",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [NEXOV Testing Corp] with a score of 85/100 and a budget of ₹10,00,000.\n\nThis deal has been queued for your approval.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1781502258,
+      "_nanoseconds": 19000000
+    }
+  },
+  {
+    "id": "e8602Py1reAb8WAFn8at",
+    "createdAt": "2026-06-14T16:38:43.067Z",
+    "subject": "[NEXA] Autonomous Launch: Epic Warehouse",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [Epic Warehouse] with a score of 84/100 and launched it as a project. Specialists have been matched and assigned task milestones.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1781455123,
+      "_nanoseconds": 67000000
+    }
+  },
+  {
+    "id": "kljhPpyqZG8jYCL5DxgV",
+    "createdAt": "2026-06-14T16:57:47.395Z",
+    "subject": "[NEXA] Autonomous Launch: BC Cancer Agency",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [BC Cancer Agency] with a score of 76/100 and launched it as a project. Specialists have been matched and assigned task milestones.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1781456267,
+      "_nanoseconds": 395000000
+    }
+  },
+  {
+    "id": "oyRdCOZK0sFppKGc2MC7",
+    "createdAt": "2026-06-14T16:49:56.504Z",
+    "subject": "[NEXA] Autonomous Launch: ePorch",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [ePorch] with a score of 75/100 and launched it as a project. Specialists have been matched and assigned task milestones.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1781455796,
+      "_nanoseconds": 503000000
+    }
   }
 ]

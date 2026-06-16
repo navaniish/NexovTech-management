@@ -7,6 +7,6 @@ const isNative = !!window.Capacitor || window.location.protocol === 'capacitor:'
 const PORT = import.meta.env.VITE_PORT || 5006;
 const isLocalDev = window.location.hostname === 'localhost' && !isNative;
 
-const API_BASE = import.meta.env.VITE_API_URL || (isLocalDev ? `http://localhost:${PORT}/api` : PRODUCTION_URL);
+const API_BASE = isLocalDev ? `http://localhost:${PORT}/api` : (import.meta.env.VITE_API_URL || PRODUCTION_URL);
 
 export default API_BASE;

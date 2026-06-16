@@ -34,6 +34,7 @@ import AdminTimesheets from './pages/AdminTimesheets';
 import TeamAccess from './pages/TeamAccess';
 import AdminTasks from './pages/AdminTasks';
 import AdminLearning from './pages/AdminLearning';
+import SharedProposal from './pages/SharedProposal';
 
 // Employee Pages
 import EmployeeDashboard from './pages/employee/Dashboard';
@@ -114,9 +115,8 @@ function AppRoutes() {
         <Route path="/settings" element={<Settings />} />
       </Route>
 
-      {/* Employee Routes */}
       <Route element={
-        <ProtectedRoute allowedRoles={['Employee', 'Specialist', 'Developer', 'Editor', 'AI Specialist', 'Security Analyst']}>
+        <ProtectedRoute allowedRoles={['Employee', 'Specialist', 'Developer', 'Editor', 'AI Specialist', 'Security Analyst', 'Admin', 'Super Admin', 'Manager']}>
           <EmployeeLayout />
         </ProtectedRoute>
       }>
@@ -136,6 +136,7 @@ function AppRoutes() {
       </Route>
 
       <Route path="/verify/:qrToken" element={<VerifyID />} />
+      <Route path="/proposals/shared/:id" element={<SharedProposal />} />
       <Route path="/team-access" element={<TeamAccess />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 

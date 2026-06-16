@@ -9,6 +9,22 @@ const User = require('../models/User');
 const LoginHistory = require('../models/LoginHistory');
 const useragent = require('useragent');
 const { sendNotification } = require('../bot/telegramBot');
+const { auth } = require('../middleware/auth');
+
+const resolveTenantId = (email) => {
+  if (!email) return 'org_default';
+  const parts = email.toLowerCase().split('@');
+  if (parts.length < 2) return 'org_default';
+  const domain = parts[1];
+  const genericDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com', 'icloud.com', 'protonmail.com', 'zoho.com'];
+  if (genericDomains.includes(domain)) {
+    const username = parts[0].replace(/[^a-z0-9]/g, '');
+    const random = Math.floor(1000 + Math.random() * 9000);
+    return `org_${username}_${random}`;
+  }
+  const cleanDomain = domain.replace(/[^a-z0-9]/g, '');
+  return `org_${cleanDomain}`;
+};
 
 // POST /api/auth/admin-override — Rapid Admin Access Bypass
 router.post('/admin-override', async (req, res) => {
@@ -31,12 +47,15 @@ router.post('/admin-override', async (req, res) => {
         companyEmail: 'admin@nexovtech.com',
         status: 'Active',
         avatar: '/assets/logo_nexo.jpeg',
+        tenantId: 'org_admin_override',
         createdAt: new Date()
       });
+    } else if (!user.tenantId) {
+      user = await fallbackDb.update('users', user.id || user._id, { tenantId: 'org_admin_override' });
     }
 
     const jwtToken = jwt.sign(
-      { id: user.id || user._id, role: 'Admin', email: adminEmail },
+      { id: user.id || user._id, role: 'Admin', email: adminEmail, tenantId: user.tenantId || 'org_admin_override' },
       process.env.JWT_SECRET || 'nexovtech_secret_key',
       { expiresIn: '24h' }
     );
@@ -109,12 +128,14 @@ router.get('/me', async (req, res) => {
 // POST /auth/register — Create/Sync profile from Firebase
 router.post('/register', async (req, res) => {
   const { uid, email, name, role, password } = req.body;
+  const tenantId = resolveTenantId(email);
   const userData = {
     firebaseUid: uid,
     email: email.toLowerCase(),
     name: name || 'New Explorer',
     role: email.toLowerCase() === 'nexovtech@myyahoo.com' ? 'Admin' : (role || 'Employee'),
     avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name + Date.now()}`,
+    tenantId,
     createdAt: new Date()
   };
 
@@ -190,6 +211,7 @@ router.post('/login', async (req, res) => {
     if (!user) {
       console.log(`🚀 ENTERPRISE_SYNC: New identity detected [${lookupEmail}]. Provisioning virtual workspace profile...`);
       const name = firebaseUser.name || lookupEmail.split('@')[0];
+      const tenantId = resolveTenantId(lookupEmail);
       user = await fallbackDb.save('users', {
         email: lookupEmail,
         companyEmail: generateCompanyEmail(name),
@@ -199,15 +221,26 @@ router.post('/login', async (req, res) => {
         department: lookupEmail === 'nexovtech@myyahoo.com' ? 'Executive' : 'General',
         status: 'Active',
         avatar: firebaseUser.picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${lookupEmail}`,
+        tenantId,
         lastActive: new Date(),
         createdAt: new Date()
       });
     } else {
-      // Update lastActive on every login/sync
-      const updatedUser = await fallbackDb.update('users', user.id || user._id, {
-        lastActive: new Date()
-      });
-      if (updatedUser) user = updatedUser;
+      // If user exists, but doesn't have tenantId yet (legacy profile), assign one based on domain
+      if (!user.tenantId) {
+        const tenantId = resolveTenantId(lookupEmail);
+        const updatedUser = await fallbackDb.update('users', user.id || user._id, {
+          tenantId,
+          lastActive: new Date()
+        });
+        if (updatedUser) user = updatedUser;
+      } else {
+        // Update lastActive on every login/sync
+        const updatedUser = await fallbackDb.update('users', user.id || user._id, {
+          lastActive: new Date()
+        });
+        if (updatedUser) user = updatedUser;
+      }
     }
 
     if (!user) {
@@ -270,7 +303,7 @@ router.post('/login', async (req, res) => {
  
     // 5. Generate Internal Session JWT
     const jwtToken = jwt.sign(
-      { id: user.id || user._id, role: user.role, firebaseUid: firebaseUser.uid },
+      { id: user.id || user._id, role: user.role, firebaseUid: firebaseUser.uid, tenantId: user.tenantId || 'org_default' },
       process.env.JWT_SECRET || 'nexovtech_secret_key',
       { expiresIn: '24h' }
     );
@@ -298,7 +331,7 @@ router.post('/login', async (req, res) => {
 });
 
 // Grant Access (Admin)
-router.post('/grant-access', async (req, res) => {
+router.post('/grant-access', auth, async (req, res) => {
   const { email, role, name, tempPassword, bankName, accountNumber, ifscCode, upiId, phoneNo } = req.body;
   const { admin } = require('../firebaseAdmin');
 
@@ -357,13 +390,14 @@ router.post('/grant-access', async (req, res) => {
       upiId,
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name + Date.now()}`,
       performance: { tasksCompleted: 0, onTimeRate: 100, rating: 5 },
+      tenantId: req.tenantId || 'org_default',
       createdAt: new Date()
     };
 
     console.log(`📝 ACCESS_SYNC: Registering specialist [${email}] in database...`);
     const saved = await fallbackDb.save('users', userData);
 
-    const allUsers = (await fallbackDb.find('users', {})) || [];
+    const allUsers = (await fallbackDb.find('users', { tenantId: req.tenantId || 'org_default' })) || [];
 
     res.json({
       message: isNexovtechGmail 
@@ -420,9 +454,9 @@ router.put('/update-profile/:id', async (req, res) => {
 });
 
 // List all granted users
-router.get('/team-access', async (req, res) => {
+router.get('/team-access', auth, async (req, res) => {
   try {
-    const users = (await fallbackDb.find('users', {})) || [];
+    const users = (await fallbackDb.find('users', { tenantId: req.tenantId || 'org_default' })) || [];
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: 'Failed to retrieve access registry' });
@@ -430,12 +464,23 @@ router.get('/team-access', async (req, res) => {
 });
 
 // GET count of all users
+// GET /auth/count — Public: Total user count (used by Sidebar badge)
 router.get('/count', async (req, res) => {
   try {
-    const users = await fallbackDb.find('users', {});
+    // If auth token provided, scope by tenant; otherwise return global count
+    let tenantId = 'org_default';
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (token) {
+      try {
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
+        tenantId = decoded.tenantId || 'org_default';
+      } catch (_) {}
+    }
+    const users = await fallbackDb.find('users', { tenantId });
     res.json({ count: users.length });
   } catch (err) {
-    res.status(500).json({ count: 0 });
+    res.json({ count: 0 });
   }
 });
 

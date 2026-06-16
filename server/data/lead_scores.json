@@ -1,0 +1,14 @@
+[
+  {
+    "id": "139VCB9OQ7bAjMRLeAeZ",
+    "createdAt": "2026-06-13T09:59:06.942Z",
+    "leadId": "H4vY61p2Qtl5yrE2YdyC",
+    "aiRecommendation": "Medium Priority",
+    "urgencyScore": 50,
+    "budgetScore": 50,
+    "evaluationLog": "Fallback scoring applied due to LLM provider offline.",
+    "overallOpportunityScore": 56,
+    "readinessScore": 75,
+    "complexityScore": 50
+  }
+]

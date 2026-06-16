@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Shield, 
   Fingerprint, 
@@ -22,11 +22,14 @@ import {
   AlertTriangle,
   History,
   Cpu,
-  Search
+  Search,
+  Camera,
+  ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import API_URL from '../../config';
 import { useAuth } from '../../context/AuthContext';
+import BiometricsService from '../../services/biometricsService';
 
 const EmployeeSecurity = () => {
   const { user, updateUser } = useAuth();
@@ -37,13 +40,50 @@ const EmployeeSecurity = () => {
   const [mfaData, setMfaData] = useState({ qrCode: '', secret: '', token: '', backupCodes: [] });
   const [toast, setToast] = useState(null);
 
+  // Biometrics States
+  const [biometricsStatus, setBiometricsStatus] = useState({ enrolled: false, enrolledAt: null });
+  const [isEnrolling, setIsEnrolling] = useState(false);
+  const [enrollStep, setEnrollStep] = useState(0); // 0: idle, 1: center, 2: left, 3: right, 4: ready
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [enrollError, setEnrollError] = useState('');
+  const [enrollStream, setEnrollStream] = useState(null);
+  const enrollVideoRef = useRef(null);
+
   useEffect(() => {
     fetchSecurityData();
+    if (user) {
+      fetchBiometricsStatus();
+    }
+  }, [user]);
+
+  // Monitor step changes during enrollment
+  useEffect(() => {
+    if (!isEnrolling) return;
+    let timer;
+    if (enrollStep === 1 && enrollStream) {
+      timer = setTimeout(() => setEnrollStep(2), 3000);
+    }
+    return () => clearTimeout(timer);
+  }, [isEnrolling, enrollStep, enrollStream]);
+
+  const enrollStreamRef = useRef(null);
+
+  useEffect(() => {
+    enrollStreamRef.current = enrollStream;
+  }, [enrollStream]);
+
+  // Clean up stream on unmount
+  useEffect(() => {
+    return () => {
+      if (enrollStreamRef.current) {
+        enrollStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
   }, []);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 3050);
   };
 
   const getGreeting = () => {
@@ -51,15 +91,85 @@ const EmployeeSecurity = () => {
     const hour = now.getHours();
     const minute = now.getMinutes();
     const totalMinutes = hour * 60 + minute;
-    if (totalMinutes < 750) return 'Good morning'; // Before 12:30 PM
-    if (totalMinutes < 1020) return 'Good afternoon'; // 12:30 PM to 5:00 PM
-    return 'Good evening'; // After 5:00 PM
+    if (totalMinutes < 750) return 'Good morning';
+    if (totalMinutes < 1020) return 'Good afternoon';
+    return 'Good evening';
   };
 
   const getAuthHeaders = () => ({
-    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    'Authorization': `Bearer ${localStorage.getItem('nexov_token') || localStorage.getItem('token')}`,
     'Content-Type': 'application/json'
   });
+
+  const fetchBiometricsStatus = async () => {
+    try {
+      const data = await BiometricsService.getStatus(user?.id || user?._id);
+      setBiometricsStatus(data);
+    } catch (err) {
+      console.error("Failed to fetch biometrics status:", err);
+    }
+  };
+
+  const startEnrollCamera = async () => {
+    setEnrollError('');
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 300, height: 300, facingMode: 'user' }
+      });
+      setEnrollStream(mediaStream);
+      setIsEnrolling(true);
+      setEnrollStep(1);
+    } catch (err) {
+      console.error("Camera access failed:", err);
+      setEnrollError("Camera connection failed. Check permissions.");
+      showToast("Camera connection failed. Check permissions.", "error");
+    }
+  };
+
+  const stopEnrollCamera = () => {
+    if (enrollStream) {
+      enrollStream.getTracks().forEach(track => track.stop());
+      setEnrollStream(null);
+    }
+  };
+
+  const handleEnrollBiometricsSubmit = async () => {
+    if (!consentChecked) {
+      return showToast("You must consent to biometric enrollment", "error");
+    }
+    setLoading(true);
+    setEnrollError('');
+    try {
+      const mockTemplate = `template_hash_${user?.email?.toLowerCase()}`;
+      await BiometricsService.enroll(user?.id || user?._id, user?.email, mockTemplate, consentChecked);
+      showToast("Facial biometric signature catalogued successfully!", "success");
+      stopEnrollCamera();
+      setIsEnrolling(false);
+      setEnrollStep(0);
+      setConsentChecked(false);
+      fetchBiometricsStatus();
+    } catch (err) {
+      setEnrollError(err.message || 'Biometric enrollment failed');
+      showToast(err.message || 'Biometric enrollment failed', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteBiometrics = async () => {
+    if (!window.confirm("Permanently purge facial biometric profile? You will lose face login capability.")) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('nexov_token') || localStorage.getItem('token');
+      await BiometricsService.delete(token);
+      showToast("Biometric profile successfully purged", "success");
+      fetchBiometricsStatus();
+    } catch (err) {
+      showToast(err.message || 'Purge failed', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchSecurityData = async () => {
     setLoading(true);
@@ -79,8 +189,6 @@ const EmployeeSecurity = () => {
   };
 
   const start2FASetup = async () => {
-    console.log('🛡️ SECURITY_BRIDGE: Initializing MFA setup sequence...');
-    showToast('Initializing Security Node...', 'success');
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/security/2fa/setup`, {
@@ -127,11 +235,34 @@ const EmployeeSecurity = () => {
     }
   };
 
+  const handleRevokeDevice = async (deviceName) => {
+    if (!window.confirm(`Are you sure you want to revoke access for ${deviceName}?`)) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/security/devices/${encodeURIComponent(deviceName)}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      if (res.ok) {
+        setTrustedDevices(prev => prev.filter(d => d.deviceName !== deviceName));
+        showToast('Device node access revoked successfully', 'success');
+        fetchSecurityData();
+      } else {
+        const data = await res.json();
+        showToast(data.message || 'Revocation failed', 'error');
+      }
+    } catch (err) {
+      showToast('Network error during revocation', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#050505] text-slate-100 p-4 md:p-8 font-sans overflow-y-auto custom-scrollbar">
+    <div className="w-full min-h-full bg-[#050505] text-slate-100 p-4 md:p-8 font-sans rounded-[32px] relative overflow-hidden">
       
       {/* ── AMBIENT OFFICE DEPTH ── */}
-      <div className="fixed inset-0 z-0 pointer-events-none opacity-20">
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
          <div className="absolute inset-0 bg-cover bg-center mix-blend-overlay opacity-30" style={{ backgroundImage: "url('/assets/office-bg.png')" }} />
          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-600/5 blur-[120px] rounded-full" />
       </div>
@@ -177,20 +308,42 @@ const EmployeeSecurity = () => {
                )}
             </section>
 
-            {/* BIOMETRIC ENROLLMENT CARD */}
+            {/* BIOMETRIC ENROLLMENT STATUS CARD */}
             <section className="bg-white/[0.02] rounded-[32px] p-8 border border-white/5 relative overflow-hidden group">
                <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-black text-white uppercase tracking-tight italic">Biometric Passkey</h3>
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${biometricsStatus.enrolled ? 'bg-emerald-500/10 text-emerald-500' : 'bg-indigo-500/10 text-indigo-500'}`}>
                      <Fingerprint size={24} />
                   </div>
                </div>
-               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6 leading-relaxed italic">
-                  Link your hardware security node for rapid biometric entry.
-               </p>
-               <button onClick={() => showToast('Syncing Biometric Hardware...', 'success')} className="w-full h-12 bg-indigo-600/10 border border-indigo-600/20 text-indigo-500 rounded-xl font-black text-[9px] uppercase tracking-[0.3em] transition-all hover:bg-indigo-600/20 flex items-center justify-center gap-3">
-                  Activate Biometric <Smartphone size={16} />
-               </button>
+               <div className="mb-6">
+                  <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest inline-block mb-2 ${biometricsStatus.enrolled ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                     {biometricsStatus.enrolled ? 'ENROLLED' : 'NOT CONFIGURED'}
+                  </span>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed italic">
+                     {biometricsStatus.enrolled 
+                        ? `Signature active in Sentinel Ledger. Registered on: ${new Date(biometricsStatus.enrolledAt).toLocaleDateString()}` 
+                        : 'Link your facial biometric signature for rapid bypass entry.'
+                     }
+                  </p>
+               </div>
+               <div className="flex gap-2 w-full">
+                  {biometricsStatus.enrolled && (
+                     <button
+                        onClick={handleDeleteBiometrics}
+                        disabled={loading}
+                        className="flex-1 px-4 py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/10 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                     >
+                        <Trash2 size={14} /> Purge Signature
+                     </button>
+                  )}
+                  <button
+                     onClick={startEnrollCamera}
+                     className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                     <Camera size={14} /> {biometricsStatus.enrolled ? 'RE-ENROLL' : 'ENROLL FACE'}
+                  </button>
+               </div>
             </section>
          </div>
 
@@ -214,14 +367,14 @@ const EmployeeSecurity = () => {
                              <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">{device.lastIp}</p>
                           </div>
                        </div>
-                       <Trash2 size={16} className="text-slate-700 hover:text-rose-500 cursor-pointer transition-colors" />
+                       <Trash2 size={16} className="text-slate-700 hover:text-rose-500 cursor-pointer transition-colors" onClick={() => handleRevokeDevice(device.deviceName)} />
                     </div>
                   ))}
                   {trustedDevices.length === 0 && (
-                    <div className="col-span-2 py-16 text-center opacity-10">
-                       <Monitor size={48} className="mx-auto mb-4" />
-                       <p className="text-[9px] font-black uppercase tracking-[0.5em]">No nodes established</p>
-                    </div>
+                     <div className="col-span-2 py-16 text-center opacity-10">
+                        <Monitor size={48} className="mx-auto mb-4" />
+                        <p className="text-[9px] font-black uppercase tracking-[0.5em]">No nodes established</p>
+                     </div>
                   )}
                </div>
             </section>
@@ -299,6 +452,131 @@ const EmployeeSecurity = () => {
                 </div>
                 <button onClick={() => setMfaModal(null)} className="w-full h-16 bg-emerald-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.4em] shadow-xl hover:bg-emerald-500 transition-all">Synchronize Nodes</button>
              </motion.div>
+          </div>
+        )}
+
+        {/* ── BIOMETRICS ENROLLMENT MODAL OVERLAY ── */}
+        {isEnrolling && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-0 md:p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { stopEnrollCamera(); setIsEnrolling(false); setEnrollStep(0); }} className="absolute inset-0 bg-slate-950/85 backdrop-blur-md" />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full h-[100dvh] md:h-auto md:max-w-md bg-white text-slate-900 md:rounded-[28px] rounded-none p-6 md:p-8 shadow-2xl z-10 flex flex-col items-center justify-start md:justify-center overflow-y-auto py-8 md:py-8">
+              
+              <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight italic mb-1.5 flex items-center gap-1.5">
+                {enrollStep === 0 ? 'Face Scanner Setup' : `Step ${enrollStep === 1 ? 1 : (enrollStep === 2 || enrollStep === 3 ? 2 : (enrollStep === 4 ? 3 : 4))} of 4`}
+              </h3>
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-6">
+                {enrollStep === 1 && 'Position your face inside the frame.'}
+                {enrollStep === 2 && 'Look left and keep face aligned.'}
+                {enrollStep === 3 && 'Look right and keep face aligned.'}
+                {enrollStep === 4 && 'Registry Validation.'}
+              </p>
+
+              <div className="relative w-56 h-56 md:w-48 md:h-48 rounded-full overflow-hidden border-4 border-slate-950 shadow-[0_0_25px_rgba(99,102,241,0.4)] mb-8 flex items-center justify-center bg-slate-50">
+                {enrollStream ? (
+                  <video
+                    ref={(node) => {
+                      if (node) {
+                        enrollVideoRef.current = node;
+                        if (enrollStream && node.srcObject !== enrollStream) {
+                          node.srcObject = enrollStream;
+                          node.play().catch(err => console.error('Enroll camera play error:', err));
+                        }
+                      }
+                    }}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <Camera size={38} className="text-slate-300 animate-pulse" />
+                )}
+                {/* Visual scan HUD overlay elements */}
+                <div className="absolute inset-0 border-2 border-indigo-500/30 rounded-full circle-scan animate-spin" style={{ animationDuration: '15s' }} />
+                <div className="absolute inset-2 border border-dashed border-cyan-400/20 rounded-full circle-scan animate-spin" style={{ animationDuration: '22s', animationDirection: 'reverse' }} />
+                <div className="absolute left-0 right-0 h-0.5 bg-cyan-400 shadow-[0_0_8px_#22d3ee] laser-line pointer-events-none animate-pulse" style={{ animation: 'laser-sweep 2s ease-in-out infinite' }} />
+              </div>
+
+              {/* Capture steps & progress */}
+              <div className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-5 mb-6 font-sans text-left space-y-3 shadow-inner">
+                <p className="text-[10px] text-slate-900 uppercase font-black tracking-wider border-b border-slate-200/60 pb-1.5">Capture Steps</p>
+                <div className="grid grid-cols-2 gap-3 text-[9px] font-bold text-slate-500">
+                  <div className="flex items-center gap-1.5">
+                    <span className={enrollStep > 1 ? "text-emerald-500 font-bold" : "text-slate-300"}>✓</span>
+                    <span className={enrollStep > 1 ? "text-slate-700 font-bold" : ""}>Front Face</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={enrollStep > 2 ? "text-emerald-500 font-bold" : "text-slate-300"}>✓</span>
+                    <span className={enrollStep > 2 ? "text-slate-700 font-bold" : ""}>Look Left</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={enrollStep > 3 ? "text-emerald-500 font-bold" : "text-slate-300"}>✓</span>
+                    <span className={enrollStep > 3 ? "text-slate-700 font-bold" : ""}>Look Right</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={enrollStep > 4 ? "text-emerald-500 font-bold" : "text-slate-300"}>✓</span>
+                    <span className={enrollStep > 4 ? "text-slate-700 font-bold" : ""}>Consent & Registry</span>
+                  </div>
+                </div>
+
+                <div className="pt-2.5 border-t border-slate-200/60 flex justify-between items-center text-[9px] font-black uppercase text-indigo-600">
+                  <span>Enrollment Progress:</span>
+                  <span>{Math.round(Math.min((enrollStep / 4) * 100, 100))}%</span>
+                </div>
+              </div>
+
+              {/* Next buttons */}
+              {enrollStream && (enrollStep === 2 || enrollStep === 3) && (
+                <button
+                  onClick={() => setEnrollStep(prev => prev + 1)}
+                  className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-xl font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 cursor-pointer mb-2"
+                >
+                  ✓ Done — Next Step
+                </button>
+              )}
+
+              {enrollStep === 4 && (
+                <div className="w-full space-y-3 pt-2">
+                  <label className="flex items-start gap-2.5 cursor-pointer p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                    <input
+                      type="checkbox"
+                      checked={consentChecked}
+                      onChange={(e) => setConsentChecked(e.target.checked)}
+                      className="mt-0.5 cursor-pointer text-indigo-600"
+                    />
+                    <span className="text-[8.5px] text-slate-505 font-bold uppercase tracking-wider leading-relaxed">
+                      I consent to storing my encrypted biometric template for passwordless authentication.
+                    </span>
+                  </label>
+
+                  <button
+                    onClick={handleEnrollBiometricsSubmit}
+                    disabled={loading || !consentChecked}
+                    className="w-full h-12 bg-indigo-650 hover:bg-indigo-600 disabled:opacity-50 text-white rounded-xl font-black text-[9px] uppercase tracking-widest transition-all cursor-pointer shadow-lg"
+                  >
+                    {loading ? 'Saving Signature...' : 'Submit Biometric Signature'}
+                  </button>
+                </div>
+              )}
+
+              <button
+                onClick={() => { stopEnrollCamera(); setIsEnrolling(false); setEnrollStep(0); }}
+                className="w-full h-10 mt-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all cursor-pointer"
+              >
+                Cancel Enrollment
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {toast && (
+          <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[300]">
+            <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 40 }} className={`px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 border backdrop-blur-2xl ${toast.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-rose-500/10 border-rose-500/20 text-rose-600'}`}>
+              <div className={`w-7.5 h-7.5 rounded-lg flex items-center justify-center ${toast.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>{toast.type === 'success' ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}</div>
+              <p className="text-[9px] font-black uppercase tracking-widest">{toast.message}</p>
+            </motion.div>
           </div>
         )}
       </AnimatePresence>

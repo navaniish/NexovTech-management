@@ -1,4 +1,5 @@
 {
   "ignore": ["data/*", "uploads/*", "*.test.js", "bot/test_*.js"],
+  "watch": [".env", "**/*.js"],
   "delay": "500"
 }

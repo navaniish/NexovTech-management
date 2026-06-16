@@ -1,53 +1,48 @@
-const OpenAI = require('openai');
-const dotenv = require('dotenv');
+const { runMultiAgentOrchestration } = require('../controllers/agentNetworkController');
+const fallbackDb = require('../utils/fallbackDb');
 
-dotenv.config();
-
-let client;
-try {
-  client = new OpenAI({
-    baseURL: process.env.AI_BASE_URL || "https://api.nexovtech.ai/v1",
-    apiKey: process.env.AI_API_KEY || 'placeholder'
-  });
-} catch (e) {
-  console.warn('⚠️ AI module offline: Missing API key.');
-}
-
-const SYSTEM_PROMPT = `
-You are the "NexovTech Operational Intelligence Engine" (NexovAI), the official AI assistant for NexovTech Management.
-
-BRAND VOICE:
-- TONE: Executive, precise, but approachable. Use "Humanized" professional language.
-- MISSION: Accelerate workspace productivity and provide real-time HR/Ops clarity.
-
-OPERATIONAL PARAMETERS:
-1. HR ASSISTANCE: Provide guidance on company policies, leave procedures, and onboarding flows.
-2. PROJECT CLARITY: Help employees summarize tasks and mission objectives.
-3. SECURITY FIRST: Never reveal Firebase UIDs, raw passwords, or backend secrets. If a user asks for sensitive data, direct them to the "NexovTech Security Shield" portal.
-4. IDENTITY: You represent NexovTech. You are not a generic LLM. You are a proprietary tool built for NexovTech employees.
-`;
-
-async function getAIResponse(userMessage, userContext = {}) {
-  if (!client) return "I'm currently offline. Please try again later.";
-
+// Retrieve recent RAG documents to prepend as context
+async function getRAGContext(tenantId = 'org_default', limit = 5) {
   try {
-    const messages = [
-      { role: "system", content: SYSTEM_PROMPT + `\n\nUser Context: ${JSON.stringify(userContext)}` },
-      { role: "user", content: userMessage }
-    ];
-
-    const completion = await client.chat.completions.create({
-      model: process.env.AI_MODEL || "nexov-intelligence-v1",
-      messages: messages,
-      temperature: 0.7,
-      max_tokens: 500,
-    });
-
-    return completion.choices[0].message.content;
-  } catch (error) {
-    console.error('❌ AI_BOT_ERROR:', error.message);
-    return "I encountered a synchronization error with the intelligence cloud.";
+    const docs = await fallbackDb.find('vector_memory', { tenantId }) || [];
+    if (!docs.length) return '';
+    const sorted = docs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, limit);
+    const contextLines = sorted.map(d => `[${d.collection || 'knowledge'}] ${d.text}`).join('\n');
+    return `📚 *Relevant RAG Context:*\n${contextLines}\n\n`;
+  } catch (err) {
+    console.warn('⚠️ RAG context fetch failed:', err.message);
+    return '';
   }
 }
 
-module.exports = { getAIResponse };
+async function getAIResponse(userMessage, userContext = {}) {
+  try {
+    // Prepend RAG context from the vector store
+    const ragContext = await getRAGContext(userContext.tenantId || 'org_default');
+
+    const result = await runMultiAgentOrchestration(userMessage);
+    
+    // Format the event hops visualization
+    let hopsText = "";
+    if (result.hops && result.hops.length > 0) {
+      hopsText = result.hops
+        .map(h => `• *${h.sender}* ➔ *${h.recipient}*`)
+        .join('\n');
+    }
+
+    let finalMsg = "";
+    if (ragContext) {
+      finalMsg += ragContext;
+    }
+    if (hopsText) {
+      finalMsg += `🤖 *NEXA Multi-Agent Event Loop Hops:*\n${hopsText}\n\n`;
+    }
+    finalMsg += `📋 *Consolidated Strategic Report:*\n${result.response}`;
+    return finalMsg;
+  } catch (error) {
+    console.error('❌ AI_BOT_ERROR (Multi-Agent):', error.message);
+    return "I encountered a synchronization error in the multi-agent network event loop.";
+  }
+}
+
+module.exports = { getAIResponse, getRAGContext };

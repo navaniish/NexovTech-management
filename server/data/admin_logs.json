@@ -1,0 +1,14 @@
+[
+  {
+    "action": "BIOMETRICS_REVOKE",
+    "status": "warning",
+    "performedBy": "Biometric Admin Tester",
+    "details": {
+      "revokedUserId": "user_biotester_1781532260269",
+      "revokedUserEmail": "biotester@nexovtech.com"
+    },
+    "timestamp": "2026-06-15T14:05:01.052Z",
+    "id": "ZTX3HTWY1ZXSOwc2s3pv",
+    "createdAt": "2026-06-15T14:05:01.052Z"
+  }
+]

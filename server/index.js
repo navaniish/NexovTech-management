@@ -50,6 +50,10 @@ const idCardRoutes = require('./routes/idCardRoutes');
 const mailRoutes = require('./routes/mailRoutes');
 const recruitmentRoutes = require('./routes/recruitmentRoutes');
 const timesheetRoutes = require('./routes/timesheetRoutes');
+const nexaRoutes = require('./routes/nexaRoutes');
+const linkedinRoutes = require('./routes/linkedinRoutes');
+const executiveRoutes = require('./routes/executiveRoutes');
+
 
 app.use('/api/auth', authRoutes);
 app.use('/api/team', teamRoutes);
@@ -70,6 +74,9 @@ app.use('/api/idcard', idCardRoutes);
 app.use('/api/mail', mailRoutes);
 app.use('/api/recruitment', recruitmentRoutes);
 app.use('/api/timesheet', timesheetRoutes);
+app.use('/api/nexa', nexaRoutes);
+app.use('/api/linkedin', linkedinRoutes);
+app.use('/api/executive', executiveRoutes);
 
 // Telegram Webhook Endpoint
 app.post('/api/telegram-webhook', async (req, res) => {

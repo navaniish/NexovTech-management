@@ -20,10 +20,12 @@ const AdminHR = () => {
 
   const fetchAll = async () => {
     try {
+      const token = localStorage.getItem('nexov_token') || '';
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
       const [tRes, aRes, lRes] = await Promise.all([
-        fetch(`${API_URL}/team?t=${Date.now()}`),
-        fetch(`${API_URL}/attendance/all`),
-        fetch(`${API_URL}/leave/all`)
+        fetch(`${API_URL}/team?t=${Date.now()}`, { headers }),
+        fetch(`${API_URL}/attendance/all`, { headers }),
+        fetch(`${API_URL}/leave/all`, { headers })
       ]);
       if (tRes.ok) setTeam(await tRes.json());
       if (aRes.ok) setAttendance(await aRes.json());
@@ -42,9 +44,13 @@ const AdminHR = () => {
 
   const handleLeaveAction = async (leaveId, action) => {
     try {
+      const token = localStorage.getItem('nexov_token') || '';
       const res = await fetch(`${API_URL}/leave/${leaveId}/approve`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ status: action, approvedBy: 'Admin' })
       });
       if (res.ok) {
@@ -55,8 +61,11 @@ const AdminHR = () => {
   };
 
   // Stats
-  const activePersonnel = team;
-  const todayAtt = attendance.filter(a => a.date === dateFilter);
+  const activePersonnel = team.filter(t => t.role !== 'Admin' && t.role !== 'Super Admin' && t.role !== 'Manager');
+  const todayAtt = attendance.filter(a => {
+    const emp = team.find(t => (t.id || t._id) === a.employeeId);
+    return a.date === dateFilter && emp && emp.role !== 'Admin' && emp.role !== 'Super Admin' && emp.role !== 'Manager';
+  });
   const presentCount = todayAtt.filter(a => a.attendanceStatus === 'Present').length;
   const lateCount = todayAtt.filter(a => a.attendanceStatus === 'Late').length;
   const absentCount = Math.max(0, activePersonnel.length - todayAtt.length);
@@ -219,9 +228,13 @@ const AttendanceTab = ({ attendance, dateFilter, setDateFilter, search, setSearc
     setMarking(true);
     setError('');
     try {
+      const token = localStorage.getItem('nexov_token') || '';
       const res = await fetch(`${API_URL}/attendance/checkin`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ employeeId: markEmpId, remarks: `Marked by Admin as ${markStatus}` })
       });
       const data = await res.json();
@@ -282,7 +295,9 @@ const AttendanceTab = ({ attendance, dateFilter, setDateFilter, search, setSearc
                   <button 
                     onClick={async () => {
                       if (window.confirm('Delete this attendance record?')) {
-                        const res = await fetch(`${API_URL}/attendance/${a.id}`, { method: 'DELETE' });
+                        const token = localStorage.getItem('nexov_token') || '';
+                        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                        const res = await fetch(`${API_URL}/attendance/${a.id}`, { method: 'DELETE', headers });
                         if (res.ok && onRefresh) onRefresh();
                       }
                     }}
@@ -407,9 +422,13 @@ const DirectoryTab = ({ team, search, setSearch, onTeamUpdated }) => {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const token = localStorage.getItem('nexov_token') || '';
       const res = await fetch(`${API_URL}/team/invite`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(form)
       });
       if (res.ok) {
@@ -424,7 +443,9 @@ const DirectoryTab = ({ team, search, setSearch, onTeamUpdated }) => {
   const handleDelete = async (id) => {
     if (!window.confirm('Remove this employee from the system?')) return;
     try {
-      const res = await fetch(`${API_URL}/team/${id}`, { method: 'DELETE' });
+      const token = localStorage.getItem('nexov_token') || '';
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const res = await fetch(`${API_URL}/team/${id}`, { method: 'DELETE', headers });
       if (res.ok && onTeamUpdated) onTeamUpdated();
     } catch (err) { console.error(err); }
   };

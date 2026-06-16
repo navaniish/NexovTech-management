@@ -19,7 +19,9 @@ import {
   EyeOff,
   AlertOctagon,
   Cpu,
-  ChevronDown
+  ChevronDown,
+  Mic,
+  MicOff
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -44,6 +46,9 @@ const AIAssistant = () => {
   const [adminCreds, setAdminCreds] = useState({ email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
 
+  // Voice simulator state
+  const [isListening, setIsListening] = useState(false);
+
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -55,6 +60,15 @@ const AIAssistant = () => {
   const handleCommand = (cmd) => {
     setInput(cmd);
     processCommand(cmd);
+  };
+
+  const startVoiceListening = () => {
+    setIsListening(true);
+    // Simulate listening
+    setTimeout(() => {
+      setIsListening(false);
+      setInput("Synchronize attendance nodes");
+    }, 3000);
   };
 
   const processCommand = async (text) => {
@@ -226,7 +240,7 @@ const AIAssistant = () => {
 
   return (
     <>
-      {/* Floating Toggle */}
+      {/* Floating Toggle - sits at bottom-6 on mobile */}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -266,7 +280,7 @@ const AIAssistant = () => {
             initial={{ opacity: 0, y: 100, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.9 }}
-            className={`fixed bottom-0 right-0 md:bottom-28 md:right-8 w-full md:w-[360px] h-[85vh] md:h-[580px] ${theme.bg} border ${theme.border} rounded-t-[32px] md:rounded-[32px] shadow-[0_50px_100px_rgba(0,0,0,0.8)] flex flex-col z-[101] overflow-hidden`}
+            className={`fixed inset-0 md:inset-auto md:bottom-28 md:right-8 w-full h-[100dvh] md:w-[360px] md:h-[580px] ${theme.bg} border ${theme.border} rounded-none md:rounded-[32px] shadow-[0_50px_100px_rgba(0,0,0,0.8)] flex flex-col z-[101] overflow-hidden`}
           >
             {/* Header */}
             <div className={`p-4 ${theme.header} border-b flex items-center justify-between`}>
@@ -297,104 +311,154 @@ const AIAssistant = () => {
               </div>
             </div>
 
-            {/* Messages */}
-            <div
-              ref={scrollRef}
-              className="flex-1 overflow-y-auto p-4 md:p-5 space-y-5 md:space-y-6 custom-scrollbar"
-            >
-              {messages.map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
-                  <div className={`flex gap-3 max-w-[92%] ${msg.role === 'assistant' ? '' : 'flex-row-reverse'}`}>
-                    <div className={`w-8 h-8 rounded-lg overflow-hidden shrink-0 flex items-center justify-center border ${
-                      msg.role === 'assistant' 
-                        ? (authState !== 'NORMAL' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500' : 'bg-white/5 border-white/10') 
-                        : 'bg-white/10 text-brand-400'
-                    }`}>
-                      {msg.role === 'assistant' ? (
-                        authState !== 'NORMAL' ? (msg.type === 'error' ? <AlertOctagon size={16} /> : <Terminal size={16} />) : <Cpu size={16} />
-                      ) : <User size={16} />}
-                    </div>
-                    <div className={`p-3.5 rounded-2xl text-[11px] font-bold leading-relaxed border ${
-                      msg.role === 'assistant' 
-                        ? (msg.type === 'security' || authState !== 'NORMAL' 
-                            ? 'bg-yellow-500/5 text-yellow-200 border-yellow-500/20 shadow-[0_0_20px_rgba(234,179,8,0.05)]' 
-                            : (msg.type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : theme.bubble))
-                        : 'bg-brand-600 text-white shadow-xl border-brand-500'
-                    }`}>
-                      {msg.content}
-                    </div>
+            {isListening ? (
+              /* Voice Listening Simulator HUD */
+              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center bg-[#090d16]/95 relative">
+                <div className="text-brand-500 mb-6 relative">
+                  <div className="absolute inset-0 bg-brand-500/20 blur-xl rounded-full scale-150 animate-pulse" />
+                  <div className="w-20 h-20 bg-brand-500/10 border border-brand-500/30 rounded-full flex items-center justify-center relative z-10 animate-bounce">
+                    <Mic size={36} className="text-brand-400" />
                   </div>
                 </div>
-              ))}
-              {isTyping && (
-                <div className="flex justify-start">
-                  <div className={`${theme.bubble} p-3 rounded-2xl flex gap-1.5`}>
-                    {[0, 1, 2].map(i => (
-                      <motion.div 
-                        key={i}
-                        animate={{ opacity: [0.2, 1, 0.2] }} 
-                        transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }} 
-                        className={`w-1.5 h-1.5 rounded-full ${authState !== 'NORMAL' ? 'bg-yellow-500' : 'bg-brand-400'}`} 
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Input Area */}
-            <div className={`p-4 md:p-5 ${theme.header} border-t pb-8 md:pb-5`}>
-              <form
-                onSubmit={(e) => { e.preventDefault(); processCommand(input); }}
-                className="relative"
-              >
-                <input
-                  type={authState === 'AWAITING_PASSWORD' && !showPass ? 'password' : 'text'}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder={authState === 'NORMAL' ? "Type a command..." : (authState === 'AWAITING_EMAIL' ? "Enter Admin Email..." : "Enter Access Key...")}
-                  className={`w-full ${authState !== 'NORMAL' ? 'bg-black border-yellow-500/30 focus:border-yellow-500 focus:ring-yellow-500/20' : 'bg-slate-800/80 border-slate-600/50 focus:border-brand-500 focus:ring-brand-500/20'} border rounded-2xl py-4 pl-5 pr-14 text-[13px] font-bold text-white outline-none transition-all shadow-inner`}
-                />
+                <h4 className="text-sm font-black uppercase tracking-[0.2em] text-white italic mb-2">Voice Sync Initiated</h4>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest max-w-[200px] leading-relaxed mb-8">Speak now... Orchestrator is analyzing vocal signature frequencies.</p>
                 
-                {authState === 'AWAITING_PASSWORD' && (
-                  <button 
-                    type="button" 
-                    onClick={() => setShowPass(!showPass)}
-                    className="absolute right-14 top-1/2 -translate-y-1/2 p-2 text-yellow-500/50 hover:text-yellow-500 transition-colors"
-                  >
-                    {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={!input.trim()}
-                  className={`absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl text-white transition-all shadow-lg disabled:opacity-0 disabled:scale-90 ${
-                    authState !== 'NORMAL' ? 'bg-yellow-600 hover:bg-yellow-500' : 'bg-brand-600 hover:bg-brand-500'
-                  }`}
-                >
-                  <Send size={16} className="ml-0.5" />
-                </button>
-              </form>
-              
-              {authState === 'NORMAL' && (
-                <div className="mt-4 flex gap-2 overflow-x-auto no-scrollbar">
-                  {[
-                    { label: 'Payroll', cmd: 'Audit Payroll' },
-                    { label: 'Team', cmd: 'Roster Check' },
-                    { label: 'Security', cmd: 'System Status' },
-                  ].map((chip, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleCommand(chip.cmd)}
-                      className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-lg text-[9px] font-black text-white/40 uppercase tracking-widest hover:bg-brand-600 hover:text-white hover:border-brand-500 transition-all whitespace-nowrap"
-                    >
-                      {chip.label}
-                    </button>
+                <div className="flex items-end justify-center gap-1.5 h-12 mb-8">
+                  {[...Array(9)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="w-1.5 bg-brand-500 rounded-full"
+                      animate={{
+                        height: [12, Math.random() * 40 + 12, 12]
+                      }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 0.5 + i * 0.07,
+                        ease: "easeInOut"
+                      }}
+                    />
                   ))}
                 </div>
-              )}
-            </div>
+                
+                <button 
+                  onClick={() => setIsListening(false)} 
+                  className="px-6 py-3 bg-white/5 border border-white/10 text-rose-500 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-500/10 hover:text-white transition-all cursor-pointer"
+                >
+                  Cancel Sync
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Messages */}
+                <div
+                  ref={scrollRef}
+                  className="flex-1 overflow-y-auto p-4 md:p-5 space-y-5 md:space-y-6 custom-scrollbar"
+                >
+                  {messages.map((msg, idx) => (
+                    <div key={idx} className={`flex ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}>
+                      <div className={`flex gap-3 max-w-[92%] ${msg.role === 'assistant' ? '' : 'flex-row-reverse'}`}>
+                        <div className={`w-8 h-8 rounded-lg overflow-hidden shrink-0 flex items-center justify-center border ${
+                          msg.role === 'assistant' 
+                            ? (authState !== 'NORMAL' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500' : 'bg-white/5 border-white/10') 
+                            : 'bg-white/10 text-brand-400'
+                        }`}>
+                          {msg.role === 'assistant' ? (
+                            authState !== 'NORMAL' ? (msg.type === 'error' ? <AlertOctagon size={16} /> : <Terminal size={16} />) : <Cpu size={16} />
+                          ) : <User size={16} />}
+                        </div>
+                        <div className={`p-3.5 rounded-2xl text-[11px] font-bold leading-relaxed border ${
+                          msg.role === 'assistant' 
+                            ? (msg.type === 'security' || authState !== 'NORMAL' 
+                                ? 'bg-yellow-500/5 text-yellow-200 border-yellow-500/20 shadow-[0_0_20px_rgba(234,179,8,0.05)]' 
+                                : (msg.type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : theme.bubble))
+                            : 'bg-brand-600 text-white shadow-xl border-brand-500'
+                        }`}>
+                          {msg.content}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {isTyping && (
+                    <div className="flex justify-start">
+                      <div className={`${theme.bubble} p-3 rounded-2xl flex gap-1.5`}>
+                        {[0, 1, 2].map(i => (
+                          <motion.div 
+                            key={i}
+                            animate={{ opacity: [0.2, 1, 0.2] }} 
+                            transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }} 
+                            className={`w-1.5 h-1.5 rounded-full ${authState !== 'NORMAL' ? 'bg-yellow-500' : 'bg-brand-400'}`} 
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Input Area */}
+                <div className={`p-4 md:p-5 ${theme.header} border-t pb-8 md:pb-5`}>
+                  <form
+                    onSubmit={(e) => { e.preventDefault(); processCommand(input); }}
+                    className="relative"
+                  >
+                    <input
+                      type={authState === 'AWAITING_PASSWORD' && !showPass ? 'password' : 'text'}
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder={authState === 'NORMAL' ? "Type a command..." : (authState === 'AWAITING_EMAIL' ? "Enter Admin Email..." : "Enter Access Key...")}
+                      className={`w-full ${authState !== 'NORMAL' ? 'bg-black border-yellow-500/30 focus:border-yellow-500 focus:ring-yellow-500/20' : 'bg-slate-800/80 border-slate-600/50 focus:border-brand-500 focus:ring-brand-500/20'} border rounded-2xl py-4 pl-5 pr-24 text-[13px] font-bold text-white outline-none transition-all shadow-inner`}
+                    />
+                    
+                    {authState === 'AWAITING_PASSWORD' && (
+                      <button 
+                        type="button" 
+                        onClick={() => setShowPass(!showPass)}
+                        className="absolute right-24 top-1/2 -translate-y-1/2 p-2 text-yellow-500/50 hover:text-yellow-500 transition-colors"
+                      >
+                        {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    )}
+
+                    {authState === 'NORMAL' && (
+                      <button 
+                        type="button" 
+                        onClick={startVoiceListening}
+                        className="absolute right-12 top-1/2 -translate-y-1/2 p-2.5 text-brand-400 hover:text-brand-300 transition-colors"
+                      >
+                        <Mic size={16} />
+                      </button>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={!input.trim()}
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl text-white transition-all shadow-lg disabled:opacity-0 disabled:scale-90 ${
+                        authState !== 'NORMAL' ? 'bg-yellow-600 hover:bg-yellow-500' : 'bg-brand-600 hover:bg-brand-500'
+                      }`}
+                    >
+                      <Send size={16} className="ml-0.5" />
+                    </button>
+                  </form>
+                  
+                  {authState === 'NORMAL' && (
+                    <div className="mt-4 flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                      {[
+                        { label: 'Payroll', cmd: 'Audit Payroll' },
+                        { label: 'Team', cmd: 'Roster Check' },
+                        { label: 'Security', cmd: 'System Status' },
+                      ].map((chip, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleCommand(chip.cmd)}
+                          className="px-3 py-1.5 bg-white/5 border border-white/5 rounded-lg text-[9px] font-black text-white/40 uppercase tracking-widest hover:bg-brand-600 hover:text-white hover:border-brand-500 transition-all whitespace-nowrap"
+                        >
+                          {chip.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

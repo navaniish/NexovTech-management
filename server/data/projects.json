@@ -1,5 +1,31 @@
 [
   {
+    "id": "5IuYXrVMAcXHsToB86z7",
+    "createdAt": "2026-06-15T07:19:46.991Z",
+    "githubRepoUrl": "https://github.com/nexovtech-simulation/acme-test-corp---a-i-solutions",
+    "client": "Acme Test Corp",
+    "description": "Project Brief: Acme Test Corp's AISolutions project aims to develop a scalable, Node.js-based platform integrating React for front-end and MongoDB for database management, within the specified budget of $120,000. The project will prioritize seamless integration, user-friendly interface, and robust data storage. The team will design a modular, secure architecture to meet the evolving needs of Acme Test Corp's business operations.",
+    "progress": 0,
+    "team": [
+      {
+        "id": "wezrxkT3lmKjO5yZLtx6",
+        "name": "Traced Analyst",
+        "email": "test_traced_user@nexovtech.com",
+        "role": "Security Analyst"
+      },
+      {
+        "id": "L2CAoeF1K5TuHB71HVzb4oNvzwy2",
+        "name": "Saranya Gunda",
+        "email": "gundasaranya.nexovtech@gmail.com",
+        "role": "DEVELOPER"
+      }
+    ],
+    "projectName": "Acme Test Corp - A I Solutions",
+    "budget": 120000,
+    "status": "In Progress",
+    "invoiceUrl": "/uploads/invoices/invoice-5IuYXrVMAcXHsToB86z7.pdf"
+  },
+  {
     "id": "HqUlSnIReYXBWrmN2JwK",
     "createdAt": {
       "_seconds": 1778953703,
@@ -26,5 +52,122 @@
     "title": "learn these",
     "budget": 0,
     "status": "Planning"
+  },
+  {
+    "id": "Irw5q7C6IfTSnFXey4rY",
+    "createdAt": "2026-06-15T07:22:26.785Z",
+    "githubRepoUrl": "https://github.com/nexovtech-simulation/acme-test-corp---a-i-solutions",
+    "client": "Acme Test Corp",
+    "description": "The NEXA Agentic AI Project Brief is as follows:\n\nFor Acme Test Corp, we propose the development of an AI-driven solution leveraging Node.js, React, and MongoDB to create a scalable and user-friendly interface for their AISolutions, with a budget of $120,000 to ensure seamless integration and high-quality delivery. The project aims to capitalize on the chosen tech stack to create a cutting-edge platform that effectively addresses the client's business needs and requirements. By deploying a robust and dynamic solution, we can optimize operational efficiency and enhance user experience, setting a strong foundation for Acme Test Corp's future growth and innovation.",
+    "progress": 0,
+    "team": [
+      {
+        "id": "wezrxkT3lmKjO5yZLtx6",
+        "name": "Traced Analyst",
+        "email": "test_traced_user@nexovtech.com",
+        "role": "Security Analyst"
+      },
+      {
+        "id": "rWHj3Vg3YQY7es1PyT3Q",
+        "name": "MANI CHARAN TEJA ",
+        "email": "manicharanteja.nexovtech@gmail.com",
+        "role": "Editor"
+      }
+    ],
+    "projectName": "Acme Test Corp - A I Solutions",
+    "budget": 120000,
+    "status": "In Progress",
+    "invoiceUrl": "/uploads/invoices/invoice-Irw5q7C6IfTSnFXey4rY.pdf"
+  },
+  {
+    "id": "cDI09YBIITCHkwUTyvJO",
+    "createdAt": {
+      "_seconds": 1781274778,
+      "_nanoseconds": 783000000
+    },
+    "progress": 0,
+    "client": {
+      "name": ""
+    },
+    "team": [],
+    "deadline": "2026-06-13",
+    "priority": "Medium",
+    "title": "Hii",
+    "budget": 3000,
+    "status": "Planning"
+  },
+  {
+    "id": "mt2NohMdHqvCRiEPVtax",
+    "createdAt": "2026-06-15T06:23:47.437Z",
+    "client": "NEXOV Testing Corp",
+    "description": "Provide automated services matching AISolutions specs.",
+    "progress": 0,
+    "team": [
+      {
+        "id": "rWHj3Vg3YQY7es1PyT3Q",
+        "name": "MANI CHARAN TEJA ",
+        "email": "manicharanteja.nexovtech@gmail.com",
+        "role": "Editor"
+      },
+      {
+        "id": "tPjcv5Z4RbfkshESoh4B",
+        "name": "REKHA SIDHARDHA",
+        "email": "sidhardharekha.nexovtech@gmail.com",
+        "role": "Editor"
+      }
+    ],
+    "projectName": "NEXOV Testing Corp - A I Solutions",
+    "budget": 1125000,
+    "status": "In Progress"
+  },
+  {
+    "id": "o0xYWcAfcChfC9JKdQmp",
+    "createdAt": "2026-06-15T07:19:05.858Z",
+    "githubRepoUrl": "https://github.com/nexovtech-simulation/acme-test-corp---a-i-solutions",
+    "client": "Acme Test Corp",
+    "description": "As the NEXA Agentic AI Project Architect, we propose a project to design and develop a cutting-edge AISolutions platform for Acme Test Corp utilizing a Node.js backend, React frontend, and MongoDB database, aligned with the $120,000 budget to deliver a scalable, secure, and user-centric solution. This platform will enable seamless integration of artificial intelligence, IoT, and data analytics to drive business growth and competitiveness. Key features will include real-time data processing, predictive analytics, and robust API management to ensure a comprehensive AISolutions experience.",
+    "progress": 0,
+    "team": [
+      {
+        "id": "wezrxkT3lmKjO5yZLtx6",
+        "name": "Traced Analyst",
+        "email": "test_traced_user@nexovtech.com",
+        "role": "Security Analyst"
+      },
+      {
+        "id": "rWHj3Vg3YQY7es1PyT3Q",
+        "name": "MANI CHARAN TEJA ",
+        "email": "manicharanteja.nexovtech@gmail.com",
+        "role": "Editor"
+      }
+    ],
+    "projectName": "Acme Test Corp - A I Solutions",
+    "budget": 120000,
+    "status": "In Progress",
+    "invoiceUrl": "/uploads/invoices/invoice-o0xYWcAfcChfC9JKdQmp.pdf"
+  },
+  {
+    "id": "s3ZrhzViZ9LylpoGKqj2",
+    "createdAt": "2026-06-15T06:24:19.110Z",
+    "client": "NEXOV Testing Corp",
+    "description": "Provide automated services matching AISolutions specs.",
+    "progress": 0,
+    "team": [
+      {
+        "id": "tPjcv5Z4RbfkshESoh4B",
+        "name": "REKHA SIDHARDHA",
+        "email": "sidhardharekha.nexovtech@gmail.com",
+        "role": "Editor"
+      },
+      {
+        "id": "L2CAoeF1K5TuHB71HVzb4oNvzwy2",
+        "name": "Saranya Gunda",
+        "email": "gundasaranya.nexovtech@gmail.com",
+        "role": "DEVELOPER"
+      }
+    ],
+    "projectName": "NEXOV Testing Corp - A I Solutions",
+    "budget": 1000000,
+    "status": "In Progress"
   }
 ]

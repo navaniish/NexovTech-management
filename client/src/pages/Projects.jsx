@@ -19,7 +19,9 @@ import {
   Calendar,
   Loader2,
   Trash2,
-  Globe
+  Globe,
+  Code,
+  FileText
 } from 'lucide-react';
 
 import API_URL from '../config';
@@ -40,6 +42,30 @@ const TaskCard = ({ project }) => (
         {project.priority || 'Medium'}
       </div>
       <div className="flex items-center gap-2">
+        {project.githubRepoUrl && (
+          <a
+            href={project.githubRepoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-slate-400 hover:text-indigo-600 transition-colors p-1 flex items-center justify-center"
+            title="GitHub Repository"
+          >
+            <Code size={16} />
+          </a>
+        )}
+        {project.invoiceUrl && (
+          <a
+            href={project.invoiceUrl.startsWith('http') ? project.invoiceUrl : `${API_URL.replace('/api', '')}${project.invoiceUrl}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-slate-400 hover:text-indigo-600 transition-colors p-1 flex items-center justify-center"
+            title="Project Invoice"
+          >
+            <FileText size={16} />
+          </a>
+        )}
         <button 
           onClick={(e) => {
             e.stopPropagation();
@@ -47,7 +73,7 @@ const TaskCard = ({ project }) => (
               project.onDelete(project.id || project._id);
             }
           }}
-          className="text-slate-400 hover:text-rose-500 transition-colors p-1"
+          className="text-slate-400 hover:text-rose-500 transition-colors p-1 flex items-center justify-center"
         >
           <Trash2 size={16} />
         </button>
@@ -130,19 +156,29 @@ const Projects = () => {
 
   const fetchProjects = async (silent = false) => {
     try {
+      const token = localStorage.getItem('nexov_token') || '';
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
       const [pRes, tRes] = await Promise.all([
-        fetch(`${API_URL}/projects`),
-        fetch(`${API_URL}/team`)
+        fetch(`${API_URL}/projects`, { headers }),
+        fetch(`${API_URL}/team`, { headers })
       ]);
       if (pRes.ok) {
         const pData = await pRes.json();
         setProjects(pData);
-        localStorage.setItem('nexov_projects', JSON.stringify(pData));
+        try {
+          localStorage.setItem('nexov_projects', JSON.stringify(pData));
+        } catch (storageErr) {
+          console.warn('⚠️ localStorage quota exceeded for projects:', storageErr.message);
+        }
       }
       if (tRes.ok) {
         const tData = await tRes.json();
         setTeamMembers(tData);
-        localStorage.setItem('nexov_team_members', JSON.stringify(tData));
+        try {
+          localStorage.setItem('nexov_team_members', JSON.stringify(tData));
+        } catch (storageErr) {
+          console.warn('⚠️ localStorage quota exceeded for team members:', storageErr.message);
+        }
       }
     } catch (err) {
       if (!silent) setError(err.message);
@@ -153,7 +189,12 @@ const Projects = () => {
 
   const handleDeleteProject = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/projects/${id}`, { method: 'DELETE' });
+      const token = localStorage.getItem('nexov_token') || '';
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const response = await fetch(`${API_URL}/projects/${id}`, { 
+        method: 'DELETE',
+        headers
+      });
       if (response.ok) {
         showToast('Mission archived.');
         fetchProjects(true);
@@ -168,9 +209,13 @@ const Projects = () => {
   const handleCreateProject = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('nexov_token') || '';
       const response = await fetch(`${API_URL}/projects`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(newProject)
       });
       if (response.ok) {
@@ -214,7 +259,7 @@ const Projects = () => {
   );
 
   return (
-    <div className="w-full h-full flex flex-col p-4 sm:p-6 md:p-10 space-y-6 md:space-y-10 animate-in fade-in duration-1000 overflow-y-auto scrollbar-hide">
+    <div className="w-full h-full flex flex-col p-4 sm:p-6 md:p-10 space-y-6 md:space-y-10 animate-in fade-in duration-1000">
       
       <AnimatePresence>
         {notification && (

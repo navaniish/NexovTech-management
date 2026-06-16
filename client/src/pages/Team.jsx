@@ -137,9 +137,11 @@ const Team = () => {
     setLoading(true);
     setError(null);
     try {
+      const token = localStorage.getItem('nexov_token') || '';
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
       const [teamRes, projectsRes] = await Promise.all([
-        fetch(`${API_URL}/team?t=${Date.now()}`),
-        fetch(`${API_URL}/projects?t=${Date.now()}`)
+        fetch(`${API_URL}/team?t=${Date.now()}`, { headers }),
+        fetch(`${API_URL}/projects?t=${Date.now()}`, { headers })
       ]);
       
       if (teamRes.ok) {
@@ -183,10 +185,14 @@ const Team = () => {
   const handleInvite = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('nexov_token') || '';
       // 1. Sync with Legacy Backend
       const response = await fetch(`${API_URL}/team/invite`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(inviteData)
       });
       
@@ -222,8 +228,12 @@ const Team = () => {
     }
 
     try {
+      const token = localStorage.getItem('nexov_token') || '';
       const response = await axios.post(`${API_URL}/tasks`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
       });
       
       if (response.status === 200 || response.status === 201) {
@@ -241,7 +251,12 @@ const Team = () => {
   const confirmRemove = async () => {
     const { id } = removeModal;
     try {
-      const response = await fetch(`${API_URL}/team/${id}`, { method: 'DELETE' });
+      const token = localStorage.getItem('nexov_token') || '';
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const response = await fetch(`${API_URL}/team/${id}`, { 
+        method: 'DELETE',
+        headers
+      });
       if (response.ok) {
         setMembers(prev => prev.filter(m => (m.id !== id && m._id !== id)));
         showNotification('Specialist removed from roster.');

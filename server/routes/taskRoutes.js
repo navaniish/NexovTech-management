@@ -4,13 +4,14 @@ const multer = require('multer');
 const path = require('path');
 const fallbackDb = require('../utils/fallbackDb');
 const { bucket } = require('../firebaseAdmin');
+const { auth } = require('../middleware/auth');
  
 // GET /tasks — get all tasks (Admin)
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
-    const tasks = await fallbackDb.find('tasks', {});
-    const projects = await fallbackDb.find('projects', {});
-    const users = await fallbackDb.find('users', {});
+    const tasks = await fallbackDb.find('tasks', { tenantId: req.tenantId || 'org_default' });
+    const projects = await fallbackDb.find('projects', { tenantId: req.tenantId || 'org_default' });
+    const users = await fallbackDb.find('users', { tenantId: req.tenantId || 'org_default' });
     
     const populated = tasks.map(task => {
       const project = projects.find(p => p.id === task.projectId || p._id === task.projectId);
@@ -63,15 +64,15 @@ router.get('/download/:filename', async (req, res) => {
 });
 
 // GET /tasks/my — tasks assigned to logged-in user
-router.get('/my', async (req, res) => {
-  const userId = req.query.userId;
+router.get('/my', auth, async (req, res) => {
+  const userId = req.query.userId || req.user.id || req.user._id;
   if (!userId) return res.status(400).json({ message: 'User ID is required' });
   
   try {
-    const tasks = await fallbackDb.find('tasks', { assignedTo: userId });
+    const tasks = await fallbackDb.find('tasks', { assignedTo: userId, tenantId: req.tenantId || 'org_default' });
     
     // Manual Populate for Project Info
-    const projects = await fallbackDb.find('projects', {});
+    const projects = await fallbackDb.find('projects', { tenantId: req.tenantId || 'org_default' });
     const tasksWithProject = tasks.map(task => {
       const project = projects.find(p => p.id === task.projectId || p._id === task.projectId);
       return { ...task, projectId: project || { title: 'Unknown Project', sector: 'General' } };
@@ -84,11 +85,14 @@ router.get('/my', async (req, res) => {
 });
 
 // PUT /tasks/:id/status — update task status
-router.put('/:id/status', async (req, res) => {
+router.put('/:id/status', auth, async (req, res) => {
   const { status } = req.body;
   try {
+    const task = await fallbackDb.findById('tasks', req.params.id);
+    if (!task || task.tenantId !== (req.tenantId || 'org_default')) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
     const updated = await fallbackDb.update('tasks', req.params.id, { status });
-    if (!updated) return res.status(404).json({ message: 'Task not found' });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: 'Failed to update mission status' });
@@ -96,14 +100,16 @@ router.put('/:id/status', async (req, res) => {
 });
 
 // POST /tasks/:id/comment — add comment
-router.post('/:id/comment', async (req, res) => {
+router.post('/:id/comment', auth, async (req, res) => {
   const { text, userId } = req.body;
   try {
     const task = await fallbackDb.findById('tasks', req.params.id);
-    if (!task) return res.status(404).json({ message: 'Task not found' });
+    if (!task || task.tenantId !== (req.tenantId || 'org_default')) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
     
     const comments = task.comments || [];
-    comments.push({ user: userId, text, date: new Date() });
+    comments.push({ user: userId || req.user.id || req.user._id, text, date: new Date() });
     
     const updated = await fallbackDb.update('tasks', req.params.id, { comments });
     res.json(updated);
@@ -113,11 +119,14 @@ router.post('/:id/comment', async (req, res) => {
 });
 
 // DELETE /tasks/:id — remove task
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
-    // Optional: Delete from Firebase Storage too
     const task = await fallbackDb.findById('tasks', req.params.id);
-    if (task && task.files && bucket) {
+    if (!task || task.tenantId !== (req.tenantId || 'org_default')) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    // Optional: Delete from Firebase Storage too
+    if (task.files && bucket) {
       for (const f of task.files) {
         try { await bucket.file(`tasks/${f.filename}`).delete(); } catch(e) {}
       }
@@ -130,7 +139,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // POST /tasks — create new task (Admin) with CLOUD file support
-router.post('/', upload.array('attachments'), async (req, res) => {
+router.post('/', auth, upload.array('attachments'), async (req, res) => {
   console.log('🚀 MISSION_CONTROL: Received cloud task assignment request');
   
   try {
@@ -167,6 +176,7 @@ router.post('/', upload.array('attachments'), async (req, res) => {
       ...taskData,
       files: files.length > 0 ? files : (typeof taskData.files === 'string' ? JSON.parse(taskData.files || '[]') : taskData.files || []),
       status: taskData.status || 'Assigned',
+      tenantId: req.tenantId || 'org_default',
       createdAt: new Date().toISOString()
     };
     
@@ -181,6 +191,7 @@ router.post('/', upload.array('attachments'), async (req, res) => {
         message: `You have been assigned to: ${newTask.title}`,
         link: '/employee/tasks',
         read: false,
+        tenantId: req.tenantId || 'org_default',
         createdAt: new Date().toISOString()
       });
     } catch (notifErr) {

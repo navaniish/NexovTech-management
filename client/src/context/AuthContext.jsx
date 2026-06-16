@@ -366,6 +366,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const biometricLogin = async (email, template, otpToken = null, livenessPassed = true) => {
+    setLoading(true);
+    try {
+      const BiometricsService = (await import('../services/biometricsService')).default;
+      const data = await BiometricsService.verify(email, template, otpToken, livenessPassed);
+      
+      if (data.requireOTP) {
+        return { success: true, requireOTP: true, message: data.message };
+      }
+
+      localStorage.setItem('nexov_token', data.token);
+      localStorage.setItem('nexov_user', JSON.stringify(data.user));
+      setUser(data.user);
+
+      toast.success('Access Granted — Facial biometric identity verified', {
+        style: { background: '#000', color: '#fff', fontSize: '10px', fontWeight: '900' }
+      });
+      return { success: true };
+    } catch (err) {
+      console.error("Biometric login failure:", err);
+      return { success: false, message: err.message || "Facial authentication failed." };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const updateUser = (newData) => {
     setUser(prev => {
       const updated = { ...prev, ...newData };
@@ -387,7 +413,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, signInWithGoogle, adminLogin, adminOverride, logout, updateUser, loading }}>
+    <AuthContext.Provider value={{ user, signInWithGoogle, adminLogin, adminOverride, biometricLogin, logout, updateUser, loading }}>
       {loading ? (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center relative overflow-hidden">
           {/* Subtle Background Asset */}

@@ -1,0 +1,11 @@
+[
+  {
+    "id": "LuCv9ZChnQGtIcETdrN0",
+    "createdAt": "2026-06-10T17:46:18.817Z",
+    "clientId": "fallback_client_id_2026",
+    "inactiveDays": 60,
+    "isResolved": false,
+    "aiSuggestion": "Client [Apex Dental Care] has been inactive for 60 days. Recommended Action: Send follow-up proposal with special retention offer.",
+    "engagementLevel": "Critical"
+  }
+]

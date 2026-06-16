@@ -213,7 +213,7 @@ const MyAttendance = () => {
                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Temporal History</h3>
                <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-brand-600 transition-colors">Export Logs</button>
             </div>
-            <div className="overflow-x-auto w-full">
+            <div className="hidden sm:block overflow-x-auto w-full">
                <table className="w-full min-w-[700px]">
                   <thead>
                      <tr className="bg-slate-50/50">
@@ -256,13 +256,44 @@ const MyAttendance = () => {
                      ))}
                   </tbody>
                </table>
-               {records.length === 0 && (
-                  <div className="py-20 text-center space-y-2 opacity-30">
-                     <MousePointer2 size={40} className="mx-auto" />
-                     <p className="text-[10px] font-black uppercase tracking-[0.2em]">Initiate first entry to populate history</p>
-                  </div>
-               )}
             </div>
+
+            {/* Mobile Card-Based History Layout */}
+            <div className="sm:hidden divide-y divide-slate-100">
+               {records.slice(0, 10).map((r, i) => (
+                  <div key={i} className="p-5 flex flex-col gap-3 hover:bg-slate-50/30 transition-all">
+                     <div className="flex items-center justify-between">
+                        <span className="text-[12px] font-black text-slate-900 uppercase tracking-tight">{r.date}</span>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${
+                           r.attendanceStatus === 'Present' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                           r.attendanceStatus === 'Late' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                           'bg-rose-50 text-rose-600 border-rose-100'
+                        }`}>{r.attendanceStatus}</span>
+                     </div>
+                     <div className="grid grid-cols-3 gap-2 text-center mt-1">
+                        <div className="bg-slate-50/50 p-2.5 rounded-xl border border-slate-100">
+                           <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Inflow</span>
+                           <span className="text-[10px] font-bold text-slate-700">{r.checkIn ? new Date(r.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+                        </div>
+                        <div className="bg-slate-50/50 p-2.5 rounded-xl border border-slate-100">
+                           <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Outflow</span>
+                           <span className="text-[10px] font-bold text-slate-700">{r.checkOut ? new Date(r.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+                        </div>
+                        <div className="bg-slate-50/50 p-2.5 rounded-xl border border-slate-100">
+                           <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Logged</span>
+                           <span className="text-[10px] font-black text-slate-900">{r.totalHours || 0}h</span>
+                        </div>
+                     </div>
+                  </div>
+               ))}
+            </div>
+
+            {records.length === 0 && (
+               <div className="py-20 text-center space-y-2 opacity-30">
+                  <MousePointer2 size={40} className="mx-auto" />
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em]">Initiate first entry to populate history</p>
+               </div>
+            )}
          </div>
       </div>
     </div>

@@ -18,6 +18,7 @@ const MyTasks = () => {
   const [commentText, setCommentText] = useState('');
   const [updating, setUpdating] = useState(null);
   const [activeTab, setActiveTab] = useState('All');
+  const [expandedTaskId, setExpandedTaskId] = useState(null);
 
   const fetchTasks = async () => {
     // Priority: id (DocID) > _id > firebaseUid
@@ -32,7 +33,12 @@ const MyTasks = () => {
     setError(null);
     try {
       console.log(`📋 MISSION_SYNC: Requesting task registry for specialist [${userId}]...`);
-      const response = await fetch(`${API_URL}/tasks/my?userId=${userId}`);
+      const response = await fetch(`${API_URL}/tasks/my?userId=${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('nexov_token') || localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (!response.ok) throw new Error('Mission Control Link Severed');
       const data = await response.json();
       console.log(`✅ MISSION_SYNC: ${data.length} assignments synchronized.`);
@@ -53,7 +59,10 @@ const MyTasks = () => {
     try { 
       const response = await fetch(`${API_URL}/tasks/${taskId}/status`, { 
         method: 'PUT', 
-        headers: { 'Content-Type': 'application/json' }, 
+        headers: { 
+          'Authorization': `Bearer ${localStorage.getItem('nexov_token') || localStorage.getItem('token')}`,
+          'Content-Type': 'application/json' 
+        }, 
         body: JSON.stringify({ status: newStatus }) 
       }); 
       if (response.ok) {
@@ -71,8 +80,11 @@ const MyTasks = () => {
     try { 
       const response = await fetch(`${API_URL}/tasks/${commentModal}/comment`, { 
         method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ text: commentText, userId: user._id }) 
+        headers: { 
+          'Authorization': `Bearer ${localStorage.getItem('nexov_token') || localStorage.getItem('token')}`,
+          'Content-Type': 'application/json' 
+        }, 
+        body: JSON.stringify({ text: commentText, userId: user._id || user.id }) 
       }); 
       if (response.ok) {
         setTasks(prev => prev.map(t => t._id === commentModal ? { ...t, comments: [...(t.comments || []), { text: commentText, user: user.name, createdAt: new Date().toISOString() }] } : t));
@@ -87,7 +99,12 @@ const MyTasks = () => {
   const handleDeleteTask = async (taskId) => {
     if (!window.confirm('Are you sure you want to terminate this mission?')) return;
     try {
-      const response = await fetch(`${API_URL}/tasks/${taskId}`, { method: 'DELETE' });
+      const response = await fetch(`${API_URL}/tasks/${taskId}`, { 
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('nexov_token') || localStorage.getItem('token')}`
+        }
+      });
       if (response.ok) {
         setTasks(prev => prev.filter(t => (t.id !== taskId && t._id !== taskId)));
       }
@@ -182,97 +199,128 @@ const MyTasks = () => {
            </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
-            {filtered.map((task) => (
-              <motion.div 
-                key={task.id || task._id} 
-                initial={{ opacity: 0, y: 10 }} 
-                animate={{ opacity: 1, y: 0 }}
-                className="glass-card p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 border-slate-100 hover:border-brand-500/30 hover:shadow-2xl transition-all group"
-              >
-                <div className="flex items-start gap-4 md:gap-8 flex-1">
-                  <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shrink-0 transition-transform group-hover:scale-110 ${
-                    task.status === 'Completed' ? 'bg-emerald-50 text-emerald-500' : 
-                    task.status === 'In Progress' ? 'bg-brand-50 text-brand-600' : 'bg-amber-50 text-amber-500'
-                  }`}>
-                    {updating === (task.id || task._id) ? <Loader2 size={20} className="animate-spin" /> : 
-                     task.status === 'Completed' ? <CheckCircle2 size={20} /> : 
-                     task.status === 'In Progress' ? <Zap size={20} /> : <Clock size={20} />}
-                  </div>
-                  
-                  <div className="space-y-2 min-w-0">
-                    <div className="flex items-center gap-3">
-                       <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight group-hover:text-brand-600 transition-colors leading-none truncate">{task.title}</h3>
-                       <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg uppercase ${
-                         task.priority === 'High' ? 'bg-rose-50 text-rose-500 border border-rose-100' : 
-                         task.priority === 'Medium' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-slate-50 text-slate-400 border border-slate-100'
-                       }`}>{task.priority}</span>
+            {filtered.map((task) => {
+              const isExpanded = expandedTaskId === (task.id || task._id);
+              return (
+                <motion.div 
+                  key={task.id || task._id} 
+                  initial={{ opacity: 0, y: 10 }} 
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => {
+                    if (window.innerWidth < 768) {
+                      setExpandedTaskId(isExpanded ? null : (task.id || task._id));
+                    }
+                  }}
+                  className="glass-card p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 border-slate-100 hover:border-brand-500/30 hover:shadow-2xl transition-all group cursor-pointer md:cursor-default"
+                >
+                  <div className="flex items-start gap-4 md:gap-8 flex-1 w-full min-w-0">
+                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shrink-0 transition-transform group-hover:scale-110 ${
+                      task.status === 'Completed' ? 'bg-emerald-50 text-emerald-500' : 
+                      task.status === 'In Progress' ? 'bg-brand-50 text-brand-600' : 'bg-amber-50 text-amber-500'
+                    }`}>
+                      {updating === (task.id || task._id) ? <Loader2 size={20} className="animate-spin" /> : 
+                       task.status === 'Completed' ? <CheckCircle2 size={20} /> : 
+                       task.status === 'In Progress' ? <Zap size={20} /> : <Clock size={20} />}
                     </div>
                     
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-3">
-                       <span className="text-brand-500">{task.projectId?.title || 'Nexus Direct'}</span>
-                       <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-                       <span>Deadline: {formatDate(task.deadline)}</span>
-                    </p>
-                    
-                    {task.description && (
-                      <p className="text-[12px] font-medium text-slate-500 leading-relaxed max-w-2xl line-clamp-2">
-                        {task.description}
-                      </p>
-                    )}
-                    
-                    {task.files && task.files.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-4">
-                        {task.files.map((file, idx) => (
-                          <a 
-                            key={idx} 
-                            href={`${API_URL}/tasks/download/${file.filename}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-brand-500/20 transition-all no-underline group/file"
-                          >
-                             <FileText size={12} className="text-slate-400" />
-                             <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{file.name}</span>
-                             <Download size={12} className="text-slate-300 opacity-0 group-hover/file:opacity-100 transition-opacity" />
-                          </a>
-                        ))}
+                    <div className="space-y-2 min-w-0 flex-1">
+                      <div className="flex items-center justify-between w-full">
+                         <div className="flex items-center gap-3 min-w-0">
+                            <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight group-hover:text-brand-600 transition-colors leading-none truncate">{task.title}</h3>
+                            <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg uppercase shrink-0 ${
+                              task.priority === 'High' ? 'bg-rose-50 text-rose-500 border border-rose-100' : 
+                              task.priority === 'Medium' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-slate-50 text-slate-400 border border-slate-100'
+                            }`}>{task.priority}</span>
+                         </div>
+                         {/* Mobile Expand Chevron Toggle */}
+                         <button
+                           type="button"
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             setExpandedTaskId(isExpanded ? null : (task.id || task._id));
+                           }}
+                           className="md:hidden p-1.5 hover:bg-slate-100 rounded-xl transition-all text-slate-400 shrink-0"
+                         >
+                           <ChevronRight 
+                             size={18} 
+                             className={`transform transition-transform duration-300 ${isExpanded ? 'rotate-90 text-brand-600' : ''}`} 
+                           />
+                         </button>
                       </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 w-full md:w-auto pt-6 md:pt-0 border-t md:border-0 border-slate-50">
-                  <select 
-                    value={task.status} 
-                    onChange={e => handleStatusChange(task.id || task._id, e.target.value)}
-                    disabled={updating === (task.id || task._id)}
-                    className="flex-1 md:flex-none text-[10px] md:text-[11px] font-black px-4 py-3 rounded-xl md:rounded-2xl bg-slate-900 text-white outline-none cursor-pointer hover:bg-brand-600 transition-all disabled:opacity-50 appearance-none min-w-[120px] md:min-w-[140px] text-center"
-                  >
-                    <option>Pending</option>
-                    <option>In Progress</option>
-                    <option>Completed</option>
-                  </select>
-
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => setCommentModal(task.id || task._id)}
-                      className="w-12 h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400 hover:text-brand-600 hover:border-brand-500/20 hover:shadow-xl transition-all relative"
-                    >
-                      <MessageSquare size={20} />
-                      {task.comments?.length > 0 && (
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-brand-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white">{task.comments.length}</span>
+                      
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-3">
+                         <span className="text-brand-500">{task.projectId?.title || 'Nexus Direct'}</span>
+                         <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
+                         <span>Deadline: {formatDate(task.deadline)}</span>
+                      </p>
+                      
+                      {task.description && (
+                        <p className={`text-[12px] font-medium text-slate-500 leading-relaxed max-w-2xl transition-all ${
+                          isExpanded ? 'line-clamp-none mt-2' : 'line-clamp-2 max-md:hidden'
+                        }`}>
+                          {task.description}
+                        </p>
                       )}
-                    </button>
-
-                    <button 
-                      onClick={() => handleDeleteTask(task.id || task._id)}
-                      className="w-12 h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-slate-300 hover:text-rose-500 hover:border-rose-100 hover:shadow-xl transition-all"
-                    >
-                      <Trash2 size={20} />
-                    </button>
+                      
+                      {task.files && task.files.length > 0 && (
+                        <div className={`flex flex-wrap gap-2 mt-4 transition-all ${isExpanded ? 'flex' : 'max-md:hidden'}`} onClick={e => e.stopPropagation()}>
+                          {task.files.map((file, idx) => (
+                            <a 
+                              key={idx} 
+                              href={`${API_URL}/tasks/download/${file.filename}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-xl hover:bg-white hover:border-brand-500/20 transition-all no-underline group/file"
+                            >
+                               <FileText size={12} className="text-slate-400" />
+                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{file.name}</span>
+                               <Download size={12} className="text-slate-300 opacity-0 group-hover/file:opacity-100 transition-opacity" />
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+
+                  <div 
+                    onClick={e => e.stopPropagation()}
+                    className={`flex items-center gap-4 w-full md:w-auto pt-6 md:pt-0 border-t md:border-0 border-slate-50 transition-all ${
+                      isExpanded ? 'flex mt-4' : 'max-md:hidden'
+                    }`}
+                  >
+                    <select 
+                      value={task.status} 
+                      onChange={e => handleStatusChange(task.id || task._id, e.target.value)}
+                      disabled={updating === (task.id || task._id)}
+                      className="flex-1 md:flex-none text-[10px] md:text-[11px] font-black px-4 py-3 rounded-xl md:rounded-2xl bg-slate-900 text-white outline-none cursor-pointer hover:bg-brand-600 transition-all disabled:opacity-50 appearance-none min-w-[120px] md:min-w-[140px] text-center"
+                    >
+                      <option>Pending</option>
+                      <option>In Progress</option>
+                      <option>Completed</option>
+                    </select>
+
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => setCommentModal(task.id || task._id)}
+                        className="w-12 h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400 hover:text-brand-600 hover:border-brand-500/20 hover:shadow-xl transition-all relative"
+                      >
+                        <MessageSquare size={20} />
+                        {task.comments?.length > 0 && (
+                          <span className="absolute -top-1 -right-1 w-5 h-5 bg-brand-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white">{task.comments.length}</span>
+                        )}
+                      </button>
+
+                      <button 
+                        onClick={() => handleDeleteTask(task.id || task._id)}
+                        className="w-12 h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-slate-300 hover:text-rose-500 hover:border-rose-100 hover:shadow-xl transition-all"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </div>
