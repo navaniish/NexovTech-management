@@ -321,7 +321,7 @@ const distributeApkScene = new Scenes.WizardScene(
         source: fs.createReadStream(apkPath),
         filename: 'nexovtech.apk'
       }, {
-        caption: `🛡️ *NexovTech Live Production Android APK*\n\nHello *${match.name}*, your Administrator has sent you the latest production-ready Android APK with the circular logo, live Netlify API integration, and staggered entrance animations. Ready for installation!`,
+        caption: `🛡️ *NexovTech Live Production Android APK*\n\nHello *${match.name}*, your Administrator has sent you the latest production-ready Android APK with the circular logo, live Vercel integration (https://nexovtech-management.vercel.app), and staggered entrance animations. Ready for installation!`,
         parse_mode: 'Markdown'
       });
 

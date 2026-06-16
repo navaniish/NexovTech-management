@@ -78,6 +78,36 @@ app.use('/api/nexa', nexaRoutes);
 app.use('/api/linkedin', linkedinRoutes);
 app.use('/api/executive', executiveRoutes);
 
+// Dynamic Telegram Webhook Setup Endpoint (Bypasses Local Firewalls)
+app.get('/api/set-telegram-webhook', async (req, res) => {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return res.status(500).send('Bot token missing in env');
+  const host = req.get('host');
+  // Support custom domains or Vercel secure headers
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const webhookUrl = `${protocol}://${host}/api/telegram-webhook`;
+  
+  try {
+    const axios = require('axios');
+    console.log(`Setting Telegram webhook dynamically to: ${webhookUrl}`);
+    const response = await axios.get(`https://api.telegram.org/bot${token}/setWebhook`, {
+      params: { url: webhookUrl }
+    });
+    res.json({
+      success: true,
+      webhookUrl,
+      telegramResponse: response.data
+    });
+  } catch (err) {
+    console.error('Failed to set webhook dynamically:', err.message);
+    res.status(500).json({
+      success: false,
+      webhookUrl,
+      error: err.response ? err.response.data : err.message
+    });
+  }
+});
+
 // Telegram Webhook Endpoint
 app.post('/api/telegram-webhook', async (req, res) => {
   if (!tgBot) return res.status(503).send('Bot not initialized');
