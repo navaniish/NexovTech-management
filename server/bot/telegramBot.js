@@ -76,6 +76,8 @@ const recoveryScene = new Scenes.WizardScene(
     const contact = ctx.message.contact;
     const phone = contact.phone_number;
     
+    console.log(`📱 [TELEGRAM_BOT] Phone Shared: ${phone} for TG User: ${ctx.from.id}`);
+    
     // SECURITY CHECK: Ensure the shared contact is actually the user's own contact
     // Telegram sends user_id if the contact belongs to the sender.
     if (!contact.user_id || contact.user_id !== ctx.from.id) {
@@ -665,9 +667,10 @@ Please activate the multi-agent network to analyze this deployment failure, reco
       return ctx.reply(`🚀 *NEXA Agentic AI Admin Online*\n\nWelcome back, ${tgUser.name || tgUser.companyEmail}. I am your Agentic AI Workspace Administrator.\n\nYou can use the menu below for quick actions, or simply chat with me naturally for any workspace assistance.`, { ...menu, parse_mode: 'Markdown' });
     }
     
-    return ctx.reply('👋 Welcome to the NEXA Agentic AI Systems Manager.\n\nPlease share your contact to retrieve your credentials and link your account:', {
+    return ctx.reply('👋 Welcome to the NEXA Agentic AI Systems Manager.\n\nPlease authenticate via email or share your contact to link your account:', {
       reply_markup: {
         keyboard: [
+          [{ text: '🔐 Authenticate via Email' }],
           [{ text: '📱 Get My Credentials (Phone)' }]
         ],
         resize_keyboard: true
