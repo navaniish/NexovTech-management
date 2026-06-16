@@ -937,29 +937,35 @@ function initBot(token) {
   // Only launch polling if NOT serverless and TELEGRAM_POLLING is enabled
   if (!IS_SERVERLESS) {
     if (process.env.TELEGRAM_POLLING === 'true') {
-      const launchBotWithRetry = (retries = 5, delay = 3000) => {
-        console.log('🤖 TELEGRAM_BOT: Deleting any existing webhook to initiate local polling...');
-        bot.telegram.deleteWebhook({ drop_pending_updates: true })
-          .then(() => {
-            console.log('🤖 TELEGRAM_BOT: Webhook deleted successfully. Starting polling in 1.5s...');
-            // Give Telegram ~1.5s to fully propagate the webhook deletion before polling
-            return new Promise(resolve => setTimeout(resolve, 1500));
-          })
-          .then(() => bot.launch())
-          .then(() => {
-            console.log('🤖 TELEGRAM_BOT: Operational and synchronized (Polling).');
-          })
-          .catch((err) => {
-            console.error(`❌ TELEGRAM_BOT_LAUNCH_FAILED: ${err.message}`);
-            if (retries > 0) {
-              console.log(`🔄 Retrying Telegram Bot launch in ${(delay / 1000).toFixed(2)}s... (${retries} retries left)`);
-              setTimeout(() => {
-                launchBotWithRetry(retries - 1, delay * 1.5);
-              }, delay);
-            } else {
-              console.error('❌ TELEGRAM_BOT: Max retries exceeded. Bot is offline.');
-            }
-          });
+      const waitForWebhookClear = async (maxWaitMs = 10000) => {
+        const start = Date.now();
+        while (Date.now() - start < maxWaitMs) {
+          const info = await bot.telegram.getWebhookInfo();
+          if (!info.url || info.url === '') return true; // webhook is gone
+          await new Promise(r => setTimeout(r, 800));
+        }
+        return false; // timed out
+      };
+
+      const launchBotWithRetry = async (retries = 5) => {
+        try {
+          console.log('🤖 TELEGRAM_BOT: Clearing any existing webhook before polling...');
+          await bot.telegram.deleteWebhook({ drop_pending_updates: true });
+          const cleared = await waitForWebhookClear(10000);
+          if (!cleared) throw new Error('Webhook did not clear within 10s');
+          console.log('🤖 TELEGRAM_BOT: Webhook confirmed clear. Launching polling...');
+          await bot.launch();
+          console.log('🤖 TELEGRAM_BOT: Operational and synchronized (Polling).');
+        } catch (err) {
+          console.error(`❌ TELEGRAM_BOT_LAUNCH_FAILED: ${err.message}`);
+          if (retries > 0) {
+            const delay = (6 - retries) * 2000; // 2s, 4s, 6s, 8s, 10s backoff
+            console.log(`🔄 Retrying Telegram Bot launch in ${delay / 1000}s... (${retries} retries left)`);
+            setTimeout(() => launchBotWithRetry(retries - 1), delay);
+          } else {
+            console.error('❌ TELEGRAM_BOT: Max retries exceeded. Bot is offline.');
+          }
+        }
       };
       launchBotWithRetry();
     } else {

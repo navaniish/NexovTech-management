@@ -279,7 +279,8 @@ router.post('/login', async (req, res) => {
     }
 
     // 4. Record Success History
-    const geo = require('geoip-lite').lookup(req.ip || req.headers['x-forwarded-for'] || '127.0.0.1');
+    const geoLookup = require('../utils/geoLookup');
+    const geo = await geoLookup(req.ip || req.headers['x-forwarded-for'] || '127.0.0.1');
     const locationStr = geo ? `${geo.city}, ${geo.region}, ${geo.country}` : 'Remote Gateway';
 
     await fallbackDb.save('loginHistory', {
