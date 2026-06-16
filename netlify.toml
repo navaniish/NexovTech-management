@@ -5,6 +5,25 @@
   [build.environment]
     SECRETS_SCAN_OMIT_PATHS = "server/data/*,PORTALS_GUIDE.md,server/controllers/executiveController.js"
 
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["server/**"]
+  external_node_modules = [
+    "@prisma/client",
+    "firebase-admin",
+    "firebase-admin/app",
+    "mongoose",
+    "telegraf",
+    "geoip-lite",
+    "pdfkit",
+    "socket.io",
+    "bcryptjs",
+    "otplib",
+    "qrcode",
+    "sharp",
+    "multer"
+  ]
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
