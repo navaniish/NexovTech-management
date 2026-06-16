@@ -1,5 +1,7 @@
 const fallbackDb = require('../utils/fallbackDb');
 const { pollLinkedInComments } = require('../services/linkedinPollingService');
+const { compileExecutiveBriefingData } = require('../controllers/executiveController');
+const { sendEmail } = require('../utils/mailer');
 
 let lastTriggeredDate = null;
 
@@ -90,6 +92,59 @@ async function sendDailyAttendanceAlert() {
     
     // Find all linked Telegram accounts
     const linkedUsers = await fallbackDb.find('telegram_users', {}) || [];
+
+    const adminReport = await generateAttendanceReport();
+
+    // -------------------------------------------------------------
+    // PART 0: DISPATCH REAL EMAIL BRIEFINGS TO FOUNDER
+    // -------------------------------------------------------------
+    try {
+      await sendEmail(
+        'daggupatinavaneeswar8980@gmail.com',
+        `[Daily brief] NexovTech Daily Attendance Alert - ${today}`,
+        adminReport
+      );
+    } catch (mailErr) {
+      console.error("⏰ SCHEDULER: Failed to email daily attendance report:", mailErr.message);
+    }
+
+    try {
+      const execData = await compileExecutiveBriefingData('org_default');
+      
+      const churnText = execData.churnRisks.length > 0
+        ? execData.churnRisks.map(c => `• ${c.clientName} (Probability: ${c.probability}%)\n  Reason: ${c.reason}\n  Action: ${c.recommendedAction}`).join('\n')
+        : '• _No high churn risks flagged._';
+
+      const execBriefText = `🏢 NexovTech AI Executive Briefing Report 📈\n` +
+        `--------------------------------------------\n` +
+        `*AI Business Health Score:* ${execData.healthScore}/100\n` +
+        `*Database Sync Status:* ${execData.dbStatus}\n\n` +
+        `📊 Key Performance Indices (KPIs):\n` +
+        `- Attendance Index: ${execData.metrics.attendanceRate}%\n` +
+        `- Task Completion Rate: ${execData.metrics.taskCompletionRate}%\n` +
+        `- Project Success Rate: ${execData.metrics.projectSuccessRate}%\n` +
+        `- Lead Conversion Index: ${execData.metrics.leadConversionRate}%\n` +
+        `- Active Campaigns: ${execData.metrics.activeProjectsCount} Projects\n` +
+        `- Total Leads Count: ${execData.metrics.totalLeadsCount} Leads\n\n` +
+        `💰 Revenue Forecasts (30/60/90 Days):\n` +
+        `- 30-Day Pipeline Projection: ₹${execData.forecasts.days30.toLocaleString()} (weighted)\n` +
+        `- 60-Day Pipeline Projection: ₹${execData.forecasts.days60.toLocaleString()}\n` +
+        `- 90-Day Pipeline Projection: ₹${execData.forecasts.days90.toLocaleString()}\n\n` +
+        `🛡️ Client Churn Risk Assessment:\n` +
+        `${churnText}\n\n` +
+        `🤖 Consolidated Strategic AI COO Report:\n` +
+        `${execData.aiCOOReport}\n\n` +
+        `--------------------------------------------\n` +
+        `🤖 NEXA Agentic AI Systems Manager`;
+        
+      await sendEmail(
+        'daggupatinavaneeswar8980@gmail.com',
+        `[Executive brief] NexovTech AI Business & Financial Operations Report - ${today}`,
+        execBriefText
+      );
+    } catch (execErr) {
+      console.error("⏰ SCHEDULER: Failed to email executive report:", execErr.message);
+    }
     
     // -------------------------------------------------------------
     // PART A: ADMIN INTEL BRIEFINGS
@@ -102,7 +157,6 @@ async function sendDailyAttendanceAlert() {
 
     let adminSuccessCount = 0;
     if (admins.length > 0) {
-      const adminReport = await generateAttendanceReport();
       for (const admin of admins) {
         if (admin.telegramId) {
           const success = await sendNotification(admin.telegramId, adminReport);

@@ -22,7 +22,8 @@
     "multer",
     "useragent",
     "request",
-    "yamlparser"
+    "yamlparser",
+    "nodemailer"
   ]
 
 [[redirects]]

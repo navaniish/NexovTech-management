@@ -30,6 +30,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.5.0",
     "multer": "^2.1.1",
+    "nodemailer": "^9.0.0",
     "nodemon": "^3.1.14",
     "openai": "^6.37.0",
     "otplib": "^13.4.0",
