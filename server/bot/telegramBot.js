@@ -941,19 +941,23 @@ function initBot(token) {
         console.log('🤖 TELEGRAM_BOT: Deleting any existing webhook to initiate local polling...');
         bot.telegram.deleteWebhook({ drop_pending_updates: true })
           .then(() => {
-            console.log('🤖 TELEGRAM_BOT: Webhook deleted successfully.');
-            return bot.launch();
+            console.log('🤖 TELEGRAM_BOT: Webhook deleted successfully. Starting polling in 1.5s...');
+            // Give Telegram ~1.5s to fully propagate the webhook deletion before polling
+            return new Promise(resolve => setTimeout(resolve, 1500));
           })
+          .then(() => bot.launch())
           .then(() => {
             console.log('🤖 TELEGRAM_BOT: Operational and synchronized (Polling).');
           })
           .catch((err) => {
             console.error(`❌ TELEGRAM_BOT_LAUNCH_FAILED: ${err.message}`);
-            if (retries > 0 && err.message.includes('409')) {
-              console.log(`🔄 Retrying Telegram Bot launch in ${delay / 1000}s... (${retries} retries left)`);
+            if (retries > 0) {
+              console.log(`🔄 Retrying Telegram Bot launch in ${(delay / 1000).toFixed(2)}s... (${retries} retries left)`);
               setTimeout(() => {
                 launchBotWithRetry(retries - 1, delay * 1.5);
               }, delay);
+            } else {
+              console.error('❌ TELEGRAM_BOT: Max retries exceeded. Bot is offline.');
             }
           });
       };
