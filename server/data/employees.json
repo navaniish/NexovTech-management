@@ -96,7 +96,6 @@
       "rating": 5,
       "onTimeRate": 100
     },
-    "companyEmail": "mani.charan.teja.@nexovtech.com",
     "phone": "7780662246",
     "name": "MANI CHARAN TEJA ",
     "department": "General",
@@ -110,7 +109,8 @@
     "lastActive": {
       "_seconds": 1779338286,
       "_nanoseconds": 532000000
-    }
+    },
+    "companyEmail": "mani.charan.teja@nexovtech.com"
   },
   {
     "id": "tPjcv5Z4RbfkshESoh4B",
