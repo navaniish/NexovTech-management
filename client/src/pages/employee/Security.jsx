@@ -30,6 +30,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import API_URL from '../../config';
 import { useAuth } from '../../context/AuthContext';
 import BiometricsService from '../../services/biometricsService';
+import { useFaceTracking } from '../../hooks/useFaceTracking';
 
 const EmployeeSecurity = () => {
   const { user, updateUser } = useAuth();
@@ -48,6 +49,14 @@ const EmployeeSecurity = () => {
   const [enrollError, setEnrollError] = useState('');
   const [enrollStream, setEnrollStream] = useState(null);
   const enrollVideoRef = useRef(null);
+  const secCanvasRef = useRef(null);
+
+  // Real-time eye tracking
+  const { eyeData: secEyeData, modelState: secModelState } = useFaceTracking(
+    enrollVideoRef,
+    secCanvasRef,
+    isEnrolling && enrollStep >= 1
+  );
 
   useEffect(() => {
     fetchSecurityData();
@@ -65,6 +74,21 @@ const EmployeeSecurity = () => {
     }
     return () => clearTimeout(timer);
   }, [isEnrolling, enrollStep, enrollStream]);
+
+  // Auto-advance enrollment steps when stable pupil tracking is established
+  useEffect(() => {
+    if (!isEnrolling || !secEyeData || !secEyeData.detected || !secEyeData.lCenter || !secEyeData.rCenter) return;
+    const blackEyesDetected = secEyeData.lCenter.darkPercent >= 60 && secEyeData.rCenter.darkPercent >= 60;
+    if (!blackEyesDetected) return;
+
+    let timer;
+    if (enrollStep === 2) {
+      timer = setTimeout(() => setEnrollStep(3), 1500);
+    } else if (enrollStep === 3) {
+      timer = setTimeout(() => setEnrollStep(4), 1500);
+    }
+    return () => clearTimeout(timer);
+  }, [isEnrolling, enrollStep, secEyeData]);
 
   const enrollStreamRef = useRef(null);
 
@@ -471,7 +495,7 @@ const EmployeeSecurity = () => {
                 {enrollStep === 4 && 'Registry Validation.'}
               </p>
 
-              <div className="relative w-56 h-56 md:w-48 md:h-48 rounded-full overflow-hidden border-4 border-slate-950 shadow-[0_0_25px_rgba(99,102,241,0.4)] mb-8 flex items-center justify-center bg-slate-50">
+              <div className="relative w-56 h-56 md:w-48 md:h-48 rounded-full overflow-hidden border-4 border-slate-950 shadow-[0_0_25px_rgba(0,0,0,0.8)] mb-8 flex items-center justify-center bg-slate-50">
                 {enrollStream ? (
                   <video
                     ref={(node) => {
@@ -479,7 +503,9 @@ const EmployeeSecurity = () => {
                         enrollVideoRef.current = node;
                         if (enrollStream && node.srcObject !== enrollStream) {
                           node.srcObject = enrollStream;
-                          node.play().catch(err => console.error('Enroll camera play error:', err));
+                          node.play().catch(err => {
+                            if (err.name !== 'AbortError') console.error('Enroll camera play error:', err);
+                          });
                         }
                       }
                     }}
@@ -491,10 +517,28 @@ const EmployeeSecurity = () => {
                 ) : (
                   <Camera size={38} className="text-slate-300 animate-pulse" />
                 )}
-                {/* Visual scan HUD overlay elements */}
-                <div className="absolute inset-0 border-2 border-indigo-500/30 rounded-full circle-scan animate-spin" style={{ animationDuration: '15s' }} />
-                <div className="absolute inset-2 border border-dashed border-cyan-400/20 rounded-full circle-scan animate-spin" style={{ animationDuration: '22s', animationDirection: 'reverse' }} />
-                <div className="absolute left-0 right-0 h-0.5 bg-cyan-400 shadow-[0_0_8px_#22d3ee] laser-line pointer-events-none animate-pulse" style={{ animation: 'laser-sweep 2s ease-in-out infinite' }} />
+                {/* Outer ring HUD */}
+                <div className="absolute inset-0 border-2 border-white/10 rounded-full circle-scan animate-spin" style={{ animationDuration: '15s' }} />
+                <div className="absolute inset-2 border border-dashed border-white/10 rounded-full animate-spin" style={{ animationDuration: '22s', animationDirection: 'reverse' }} />
+                {/* Live tracking canvas */}
+                <canvas ref={secCanvasRef} className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 10 }} />
+                {/* Status badges */}
+                {isEnrolling && secModelState === 'loading' && (
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
+                    <span className="bg-black/80 text-cyan-400 text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-cyan-500/30">⬡ Loading AI...</span>
+                  </div>
+                )}
+                {isEnrolling && secModelState === 'ready' && secEyeData && !secEyeData.detected && (
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
+                    <span className="bg-black/80 text-slate-350 text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-slate-600/40">Searching...</span>
+                  </div>
+                )}
+                {enrollStep === 4 && secEyeData?.detected && (
+                  <div className="absolute bottom-[20%] left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
+                    <span className="bg-black/80 text-white text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-white/30 shadow-[0_0_8px_rgba(255,255,255,0.3)]">BLINK DETECTED</span>
+                  </div>
+                )}
+                <div className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent shadow-[0_0_6px_rgba(255,255,255,0.5)] pointer-events-none" style={{ animation: 'laser-sweep 2s ease-in-out infinite' }} />
               </div>
 
               {/* Capture steps & progress */}

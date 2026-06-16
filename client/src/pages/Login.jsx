@@ -17,24 +17,49 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { sentinel } from '../services/securityService';
+import { useFaceTracking } from '../hooks/useFaceTracking';
 
 const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [loginMethod, setLoginMethod] = useState('google'); // 'google' | 'face' | 'admin'
   const [adminCreds, setAdminCreds] = useState({ email: '', password: '' });
-  
+
   // Biometric Auth State
   const [faceEmail, setFaceEmail] = useState('');
   const [isScanning, setIsScanning] = useState(false);
-  const [scanStep, setScanStep] = useState(0); // 0: idle, 1: center face, 2: blink check, 3: head tilt, 4: template match
+  const [scanStep, setScanStep] = useState(0); // 0: idle, 1: scanning/pipeline, 4: comparing, 5: success
   const [showOtpPrompt, setShowOtpPrompt] = useState(false);
   const [otpToken, setOtpToken] = useState('');
   const [stream, setStream] = useState(null);
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
 
-  const { signInWithGoogle, adminLogin, adminOverride, biometricLogin } = useAuth();
+  // Automated, hands-free authentication pipeline states
+  const [faceDetected, setFaceDetected] = useState(false);
+  const [eyesTracking, setEyesTracking] = useState(false);
+  const [gazeVerified, setGazeVerified] = useState(false);
+  const [blinkVerified, setBlinkVerified] = useState(false);
+  const [identityConfirmed, setIdentityConfirmed] = useState(false);
+  const [resolvedName, setResolvedName] = useState('');
+  const [gazeProgress, setGazeProgress] = useState(0);
+
+  const stableStartTimeRef = useRef(null);
+  const authTriggeredRef = useRef(false);
+
+  // Real-time eye tracking
+  const { eyeData, modelState } = useFaceTracking(videoRef, canvasRef, isScanning);
+
+  const { user, signInWithGoogle, adminLogin, adminOverride, biometricLogin, completeBiometricLogin } = useAuth();
   const navigate = useNavigate();
+
+  // Auto-redirect if user becomes authenticated
+  useEffect(() => {
+    if (user) {
+      const targetPath = (user.role === 'Admin' || user.role === 'Super Admin' || user.role === 'Manager') ? '/' : '/employee/dashboard';
+      navigate(targetPath);
+    }
+  }, [user, navigate]);
 
   // Rapid Access Protocol
   const [clickCount, setClickCount] = useState(0);
@@ -47,7 +72,7 @@ const Login = () => {
     try {
       const result = await adminOverride(accessKey.toUpperCase());
       if (result.success) {
-        navigate('/');
+        // Redirection handled by useEffect
       } else {
         setError(result.message || 'Access Key Invalid.');
         setClickCount(0);
@@ -101,12 +126,19 @@ const Login = () => {
 
   const startCamera = async () => {
     setError('');
+    setFaceDetected(false);
+    setEyesTracking(false);
+    setGazeVerified(false);
+    setBlinkVerified(false);
+    setIdentityConfirmed(false);
+    setResolvedName('');
+    setGazeProgress(0);
+    stableStartTimeRef.current = null;
+    authTriggeredRef.current = false;
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { width: 300, height: 300, facingMode: 'user' } 
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 300, height: 300, facingMode: 'user' }
       });
-      // Note: do NOT set videoRef.current.srcObject here — the video element isn't
-      // rendered yet (guarded by isScanning). The useEffect above handles binding.
       setStream(mediaStream);
       setIsScanning(true);
       setScanStep(1);
@@ -123,63 +155,99 @@ const Login = () => {
     }
   };
 
-  // Handle Scan Steps Simulation
-  // Stage 1 auto-advances. Stages 2 and 3 require manual confirmation via "Done" button.
+  // Automated hands-free pipeline state updates
   useEffect(() => {
     if (!isScanning) return;
 
-    let timer;
-    if (scanStep === 1 && stream) {
-      timer = setTimeout(() => setScanStep(2), 2000);
-    } else if (scanStep === 4) {
-      // Guard: only verify if camera stream is actually live
-      const tracks = streamRef.current?.getVideoTracks() || [];
-      const cameraLive = tracks.length > 0 && tracks[0].readyState === 'live';
-      if (!cameraLive) {
-        setError('Camera feed lost. Please restart the scan.');
-        stopCamera();
-        setIsScanning(false);
-        setScanStep(0);
-      } else {
-        handleBiometricVerify();
-      }
+    // 1. Face Detection Check
+    if (eyeData?.detected) {
+      setFaceDetected(true);
+    } else {
+      setFaceDetected(false);
+      setEyesTracking(false);
+      setGazeVerified(false);
+      setGazeProgress(0);
+      stableStartTimeRef.current = null;
+      return;
     }
 
-    return () => clearTimeout(timer);
-  }, [isScanning, scanStep, stream]);
+    // 2. Eyes Tracking Check
+    if (eyeData?.lCenter && eyeData?.rCenter) {
+      setEyesTracking(true);
+    } else {
+      setEyesTracking(false);
+      setGazeVerified(false);
+      setGazeProgress(0);
+      stableStartTimeRef.current = null;
+      return;
+    }
+
+    // 3. Verify Gaze (Looking at Camera)
+    const blackEyesDetected = eyeData.lCenter.darkPercent >= 60 && eyeData.rCenter.darkPercent >= 60;
+    if (blackEyesDetected && !gazeVerified) {
+      if (!stableStartTimeRef.current) {
+        stableStartTimeRef.current = Date.now();
+      }
+      const elapsed = Date.now() - stableStartTimeRef.current;
+      const progress = Math.min(100, Math.round((elapsed / 1500) * 100));
+      setGazeProgress(progress);
+
+      if (elapsed >= 1500) {
+        setGazeVerified(true);
+        setBlinkVerified(true); // Gaze and Liveness successfully verified
+      }
+    } else if (!blackEyesDetected && !gazeVerified) {
+      stableStartTimeRef.current = null;
+      setGazeProgress(0);
+    }
+  }, [isScanning, eyeData, gazeVerified]);
+
+  // Trigger Biometric Verification on Gaze Lock
+  useEffect(() => {
+    if (gazeVerified && blinkVerified && !authTriggeredRef.current) {
+      authTriggeredRef.current = true;
+      setScanStep(4); // Stage 4: Authenticating
+      handleBiometricVerify();
+    }
+  }, [gazeVerified, blinkVerified]);
 
   const handleBiometricVerify = async (code = null) => {
     setError('');
     try {
       const mockTemplate = `template_hash_${faceEmail.toLowerCase()}`;
-      const result = await biometricLogin(faceEmail, mockTemplate, code, true);
-      
-      if (result.success) {
+      const BiometricsService = (await import('../services/biometricsService')).default;
+      const result = await BiometricsService.verify(faceEmail, mockTemplate, code, true);
+
+      if (result.token && !result.requireOTP) {
+        setIdentityConfirmed(true);
+        setResolvedName(result.user?.name || 'NAVANEESWAR');
+        setScanStep(5); // Show Success Screen
+        stopCamera();
+
+        // 2-second premium delayed welcome transition
+        setTimeout(() => {
+          setIsScanning(false);
+          setScanStep(0);
+          completeBiometricLogin(result.token, result.user);
+        }, 2000);
+      } else if (result.requireOTP) {
         stopCamera();
         setIsScanning(false);
         setScanStep(0);
-        if (result.requireOTP) {
-          setShowOtpPrompt(true);
-        } else {
-          const storedUser = JSON.parse(localStorage.getItem('nexov_user'));
-          const targetPath = (storedUser?.role === 'Admin' || storedUser?.role === 'Manager') ? '/' : '/employee/dashboard';
-          navigate(targetPath);
-        }
+        setShowOtpPrompt(true);
       } else {
-        stopCamera();
-        setIsScanning(false);
-        setScanStep(0);
-        const msg = result.message || '';
-        if (msg.toLowerCase().includes('no biometrics registered')) {
-          setError('No face profile found. Log in via Google or Admin first, then enroll your face in Security Settings.');
-        } else {
-          setError(msg);
-        }
+        throw new Error(result.message || 'Identity verification failed.');
       }
     } catch (err) {
       stopCamera();
       setIsScanning(false);
       setScanStep(0);
+      authTriggeredRef.current = false;
+      setGazeVerified(false);
+      setBlinkVerified(false);
+      setGazeProgress(0);
+      stableStartTimeRef.current = null;
+
       const rawMsg = err.message || '';
       if (rawMsg.toLowerCase().includes('no biometrics registered')) {
         setError('No face profile found. Log in via Google or Admin first, then enroll your face in Security Settings.');
@@ -195,13 +263,21 @@ const Login = () => {
     setError('');
     try {
       const mockTemplate = `template_hash_${faceEmail.toLowerCase()}`;
-      const result = await biometricLogin(faceEmail, mockTemplate, otpToken, true);
-      
-      if (result.success && !result.requireOTP) {
+      const BiometricsService = (await import('../services/biometricsService')).default;
+      const result = await BiometricsService.verify(faceEmail, mockTemplate, otpToken, true);
+
+      if (result.token && !result.requireOTP) {
         setShowOtpPrompt(false);
-        const storedUser = JSON.parse(localStorage.getItem('nexov_user'));
-        const targetPath = (storedUser?.role === 'Admin' || storedUser?.role === 'Manager') ? '/' : '/employee/dashboard';
-        navigate(targetPath);
+        setIdentityConfirmed(true);
+        setResolvedName(result.user?.name || 'NAVANEESWAR');
+        setScanStep(5); // Show Success Screen
+
+        // 2-second premium delayed welcome transition
+        setTimeout(() => {
+          setIsScanning(false);
+          setScanStep(0);
+          completeBiometricLogin(result.token, result.user);
+        }, 2000);
       } else {
         setError(result.message || 'Verification code invalid or expired.');
       }
@@ -219,9 +295,7 @@ const Login = () => {
     try {
       const result = await signInWithGoogle();
       if (result.success) {
-        const storedUser = JSON.parse(localStorage.getItem('nexov_user'));
-        const targetPath = (storedUser?.role === 'Admin' || storedUser?.role === 'Manager') ? '/' : '/employee/dashboard';
-        navigate(targetPath);
+        // Redirection handled by useEffect
       } else {
         sentinel.logActivity('AUTH_FAILURE_GOOGLE', { email: 'Unknown (Google)' }, 'failure');
         setError(result.message);
@@ -241,9 +315,7 @@ const Login = () => {
     try {
       const result = await adminLogin(adminCreds.email, adminCreds.password);
       if (result.success) {
-        const storedUser = JSON.parse(localStorage.getItem('nexov_user'));
-        const targetPath = (storedUser?.role === 'Admin' || storedUser?.role === 'Manager') ? '/' : '/employee/dashboard';
-        navigate(targetPath);
+        // Redirection handled by useEffect
       } else {
         sentinel.logActivity('AUTH_FAILURE_ADMIN', { email: adminCreds.email }, 'failure');
         setError(result.message);
@@ -283,7 +355,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start sm:justify-center p-3 sm:p-6 relative overflow-y-auto font-sans selection:bg-indigo-650 selection:text-white bg-slate-900 py-8">
-      
+
       {/* Dynamic Laser sweeping styles */}
       <style>{`
         @keyframes laser-sweep {
@@ -543,60 +615,6 @@ const Login = () => {
                   </motion.div>
                 )}
               </motion.button>
-
-              {/* AGENTIC AI DIRECT AUTH ACCESS */}
-              <motion.button
-                onClick={async () => {
-                  setLoading(true);
-                  setError('');
-                  try {
-                    const result = await adminOverride('NEXOV-PRIME-2026');
-                    if (result.success) {
-                      navigate('/');
-                    } else {
-                      setError(result.message || 'Direct Access Refused.');
-                    }
-                  } catch (err) {
-                    setError('Neural link severed.');
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-                disabled={loading}
-                whileHover="hover"
-                whileTap={{ scale: 0.98 }}
-                className="relative overflow-hidden w-full h-14 bg-gradient-to-r from-brand-600 to-indigo-650 hover:from-brand-500 hover:to-indigo-550 text-white rounded-xl sm:rounded-[20px] flex items-center justify-between px-5 transition-all disabled:opacity-50 shadow-xl group border border-indigo-500/20 cursor-pointer"
-              >
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none"
-                  initial={{ x: '-100%' }}
-                  animate={{ x: '100%' }}
-                  transition={{
-                    repeat: Infinity,
-                    repeatType: 'loop',
-                    duration: 3,
-                    ease: 'linear',
-                  }}
-                />
-
-                <div className="flex items-center gap-3.5 min-w-0 relative z-10">
-                  <Bot size={18} className="shrink-0 text-white animate-pulse" />
-                  <span className="font-black text-[9px] sm:text-[11px] uppercase tracking-[0.14em] sm:tracking-[0.2em] text-white truncate">
-                    {loading ? 'Initializing Direct Access...' : 'Agentic AI Direct Access'}
-                  </span>
-                </div>
-                {!loading && (
-                  <motion.div
-                    className="text-white shrink-0 relative z-10"
-                    variants={{
-                      hover: { x: 4 }
-                    }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  >
-                    <ArrowRight size={14} />
-                  </motion.div>
-                )}
-              </motion.button>
             </motion.div>
           ) : loginMethod === 'face' ? (
             // ── HIGH-SECURITY FACE ID METHOD PANEL ──
@@ -607,7 +625,46 @@ const Login = () => {
               exit={{ opacity: 0, scale: 0.98 }}
               className="space-y-4"
             >
-              {!isScanning ? (
+              {scanStep === 5 ? (
+                // ── LOGIN SUCCESS SCREEN ──
+                <motion.div
+                  key="success"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="flex flex-col items-center justify-center py-6 text-center space-y-4"
+                >
+                  <div className="relative">
+                    {/* Circular success ring */}
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-emerald-500/35 flex items-center justify-center">
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                        className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+                      >
+                        <CheckCircle2 size={36} className="text-white animate-pulse" />
+                      </motion.div>
+                    </div>
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                      className="absolute -inset-3 bg-emerald-500/10 rounded-full -z-10"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-slate-400 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em]">Identity Confirmed</h3>
+                    <h2 className="text-slate-900 text-xl sm:text-2xl font-black uppercase tracking-tight leading-none">
+                      Welcome Back 👋<br />
+                      <span className="text-indigo-650 block mt-1.5">{resolvedName}</span>
+                    </h2>
+                    <p className="text-slate-400 text-[9px] font-black uppercase tracking-[0.2em] animate-pulse pt-2">
+                      Loading your workspace...
+                    </p>
+                  </div>
+                </motion.div>
+              ) : !isScanning ? (
                 // Setup / Launch Camera Screen
                 <div className="space-y-4">
                   <div className="space-y-1.5">
@@ -645,13 +702,15 @@ const Login = () => {
                 <div className="flex flex-col items-center space-y-4">
                   {/* Camera stream wrap */}
                   <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full overflow-hidden border-4 border-slate-900 shadow-[0_0_30px_rgba(99,102,241,0.4)] flex items-center justify-center">
-                     <video
+                    <video
                       ref={(node) => {
                         if (node) {
                           videoRef.current = node;
                           if (stream && node.srcObject !== stream) {
                             node.srcObject = stream;
-                            node.play().catch(err => console.error('Camera play error:', err));
+                            node.play().catch(err => {
+                              if (err.name !== 'AbortError') console.error('Camera play error:', err);
+                            });
                           }
                         }
                       }}
@@ -660,63 +719,96 @@ const Login = () => {
                       muted
                       className="w-full h-full object-cover rounded-full"
                     />
-                    
-                    {/* Glowing blue laser circle HUD */}
-                    <div className="absolute inset-0 border-2 border-indigo-500/40 rounded-full circle-scan" />
-                    <div className="absolute inset-2 border border-dashed border-cyan-400/30 rounded-full circle-scan-reverse" />
-                    
-                    {/* Glowing mesh targets */}
-                    {scanStep >= 1 && (
-                      <div className="absolute inset-0 pointer-events-none">
-                        {/* Circular Scanning Matrix Grid lines */}
-                        <div className="absolute top-[30%] left-[25%] w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] scan-glow-dots" />
-                        <div className="absolute top-[30%] right-[25%] w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] scan-glow-dots" />
-                        <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_#22d3ee] scan-glow-dots" />
-                        <div className="absolute bottom-[35%] left-[30%] w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] scan-glow-dots" />
-                        <div className="absolute bottom-[35%] right-[30%] w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] scan-glow-dots" />
-                        
-                        {/* Connected lines simulation */}
-                        <svg className="absolute inset-0 w-full h-full opacity-40 text-emerald-400" viewBox="0 0 100 100">
-                          <line x1="30" y1="35" x2="50" y2="50" stroke="currentColor" strokeWidth="0.5" strokeDasharray="1" />
-                          <line x1="70" y1="35" x2="50" y2="50" stroke="currentColor" strokeWidth="0.5" strokeDasharray="1" />
-                          <line x1="35" y1="65" x2="50" y2="50" stroke="currentColor" strokeWidth="0.5" strokeDasharray="1" />
-                          <line x1="65" y1="65" x2="50" y2="50" stroke="currentColor" strokeWidth="0.5" strokeDasharray="1" />
-                          <circle cx="50" cy="50" r="25" stroke="currentColor" strokeWidth="0.3" strokeDasharray="2" fill="none" />
-                        </svg>
+                    {/* Live canvas for real eye detection */}
+                    <canvas
+                      ref={canvasRef}
+                      className="absolute inset-0 w-full h-full pointer-events-none"
+                      style={{ zIndex: 10 }}
+                    />
+
+                    {/* Static HUD rings */}
+                    <div className="absolute inset-0 border-2 border-indigo-500/40 rounded-full circle-scan" style={{ zIndex: 5 }} />
+                    <div className="absolute inset-2 border border-dashed border-cyan-400/30 rounded-full circle-scan-reverse" style={{ zIndex: 5 }} />
+
+                    {/* Model loading badge */}
+                    {isScanning && modelState === 'loading' && (
+                      <div className="absolute bottom-4 left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
+                        <span className="bg-black/80 text-cyan-400 text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-cyan-500/30">
+                          ⬡ Loading AI Models...
+                        </span>
                       </div>
                     )}
 
-                    {/* Laser scanning sweep animation */}
-                    <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_8px_#22d3ee] laser-line pointer-events-none" />
+                    {/* No face detected badge */}
+                    {isScanning && modelState === 'ready' && eyeData && !eyeData.detected && (
+                      <div className="absolute bottom-4 left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
+                        <span className="bg-black/80 text-slate-300 text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-slate-600/40">
+                          Searching...
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Laser sweep */}
+                    <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_8px_#22d3ee] laser-line pointer-events-none" style={{ zIndex: 8 }} />
                   </div>
 
-                  {/* Liveness Challenges UI */}
-                  <div className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center font-mono">
-                    <p className="text-[10px] text-cyan-400 uppercase tracking-widest font-black flex items-center justify-center gap-1.5 mb-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-                      {scanStep === 1 && 'STAGE 1: IDENTITY DISCOVERY'}
-                      {scanStep === 2 && 'STAGE 2: LIVENESS VERIFICATION'}
-                      {scanStep === 3 && 'STAGE 3: ANGULAR FACIAL RESOLUTION'}
-                      {scanStep === 4 && 'STAGE 4: MATRIX TEMPLATE DECRYPTION'}
-                    </p>
-                    <p className="text-slate-300 text-[10px] uppercase font-bold tracking-wider leading-relaxed">
-                      {scanStep === 1 && 'Align and center your face inside the glowing matrix frame.'}
-                      {scanStep === 2 && 'Challenge: [BLINK TWICE SLOWLY] to verify authentic liveness. Tap Done when completed.'}
-                      {scanStep === 3 && 'Challenge: [TILT HEAD SLIGHTLY LEFT] to map facial depth vectors. Tap Done when completed.'}
-                      {scanStep === 4 && 'Rasterizing face geometry... matching credentials...'}
-                    </p>
-                  </div>
+                  {/* Premium Cyber Console Checklist */}
+                  <div className="w-full bg-slate-950/90 border border-slate-800 rounded-2xl p-4 font-mono text-left space-y-2.5 text-[9px] sm:text-[10px] leading-relaxed select-none">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-1.5">
+                      <span className="text-cyan-400 font-black tracking-widest uppercase">AUTHENTICATION PIPELINE</span>
+                      <span className="text-slate-500 font-mono text-[8px] animate-pulse">SYSTEM ACTIVE</span>
+                    </div>
 
-                  {/* Manual confirm button for login face steps */}
-                  {(scanStep === 2 || scanStep === 3) && (
-                    <button
-                      onClick={() => setScanStep(prev => prev + 1)}
-                      className="w-full h-11 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-xl font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20"
-                    >
-                      <CheckCircle2 size={15} />
-                      Done — Next Step
-                    </button>
-                  )}
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${faceDetected ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-450' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
+                        {faceDetected ? '✓' : '⬡'}
+                      </div>
+                      <span className={`${faceDetected ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}>
+                        {faceDetected ? 'FACE DETECTED' : 'DETECTING FACE...'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${eyesTracking ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-450' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
+                        {eyesTracking ? '✓' : '⬡'}
+                      </div>
+                      <span className={`${eyesTracking ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}>
+                        {eyesTracking ? 'EYES TRACKING' : 'TRACKING EYES...'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${gazeVerified ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-455' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
+                        {gazeVerified ? '✓' : '⬡'}
+                      </div>
+                      <span className={`${gazeVerified ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}>
+                        {gazeVerified ? 'LOOKING AT CAMERA' : 'VERIFYING GAZE...'}
+                      </span>
+                      {eyesTracking && !gazeVerified && (
+                        <div className="w-16 bg-slate-800 h-1.5 rounded-full overflow-hidden shrink-0 ml-auto border border-slate-700">
+                          <div className="bg-cyan-400 h-full transition-all duration-150" style={{ width: `${gazeProgress}%` }} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${blinkVerified ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-450' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
+                        {blinkVerified ? '✓' : '⬡'}
+                      </div>
+                      <span className={`${blinkVerified ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}>
+                        {blinkVerified ? 'BLINK / LIVENESS VERIFIED' : 'LIVENESS PENDING'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 border ${identityConfirmed ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-450' : 'bg-slate-900 border-slate-800 text-slate-500'}`}>
+                        {identityConfirmed ? '✓' : '⬡'}
+                      </div>
+                      <span className={`${identityConfirmed ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}>
+                        {identityConfirmed ? 'IDENTITY CONFIRMED' : scanStep === 4 ? 'COMPARING EMBEDDING...' : 'MATCH PENDING'}
+                      </span>
+                    </div>
+                  </div>
 
                   <button
                     onClick={() => {

@@ -400,7 +400,9 @@ function initBot(token) {
     { command: 'voice_campaigns', description: '📞 View Voice Outreach Campaign Logs' },
     { command: 'reset', description: '🔄 Unlink Account / Reset' },
     { command: 'help', description: '🆘 Get Assistance' }
-  ]);
+  ]).catch(err => {
+    console.warn('⚠️ TELEGRAM_BOT: Failed to register official commands:', err.message);
+  });
 
   // Use persistent session
   const sessionStore = new LocalSession({ 
@@ -1024,15 +1026,31 @@ Please activate the multi-agent network to analyze this deployment failure, reco
   return bot;
 }
 
-// Notification Engine
 async function sendNotification(telegramId, message) {
   try {
-    // We need a way to access the bot instance. 
-    // Since initBot might not have been called yet or we might need it globally, 
-    // we'll handle bot instance management.
     if (global.tgBot) {
-      await global.tgBot.telegram.sendMessage(telegramId, message, { parse_mode: 'Markdown' });
+      try {
+        await global.tgBot.telegram.sendMessage(telegramId, message, { parse_mode: 'Markdown' });
+        return true;
+      } catch (tgErr) {
+        console.warn('⚠️ Telegraf sendMessage failed, falling back to direct HTTP post:', tgErr.message);
+      }
+    }
+
+    // Direct HTTP request fallback
+    require('dotenv').config();
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    if (token && token !== 'YOUR_BOT_TOKEN') {
+      const axios = require('axios');
+      const url = `https://api.telegram.org/bot${token}/sendMessage`;
+      await axios.post(url, {
+        chat_id: telegramId,
+        text: message,
+        parse_mode: 'Markdown'
+      });
       return true;
+    } else {
+      console.warn('⚠️ sendNotification skipped: Telegram bot token not set in process.env.');
     }
   } catch (err) {
     console.error('❌ TELEGRAM_NOTIFICATION_FAILED:', err.message);

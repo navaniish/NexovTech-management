@@ -1,6 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const OpenAI = require('openai');
+
+let aiClient;
+try {
+  if (process.env.AI_API_KEY) {
+    aiClient = new OpenAI({
+      baseURL: process.env.AI_BASE_URL || "https://api.nexovtech.ai/v1",
+      apiKey: process.env.AI_API_KEY
+    });
+  }
+} catch (e) {
+  console.warn('⚠️ Biometrics AI Security Agent offline: Missing API key.', e.message);
+}
+
 
 // TELEGRAM CONFIGURATION (To be set in environment variables)
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || 'YOUR_BOT_TOKEN';
@@ -549,6 +563,90 @@ router.post('/biometrics/enroll', async (req, res) => {
   }
 });
 
+async function runBiometricAIScan(user, currentAttempt, recentLogs, recentHistory) {
+  require('dotenv').config();
+
+  if (!aiClient) {
+    try {
+      if (process.env.AI_API_KEY && process.env.AI_API_KEY !== 'placeholder') {
+        aiClient = new OpenAI({
+          baseURL: process.env.AI_BASE_URL || "https://api.nexovtech.ai/v1",
+          apiKey: process.env.AI_API_KEY
+        });
+      }
+    } catch (e) {
+      console.warn('⚠️ Failed to initialize OpenAI client inside AI Agent:', e.message);
+    }
+  }
+
+  if (!aiClient) {
+    console.warn('⚠️ Biometrics AI Agent skipped: AI Client not initialized.');
+    return { riskScore: 0, threatAssessment: 'Sentinel AI module offline. Local rules applied.', verdict: 'CHALLENGE' };
+  }
+
+  const model = process.env.AI_MODEL || "meta/llama-3.1-8b-instruct";
+  
+  const systemPrompt = `You are the Sentinel AI Security Agent for NexovTech Enterprise. Your job is to analyze biometric authentication attempts and evaluate threats.
+Analyze the user's current attempt details compared to their recent login history and biometric logs.
+Determine:
+1. riskScore (0 to 100).
+2. threatAssessment: short 1-2 sentence description explaining any anomalies.
+3. verdict: 'ALLOW' (trusted device or low risk), 'CHALLENGE' (unrecognized device/moderate risk, needs OTP), or 'LOCK' (severe risk, e.g. brute force, suspicious geo-hops, status issues, high riskScore >= 85).
+
+You MUST respond with a valid JSON object ONLY, matching this schema:
+{
+  "riskScore": number,
+  "threatAssessment": "string",
+  "verdict": "ALLOW" | "CHALLENGE" | "LOCK"
+}`;
+
+  const prompt = `
+[USER CONTEXT]
+- Name: ${user.name}
+- Email: ${user.email}
+- Role: ${user.role}
+- Tenant ID: ${user.tenantId}
+
+[CURRENT ATTEMPT]
+- Device ID: ${currentAttempt.deviceId}
+- Device Info: ${JSON.stringify(currentAttempt.deviceInfo)}
+- Liveness Passed: ${currentAttempt.livenessPassed}
+- Similarity Score: ${currentAttempt.score}
+- IP Address: ${currentAttempt.ip}
+- Location: ${currentAttempt.location}
+
+[RECENT BIOMETRIC LOGS]
+${JSON.stringify(recentLogs.map(l => ({ attemptType: l.attemptType, status: l.status, ip: l.ipAddress, browser: l.browser, os: l.os, timestamp: l.timestamp })))}
+
+[RECENT LOGIN HISTORY]
+${JSON.stringify(recentHistory.map(h => ({ status: h.loginStatus, ip: h.ipAddress, browser: h.browser, location: h.location, timestamp: h.createdAt })))}
+`;
+
+  try {
+    const response = await aiClient.chat.completions.create({
+      model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.1,
+      max_tokens: 300,
+      response_format: { type: "json_object" }
+    });
+
+    const content = response.choices[0].message.content.trim();
+    console.log("🤖 SENTINEL AI AGENT SCAN RESULT:", content);
+    return JSON.parse(content);
+  } catch (err) {
+    console.error('🔥 Sentinel AI scan execution failed:', err.message);
+    return {
+      riskScore: 0,
+      threatAssessment: 'Sentinel AI analysis failed. Local fail-safe challenge triggered.',
+      verdict: 'CHALLENGE'
+    };
+  }
+}
+
 // ── FACIAL BIOMETRICS VERIFICATION & MULTI-FACTOR CHALLENGE ──
 router.post('/biometrics/verify', async (req, res) => {
   const { email, biometricTemplate, deviceId, deviceInfo, otpToken, livenessPassed } = req.body;
@@ -580,6 +678,9 @@ router.post('/biometrics/verify', async (req, res) => {
     let stored = await fallbackDb.findOne('biometrics_templates', { userId: primaryId });
     if (!stored && secondaryId && secondaryId !== primaryId) {
       stored = await fallbackDb.findOne('biometrics_templates', { userId: secondaryId });
+    }
+    if (!stored && user.email) {
+      stored = await fallbackDb.findOne('biometrics_templates', { email: user.email.toLowerCase() });
     }
     if (!stored) {
       return res.status(400).json({ message: 'No biometrics registered for this account. Please use password login or contact Admin.' });
@@ -618,12 +719,65 @@ router.post('/biometrics/verify', async (req, res) => {
       return res.status(401).json({ message: 'Biometric face matching failed. Features do not match.' });
     }
 
+    // Retrieve location information and logs/history for AI context
+    const geoLookup = require('../utils/geoLookup');
+    const geo = await geoLookup(req.ip || req.headers['x-forwarded-for'] || '127.0.0.1');
+    const locationStr = geo ? `${geo.city}, ${geo.region}, ${geo.country}` : 'Remote Gateway';
+
+    const recentLogs = await fallbackDb.find('biometrics_logs', { userId: primaryId }) || [];
+    const recentHistory = await fallbackDb.find('loginHistory', { userId: primaryId }) || [];
+    const sortedLogs = recentLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+    const sortedHistory = recentHistory.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+
+    // Invoke Sentinel AI Security Agent Scan
+    const currentAttempt = {
+      deviceId,
+      deviceInfo: {
+        browser: deviceInfo?.browser || agent.toAgent(),
+        os: deviceInfo?.os || agent.os.toString()
+      },
+      livenessPassed,
+      score,
+      ip: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
+      location: locationStr
+    };
+
+    const aiScan = await runBiometricAIScan(user, currentAttempt, sortedLogs, sortedHistory);
+
+    if (aiScan.verdict === 'LOCK') {
+      // Temporarily lock user node
+      await fallbackDb.update('users', user.id || user._id, { status: 'Locked' });
+
+      await fallbackDb.save('biometrics_logs', {
+        userId: user.id || user._id,
+        email: user.email,
+        attemptType: 'Verification',
+        status: 'Failed_Locked',
+        deviceId,
+        deviceScore: 0,
+        ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
+        location: locationStr,
+        browser: agent.toAgent(),
+        os: agent.os.toString(),
+        timestamp: new Date().toISOString(),
+        tenantId: user.tenantId || 'org_default',
+        threatAssessment: aiScan.threatAssessment || 'Sentinel AI Agent triggered automatic lockout.',
+        aiRiskScore: aiScan.riskScore || 90
+      });
+
+      return res.status(403).json({
+        message: `Access Denied: Account has been locked by Sentinel AI Security Agent. Threat Assessment: ${aiScan.threatAssessment}`
+      });
+    }
+
     // Check trusted device
     const trustedDevices = await fallbackDb.find('trusted_devices', { userId: user.id || user._id }) || [];
     const isDeviceTrusted = trustedDevices.some(d => d.deviceId === deviceId);
 
-    // If device is NOT trusted, verify OTP or prompt OTP send
-    if (!isDeviceTrusted) {
+    // Enforce OTP if verdict is CHALLENGE or device is untrusted
+    const requireOtpChallenge = aiScan.verdict === 'CHALLENGE' || !isDeviceTrusted;
+
+    if (requireOtpChallenge) {
       if (!otpToken) {
         // Generate OTP
         const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -638,8 +792,8 @@ router.post('/biometrics/verify', async (req, res) => {
         await fallbackDb.save('mails', {
           from: 'security@nexovtech.com',
           to: user.email,
-          subject: '[NexovTech Security] Verification Code for Untrusted Device Sign-in',
-          body: `A sign-in attempt with facial biometrics was detected from an untrusted device. Use the following 6-digit code to authorize access: \n\n${otpCode}\n\nIf you did not initiate this, please contact administrator immediately.`,
+          subject: '[NexovTech Security] Verification Code for Biometric Sign-in Challenge',
+          body: `A biometric sign-in challenge was triggered by the Sentinel AI Agent. Use the following 6-digit code to authorize access: \n\n${otpCode}\n\nIf you did not initiate this, please contact administrator immediately.`,
           id: Date.now().toString(),
           timestamp: new Date().toISOString(),
           status: 'Unread',
@@ -648,9 +802,30 @@ router.post('/biometrics/verify', async (req, res) => {
 
         console.log(`🛡️ OTP Sent to ${user.email}: ${otpCode}`);
 
+        // Dispatch Biometric OTP to Telegram Bot if user is linked
+        let targetTelegramId = user.telegramId;
+        if (!targetTelegramId) {
+          const mapping = await fallbackDb.findOne('telegram_users', { companyEmail: user.email.toLowerCase() }) ||
+                          await fallbackDb.findOne('telegram_users', { firebaseUid: user.id || user._id });
+          if (mapping) {
+            targetTelegramId = mapping.telegramId;
+          }
+        }
+
+        if (targetTelegramId) {
+          try {
+            const { sendNotification } = require('../bot/telegramBot');
+            const alertMsg = `🔑 *NexovTech Biometric OTP Challenge*\n\nSentinel AI Security Agent has triggered a verification challenge.\n\nYour 6-digit verification code is:\n\n\`${otpCode}\`\n\nPlease enter this code to complete authentication.`;
+            await sendNotification(targetTelegramId, alertMsg);
+            console.log(`🛡️ OTP Sent to Telegram user ${targetTelegramId}`);
+          } catch (teleErr) {
+            console.error('🔥 Failed to send biometric OTP to Telegram:', teleErr.message);
+          }
+        }
+
         return res.json({
           requireOTP: true,
-          message: 'Unrecognized device fingerprint. Verification code dispatched to your email.'
+          message: 'Biometric challenge triggered. Verification code dispatched to your email and linked Telegram device.'
         });
       } else {
         // Verify OTP
@@ -664,18 +839,20 @@ router.post('/biometrics/verify', async (req, res) => {
           biometricOtpExpires: null
         });
 
-        // Add to trusted devices
-        await fallbackDb.save('trusted_devices', {
-          deviceId,
-          userId: user.id || user._id,
-          browserFingerprint: `${deviceInfo?.browser || agent.toAgent()} on ${deviceInfo?.os || agent.os.toString()}`,
-          trustScore: 95,
-          lastUsed: new Date().toISOString(),
-          tenantId: user.tenantId || 'org_default'
-        });
+        // Add to trusted devices if it's not already trusted
+        if (!isDeviceTrusted) {
+          await fallbackDb.save('trusted_devices', {
+            deviceId,
+            userId: user.id || user._id,
+            browserFingerprint: `${deviceInfo?.browser || agent.toAgent()} on ${deviceInfo?.os || agent.os.toString()}`,
+            trustScore: 95,
+            lastUsed: new Date().toISOString(),
+            tenantId: user.tenantId || 'org_default'
+          });
+        }
       }
     } else {
-      // Update lastUsed for trusted device
+      // Update lastUsed for trusted device if we didn't do OTP challenge
       const currentDevice = trustedDevices.find(d => d.deviceId === deviceId);
       if (currentDevice) {
         await fallbackDb.update('trusted_devices', currentDevice.id || currentDevice._id, {
@@ -685,10 +862,6 @@ router.post('/biometrics/verify', async (req, res) => {
     }
 
     // Record Success to LoginHistory & biometrics_logs
-    const geoLookup = require('../utils/geoLookup');
-    const geo = await geoLookup(req.ip || req.headers['x-forwarded-for'] || '127.0.0.1');
-    const locationStr = geo ? `${geo.city}, ${geo.region}, ${geo.country}` : 'Remote Gateway';
-
     await fallbackDb.save('loginHistory', {
       userId: user.id || user._id,
       email: user.email,
@@ -715,7 +888,9 @@ router.post('/biometrics/verify', async (req, res) => {
       browser: agent.toAgent(),
       os: agent.os.toString(),
       timestamp: new Date().toISOString(),
-      tenantId: user.tenantId || 'org_default'
+      tenantId: user.tenantId || 'org_default',
+      threatAssessment: aiScan.threatAssessment,
+      aiRiskScore: aiScan.riskScore
     });
 
     // Generate internal session JWT
@@ -754,7 +929,10 @@ router.get('/biometrics/status/:userId', async (req, res) => {
 
   try {
     const user = await fallbackDb.findById('users', userId);
-    const template = await fallbackDb.findOne('biometrics_templates', { userId });
+    let template = await fallbackDb.findOne('biometrics_templates', { userId });
+    if (!template && user?.email) {
+      template = await fallbackDb.findOne('biometrics_templates', { email: user.email.toLowerCase() });
+    }
     res.json({
       enrolled: !!(template && template.encryptedTemplate),
       enrolledAt: template ? template.createdAt : null,
@@ -863,7 +1041,11 @@ router.get('/biometrics/admin/logs', async (req, res) => {
 
     // Fetch biometrics logs
     const logs = await fallbackDb.find('biometrics_logs', { tenantId }) || [];
-    const sortedLogs = logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const sortedLogs = logs.sort((a, b) => {
+      const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+      const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+      return timeB - timeA;
+    });
 
     // Fetch trusted devices
     const devices = await fallbackDb.find('trusted_devices', { tenantId }) || [];
@@ -878,8 +1060,8 @@ router.get('/biometrics/admin/logs', async (req, res) => {
       stats: {
         totalUsers: users.length,
         enrolledUsers: templates.length,
-        failedAttempts: logs.filter(l => l.status.startsWith('Failed')).length,
-        activeDevices: new Set(devices.map(d => d.deviceId)).size
+        failedAttempts: logs.filter(l => l.status && typeof l.status === 'string' && l.status.startsWith('Failed')).length,
+        activeDevices: new Set(devices.map(d => d.deviceId).filter(Boolean)).size
       }
     });
   } catch (err) {
@@ -911,7 +1093,10 @@ router.post('/biometrics/admin/revoke/:userId', async (req, res) => {
       return res.status(404).json({ message: 'User not found.' });
     }
 
-    const template = await fallbackDb.findOne('biometrics_templates', { userId });
+    let template = await fallbackDb.findOne('biometrics_templates', { userId });
+    if (!template && targetUser?.email) {
+      template = await fallbackDb.findOne('biometrics_templates', { email: targetUser.email.toLowerCase() });
+    }
     if (!template) {
       return res.status(400).json({ message: 'No biometric template found for this user.' });
     }

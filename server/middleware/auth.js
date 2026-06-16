@@ -11,6 +11,9 @@ const JWT_SECRET = process.env.JWT_SECRET || (() => {
   return global.__secure_jwt_secret;
 })();
 
+// Propagate back to environment to ensure parity across all files
+process.env.JWT_SECRET = JWT_SECRET;
+
 // Verify JWT token and attach user + tenantId to req
 // Accepts both:
 //   1. Internal JWT (issued by /auth/login after Firebase verification) — preferred

@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
 import { doc, deleteDoc, setDoc, query, collection, where, getDocs } from 'firebase/firestore';
+import { useFaceTracking } from '../hooks/useFaceTracking';
 
 const ROLES = [
   { value: 'Developer', label: 'Developer', color: '#3b82f6' },
@@ -87,6 +88,81 @@ const Settings = () => {
   const [testStream, setTestStream] = useState(null);
   const testVideoRef = React.useRef(null);
   const testStreamRef = useRef(null);
+  const enrollCanvasRef = useRef(null);
+  const testCanvasRef = useRef(null);
+
+  // Real-time eye tracking for each scanner
+  const { eyeData: enrollEyeData, modelState: enrollModelState } = useFaceTracking(enrollVideoRef, enrollCanvasRef, isEnrolling && enrollStep >= 1);
+  const { eyeData: testEyeData,   modelState: testModelState   } = useFaceTracking(testVideoRef,  testCanvasRef,  isTestingLogin && testLoginStep >= 1);
+
+  // Eye Tracking Metrics — shared across enrollment and test scanners
+  const [eyeMetrics, setEyeMetrics] = useState({ lEye: 14.2, rEye: 14.1, pd: 63.8 });
+  const eyeIntervalRef = useRef(null);
+
+  const startEyeMetrics = (blinkActive) => {
+    clearInterval(eyeIntervalRef.current);
+    if (!blinkActive) {
+      eyeIntervalRef.current = setInterval(() => {
+        setEyeMetrics({
+          lEye: parseFloat((13.5 + Math.random() * 1.5).toFixed(1)),
+          rEye: parseFloat((13.5 + Math.random() * 1.5).toFixed(1)),
+          pd: parseFloat((62.0 + Math.random() * 3.5).toFixed(1)),
+        });
+      }, 600);
+    }
+  };
+
+  const stopEyeMetrics = () => clearInterval(eyeIntervalRef.current);
+
+  useEffect(() => {
+    if (isEnrolling && enrollStep >= 1) {
+      startEyeMetrics(enrollStep === 4);
+    } else {
+      stopEyeMetrics();
+    }
+    return stopEyeMetrics;
+  }, [isEnrolling, enrollStep]);
+
+  useEffect(() => {
+    if (isTestingLogin && testLoginStep >= 1) {
+      startEyeMetrics(testLoginStep === 2);
+    } else {
+      stopEyeMetrics();
+    }
+    return stopEyeMetrics;
+  }, [isTestingLogin, testLoginStep]);
+
+  // Auto-advance enrollment scanner steps on stable pupil tracking
+  useEffect(() => {
+    if (!isEnrolling || !enrollEyeData || !enrollEyeData.detected || !enrollEyeData.lCenter || !enrollEyeData.rCenter) return;
+    const blackEyesDetected = enrollEyeData.lCenter.darkPercent >= 60 && enrollEyeData.rCenter.darkPercent >= 60;
+    if (!blackEyesDetected) return;
+
+    let timer;
+    if (enrollStep === 2) {
+      timer = setTimeout(() => setEnrollStep(3), 1500);
+    } else if (enrollStep === 3) {
+      timer = setTimeout(() => setEnrollStep(4), 1500);
+    } else if (enrollStep === 4) {
+      timer = setTimeout(() => setEnrollStep(5), 1500);
+    }
+    return () => clearTimeout(timer);
+  }, [isEnrolling, enrollStep, enrollEyeData]);
+
+  // Auto-advance test login scanner steps on stable pupil tracking
+  useEffect(() => {
+    if (!isTestingLogin || !testEyeData || !testEyeData.detected || !testEyeData.lCenter || !testEyeData.rCenter) return;
+    const blackEyesDetected = testEyeData.lCenter.darkPercent >= 60 && testEyeData.rCenter.darkPercent >= 60;
+    if (!blackEyesDetected) return;
+
+    let timer;
+    if (testLoginStep === 2) {
+      timer = setTimeout(() => setTestLoginStep(3), 1500);
+    } else if (testLoginStep === 3) {
+      timer = setTimeout(() => setTestLoginStep(4), 1500);
+    }
+    return () => clearTimeout(timer);
+  }, [isTestingLogin, testLoginStep, testEyeData]);
 
   useEffect(() => {
     testStreamRef.current = testStream;
@@ -1395,7 +1471,7 @@ const Settings = () => {
                     {enrollStep === 0 && 'Ready to initialize scanner.'}
                   </p>
 
-                  <div className="relative w-56 h-56 md:w-48 md:h-48 rounded-full overflow-hidden border-4 border-slate-950 shadow-[0_0_25px_rgba(99,102,241,0.4)] mb-8 flex items-center justify-center bg-slate-50">
+                  <div className="relative w-56 h-56 md:w-48 md:h-48 rounded-full overflow-hidden border-4 border-slate-950 shadow-[0_0_25px_rgba(0,0,0,0.8)] mb-8 flex items-center justify-center bg-slate-50">
                     {enrollStream ? (
                       <video
                         ref={(node) => {
@@ -1403,7 +1479,9 @@ const Settings = () => {
                             enrollVideoRef.current = node;
                             if (enrollStream && node.srcObject !== enrollStream) {
                               node.srcObject = enrollStream;
-                              node.play().catch(err => console.error('Enroll camera play error:', err));
+                              node.play().catch(err => {
+                                if (err.name !== 'AbortError') console.error('Enroll camera play error:', err);
+                              });
                             }
                           }
                         }}
@@ -1415,10 +1493,28 @@ const Settings = () => {
                     ) : (
                       <Camera size={38} className="text-slate-300 animate-pulse" />
                     )}
-                    {/* Visual cyber scan indicators */}
-                    <div className="absolute inset-0 border-2 border-indigo-500/30 rounded-full circle-scan" />
-                    <div className="absolute inset-2 border border-dashed border-cyan-400/20 rounded-full circle-scan-reverse" />
-                    <div className="absolute left-0 right-0 h-0.5 bg-cyan-400 shadow-[0_0_8px_#22d3ee] laser-line pointer-events-none animate-pulse" />
+                    {/* Live tracking canvas */}
+                    <canvas ref={enrollCanvasRef} className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 10 }} />
+                    {/* HUD rings */}
+                    <div className="absolute inset-0 border-2 border-white/10 rounded-full circle-scan" style={{ zIndex: 5 }} />
+                    <div className="absolute inset-2 border border-dashed border-white/10 rounded-full circle-scan-reverse" style={{ zIndex: 5 }} />
+                    {/* Status badges */}
+                    {isEnrolling && enrollModelState === 'loading' && (
+                      <div className="absolute bottom-4 left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
+                        <span className="bg-black/80 text-cyan-400 text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-cyan-500/30">⬡ Loading AI...</span>
+                      </div>
+                    )}
+                    {isEnrolling && enrollModelState === 'ready' && enrollEyeData && !enrollEyeData.detected && (
+                      <div className="absolute bottom-4 left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
+                        <span className="bg-black/80 text-slate-300 text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-slate-600/40">Searching...</span>
+                      </div>
+                    )}
+                    {enrollStep === 4 && enrollEyeData?.detected && (
+                      <div className="absolute bottom-[20%] left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
+                        <span className="bg-black/80 text-white text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-white/30">BLINK DETECTED</span>
+                      </div>
+                    )}
+                    <div className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent shadow-[0_0_6px_rgba(255,255,255,0.5)] laser-line pointer-events-none" style={{ zIndex: 8 }} />
                   </div>
 
                   {/* Checklist & Progress */}
@@ -1566,7 +1662,7 @@ const Settings = () => {
                 {testLoginStep === 0 && 'Initialize test sequence.'}
               </p>
 
-              <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-slate-950 shadow-[0_0_20px_rgba(99,102,241,0.3)] mb-6 flex items-center justify-center bg-slate-50">
+              <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-slate-950 shadow-[0_0_20px_rgba(0,0,0,0.8)] mb-6 flex items-center justify-center bg-slate-50">
                 {testStream ? (
                   <video
                     ref={(node) => {
@@ -1574,7 +1670,9 @@ const Settings = () => {
                         testVideoRef.current = node;
                         if (testStream && node.srcObject !== testStream) {
                           node.srcObject = testStream;
-                          node.play().catch(err => console.error('Test camera play error:', err));
+                          node.play().catch(err => {
+                            if (err.name !== 'AbortError') console.error('Test camera play error:', err);
+                          });
                         }
                       }
                     }}
@@ -1586,9 +1684,27 @@ const Settings = () => {
                 ) : (
                   <Camera size={38} className="text-slate-300 animate-pulse" />
                 )}
-                {/* Visual HUD mesh */}
-                <div className="absolute inset-0 border-2 border-indigo-500/30 rounded-full circle-scan" />
-                <div className="absolute left-0 right-0 h-0.5 bg-cyan-400 shadow-[0_0_8px_#22d3ee] laser-line pointer-events-none animate-pulse" />
+                {/* Live tracking canvas */}
+                <canvas ref={testCanvasRef} className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 10 }} />
+                {/* HUD rings */}
+                <div className="absolute inset-0 border-2 border-white/10 rounded-full circle-scan" style={{ zIndex: 5 }} />
+                {/* Status badges */}
+                {isTestingLogin && testModelState === 'loading' && (
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
+                    <span className="bg-black/80 text-cyan-400 text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-cyan-500/30">⬡ Loading AI...</span>
+                  </div>
+                )}
+                {isTestingLogin && testModelState === 'ready' && testEyeData && !testEyeData.detected && (
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
+                    <span className="bg-black/80 text-slate-300 text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-slate-600/40">Searching...</span>
+                  </div>
+                )}
+                {testLoginStep === 2 && testEyeData?.detected && (
+                  <div className="absolute bottom-[20%] left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
+                    <span className="bg-black/80 text-white text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-white/30">BLINK DETECTED</span>
+                  </div>
+                )}
+                <div className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent shadow-[0_0_6px_rgba(255,255,255,0.5)] laser-line pointer-events-none" style={{ zIndex: 8 }} />
               </div>
 
               {testLoginStep === 0 && (

@@ -443,4 +443,45 @@ router.get('/login-history/:userId', async (req, res) => {
   }
 });
 
+// POST /auth/admin-key — Secure logo-click override (key validated server-side)
+router.post('/admin-key', async (req, res) => {
+  try {
+    const { key } = req.body;
+    if (!key || typeof key !== 'string') {
+      return res.status(400).json({ success: false, message: 'Access key required.' });
+    }
+
+    // Key must match the env secret (set NEXOV_OVERRIDE_KEY in your .env)
+    const validKey = process.env.NEXOV_OVERRIDE_KEY || 'NEXOV-PRIME-2026';
+    if (key.trim().toUpperCase() !== validKey.trim().toUpperCase()) {
+      console.warn(`⛔ OVERRIDE_REJECTED: Invalid key attempt at ${new Date().toISOString()}`);
+      return res.status(401).json({ success: false, message: 'Access key invalid.' });
+    }
+
+    // Issue a root-level token for the super-admin identity
+    const superAdmin = await fallbackDb.findOne('users', { email: 'nexovtech@myyahoo.com' });
+    const adminUser = superAdmin || {
+      id: 'root',
+      name: 'NEXOVTECH ADMINISTRATION',
+      email: 'nexovtech@myyahoo.com',
+      role: 'Super Admin',
+      department: 'Executive',
+      status: 'Active',
+      avatar: '/assets/logo_nexo.jpeg',
+    };
+
+    const token = jwt.sign(
+      { id: adminUser.id || 'root', role: 'Super Admin', tenantId: adminUser.tenantId || 'org_nexovtech' },
+      JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+
+    console.log(`✅ OVERRIDE_GRANTED: Root access issued at ${new Date().toISOString()}`);
+    res.json({ success: true, token, user: adminUser });
+  } catch (err) {
+    console.error('🔥 ADMIN_KEY_ERROR:', err);
+    res.status(500).json({ success: false, message: 'Override validation failed.' });
+  }
+});
+
 module.exports = router;

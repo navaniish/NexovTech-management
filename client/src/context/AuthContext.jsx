@@ -33,6 +33,44 @@ export const AuthProvider = ({ children }) => {
 
   const verifyingEmail = useRef(null);
 
+  // Check URL token query parameter on mount for automated biometric login bypass
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get('token');
+    if (urlToken) {
+      const fetchUserFromToken = async () => {
+        setLoading(true);
+        try {
+          const res = await fetch(`${API_BASE}/auth/me`, {
+            headers: {
+              'Authorization': `Bearer ${urlToken}`
+            }
+          });
+          if (res.ok) {
+            const userData = await res.json();
+            localStorage.setItem('nexov_token', urlToken);
+            localStorage.setItem('nexov_user', JSON.stringify(userData));
+            setUser(userData);
+            
+            // Clean token from browser URL address bar to preserve secrecy
+            const newUrl = window.location.pathname + window.location.search.replace(/[?&]token=[^&]+/, '').replace(/^&/, '?');
+            window.history.replaceState({}, document.title, newUrl);
+            toast.success('Access Granted — Welcome to NexovTech', {
+              style: { background: '#000', color: '#fff', fontSize: '10px', fontWeight: '900' }
+            });
+          } else {
+            console.error('[AUTH] Token verification check rejected by server');
+          }
+        } catch (err) {
+          console.error('[AUTH] Error resolving session token:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchUserFromToken();
+    }
+  }, []);
+
   // Helper to check legacy bridge
   const checkLegacyBridge = async (email, isRootEmail) => {
     try {
@@ -221,6 +259,10 @@ export const AuthProvider = ({ children }) => {
             console.warn("[AUTH] Firebase session lost. Root bypass active.");
             return prev; 
           }
+          if (localStorage.getItem('nexov_token')) {
+            console.log("[AUTH] Local session token exists. Retaining session.");
+            return prev;
+          }
           localStorage.removeItem('nexov_user');
           return null;
         });
@@ -317,8 +359,33 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
-
-
+  const adminOverride = async (key) => {
+    setLoading(true);
+    try {
+      // Validate the access key against the server
+      const res = await fetch(`${API_BASE}/auth/admin-key`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return { success: false, message: data.message || 'Access key rejected.' };
+      }
+      localStorage.setItem('nexov_token', data.token);
+      localStorage.setItem('nexov_user', JSON.stringify(data.user));
+      setUser(data.user);
+      toast.success('Root Access Granted', {
+        style: { background: '#000', color: '#fff', fontSize: '10px', fontWeight: '900' }
+      });
+      return { success: true };
+    } catch (err) {
+      console.error('[AUTH] Override key validation failed:', err);
+      return { success: false, message: 'Connection error. Try again.' };
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const biometricLogin = async (email, template, otpToken = null, livenessPassed = true) => {
     setLoading(true);
@@ -366,8 +433,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const completeBiometricLogin = (token, userData) => {
+    localStorage.setItem('nexov_token', token);
+    localStorage.setItem('nexov_user', JSON.stringify(userData));
+    setUser(userData);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, signInWithGoogle, adminLogin, biometricLogin, logout, updateUser, loading }}>
+    <AuthContext.Provider value={{ user, signInWithGoogle, adminLogin, adminOverride, biometricLogin, completeBiometricLogin, logout, updateUser, loading }}>
       {loading ? (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center relative overflow-hidden">
           {/* Subtle Background Asset */}

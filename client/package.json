@@ -18,6 +18,7 @@
     "axios": "^1.15.2",
     "clsx": "^2.1.1",
     "es-toolkit": "^1.47.1",
+    "face-api.js": "^0.22.2",
     "firebase": "^12.12.1",
     "framer-motion": "^12.38.0",
     "html-to-image": "^1.11.13",
