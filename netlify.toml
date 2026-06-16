@@ -21,7 +21,10 @@
     "otplib",
     "qrcode",
     "sharp",
-    "multer"
+    "multer",
+    "useragent",
+    "request",
+    "yamlparser"
   ]
 
 [[redirects]]
