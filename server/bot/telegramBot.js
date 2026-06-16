@@ -938,7 +938,12 @@ function initBot(token) {
   if (!IS_SERVERLESS) {
     if (process.env.TELEGRAM_POLLING === 'true') {
       const launchBotWithRetry = (retries = 5, delay = 3000) => {
-        bot.launch()
+        console.log('🤖 TELEGRAM_BOT: Deleting any existing webhook to initiate local polling...');
+        bot.telegram.deleteWebhook({ drop_pending_updates: true })
+          .then(() => {
+            console.log('🤖 TELEGRAM_BOT: Webhook deleted successfully.');
+            return bot.launch();
+          })
           .then(() => {
             console.log('🤖 TELEGRAM_BOT: Operational and synchronized (Polling).');
           })
