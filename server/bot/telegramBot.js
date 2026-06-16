@@ -1,4 +1,4 @@
-const { Telegraf, Scenes } = require('telegraf');
+const { Telegraf, Scenes, Markup } = require('telegraf');
 const LocalSession = require('./localSession');
 const authService = require('./authService');
 const { getAIResponse } = require('./aiAssistant');
@@ -307,7 +307,12 @@ const distributeApkScene = new Scenes.WizardScene(
     const apkPath = path.resolve(__dirname, '../../nexovtech.apk');
 
     if (!fs.existsSync(apkPath)) {
-      await ctx.reply('❌ Error: The compiled `nexovtech.apk` file is missing from the server root.');
+      await ctx.reply(
+        '❌ Error: The compiled `nexovtech.apk` file is missing from the server root.',
+        Markup.inlineKeyboard([
+          Markup.button.callback('🤖 Activate AI Agents', `activate_agents:missing_apk:${match.name}`)
+        ])
+      );
       return ctx.scene.leave();
     }
 
@@ -323,7 +328,12 @@ const distributeApkScene = new Scenes.WizardScene(
       await ctx.reply(`🎉 *APK Successfully Dispatched!* 🚀\n\nLatest binary payload has been uploaded and delivered directly to *${match.name}* on Telegram.`);
     } catch (err) {
       console.error(err);
-      await ctx.reply(`❌ Failed to send APK to *${match.name}*: ${err.message}`, { parse_mode: 'Markdown' });
+      await ctx.reply(
+        `❌ Failed to send APK to *${match.name}*: ${err.message}`,
+        Markup.inlineKeyboard([
+          Markup.button.callback('🤖 Activate AI Agents', `activate_agents:send_failed:${match.name}`)
+        ])
+      );
     }
 
     return ctx.scene.leave();
@@ -399,6 +409,38 @@ function initBot(token) {
   });
   bot.use(sessionStore.middleware());
   bot.use(stage.middleware());
+
+  // Callback query action for one-click AI Agent activation on APK failure
+  bot.action(/activate_agents:(.+)/, async (ctx) => {
+    const data = ctx.match[1];
+    const parts = data.split(':');
+    const reasonType = parts[0];
+    const specialistName = parts[1];
+
+    try {
+      await ctx.answerCbQuery('🤖 Activating multi-agent intelligence network...');
+    } catch (e) {
+      // Ignored if query expired
+    }
+    
+    await ctx.reply('⏳ *Activating multi-agent network event loop...*', { parse_mode: 'Markdown' });
+
+    const failureDescription = reasonType === 'missing_apk'
+      ? `The compiled 'nexovtech.apk' file is missing from the server root directory.`
+      : `The Telegram API document dispatch failed.`;
+
+    const aiPrompt = `System Alert: The automated APK distribution of nexovtech.apk to the specialist '${specialistName}' failed.
+Reason: ${failureDescription}
+Please activate the multi-agent network to analyze this deployment failure, recommend immediate remediation, and specify tasks for the support or development divisions.`;
+
+    try {
+      const response = await getAIResponse(aiPrompt, ctx.state.user || { role: 'Admin', tenantId: 'org_default' });
+      await ctx.reply(response, { parse_mode: 'Markdown' });
+    } catch (err) {
+      console.error('❌ Action AI response error:', err.message);
+      await ctx.reply(`❌ Multi-agent network compilation failed: ${err.message}`);
+    }
+  });
 
   // Middleware to check if user is authenticated
   bot.use(async (ctx, next) => {
