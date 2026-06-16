@@ -6,16 +6,19 @@
     "client": "cd client && npm run dev",
     "server": "cd server && npm run dev",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "build": "cd client && npm ci && npm run build"
+    "build": "cd client && npm ci && npm run build",
+    "postinstall": "prisma generate --schema=server/prisma/schema.prisma"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
+    "prisma": "^6.4.1",
     "vite": "^8.0.9"
   },
   "dependencies": {
+    "@prisma/client": "^6.4.1",
     "axios": "^1.16.1",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
