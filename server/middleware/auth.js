@@ -1,5 +1,15 @@
 const jwt = require('jsonwebtoken');
 const fallbackDb = require('../utils/fallbackDb');
+const crypto = require('crypto');
+
+// Secure random JWT secret generator if process.env.JWT_SECRET is missing
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  if (!global.__secure_jwt_secret) {
+    global.__secure_jwt_secret = crypto.randomBytes(64).toString('hex');
+    console.warn('⚠️ SECURITY_WARNING: JWT_SECRET is not defined in environment. Generating a secure dynamic session key.');
+  }
+  return global.__secure_jwt_secret;
+})();
 
 // Verify JWT token and attach user + tenantId to req
 // Accepts both:
@@ -12,7 +22,7 @@ const auth = async (req, res, next) => {
 
     // ── 1. Try internal JWT first (fast, no network call) ────────────────────
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
+      const decoded = jwt.verify(token, JWT_SECRET);
 
       // Fetch user from fallbackDb to prevent offline Postgres db crashes
       const user = await fallbackDb.findById('users', decoded.id);
@@ -63,4 +73,4 @@ const requireRole = (...roles) => (req, res, next) => {
   next();
 };
 
-module.exports = { auth, requireRole };
+module.exports = { auth, requireRole, JWT_SECRET };

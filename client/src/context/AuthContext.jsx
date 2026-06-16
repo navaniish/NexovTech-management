@@ -99,26 +99,7 @@ export const AuthProvider = ({ children }) => {
         return { authorized: true, data: { ...employeeData, docId: docSnap.id, isRoot: isRootEmail } };
       }
 
-      // 4. Fallback for Nexovtech Corporate Gmail Format (Auto-Authorize)
-      if (email.toLowerCase().endsWith('.nexovtech@gmail.com')) {
-        const namePart = email.toLowerCase().split('.nexovtech@gmail.com')[0];
-        // Capitalize each part of the name (e.g. john.doe -> John Doe)
-        const formattedName = namePart.split('.')
-          .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-          .join(' ');
-          
-        console.log(`[AUTH] Auto-authorizing new employee: ${formattedName}`);
-        return { 
-          authorized: true, 
-          data: { 
-            name: formattedName, 
-            role: 'Employee', 
-            status: 'active',
-            department: 'General',
-            email: email.toLowerCase()
-          } 
-        };
-      }
+
 
       return { authorized: false, message: "Access Denied — You are not an authorized Nexovtech employee." };
     } catch (error) {
@@ -337,34 +318,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const adminOverride = async (masterKey) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_BASE}/auth/admin-override`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ masterKey })
-      });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Override Rejected');
-
-      // Manual Session Set (Bypasses Firebase Auth State for this session)
-      localStorage.setItem('nexov_token', data.token);
-      localStorage.setItem('nexov_user', JSON.stringify(data.user));
-      setUser(data.user);
-
-      toast.success('Neural Link Established: Admin Override Active', {
-        style: { background: '#000', color: '#fff', fontSize: '10px', fontWeight: '900' }
-      });
-      return { success: true };
-    } catch (err) {
-      console.error("Override Error:", err);
-      return { success: false, message: err.message };
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const biometricLogin = async (email, template, otpToken = null, livenessPassed = true) => {
     setLoading(true);
@@ -413,7 +367,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, signInWithGoogle, adminLogin, adminOverride, biometricLogin, logout, updateUser, loading }}>
+    <AuthContext.Provider value={{ user, signInWithGoogle, adminLogin, biometricLogin, logout, updateUser, loading }}>
       {loading ? (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center relative overflow-hidden">
           {/* Subtle Background Asset */}

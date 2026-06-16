@@ -9,7 +9,7 @@ const User = require('../models/User');
 const LoginHistory = require('../models/LoginHistory');
 const useragent = require('useragent');
 const { sendNotification } = require('../bot/telegramBot');
-const { auth } = require('../middleware/auth');
+const { auth, JWT_SECRET } = require('../middleware/auth');
 
 const resolveTenantId = (email) => {
   if (!email) return 'org_default';
@@ -26,55 +26,7 @@ const resolveTenantId = (email) => {
   return `org_${cleanDomain}`;
 };
 
-// POST /api/auth/admin-override — Rapid Admin Access Bypass
-router.post('/admin-override', async (req, res) => {
-  const { masterKey } = req.body;
-  const adminEmail = 'nexovtech@myyahoo.com';
 
-  if (masterKey !== (process.env.ADMIN_OVERRIDE_KEY || 'NEXOV-PRIME-2026')) {
-    return res.status(401).json({ message: 'Neural override failed: Access Key Invalid.' });
-  }
-
-  try {
-    let user = await fallbackDb.findOne('users', { email: adminEmail });
-    
-    if (!user) {
-      // Provision if missing
-      user = await fallbackDb.save('users', {
-        email: adminEmail,
-        name: 'NEXOVTECH ADMINISTRATION',
-        role: 'Admin',
-        companyEmail: 'admin@nexovtech.com',
-        status: 'Active',
-        avatar: '/assets/logo_nexo.jpeg',
-        tenantId: 'org_admin_override',
-        createdAt: new Date()
-      });
-    } else if (!user.tenantId) {
-      user = await fallbackDb.update('users', user.id || user._id, { tenantId: 'org_admin_override' });
-    }
-
-    const jwtToken = jwt.sign(
-      { id: user.id || user._id, role: 'Admin', email: adminEmail, tenantId: user.tenantId || 'org_admin_override' },
-      process.env.JWT_SECRET || 'nexovtech_secret_key',
-      { expiresIn: '24h' }
-    );
-
-    res.json({
-      token: jwtToken,
-      user: {
-        id: user.id || user._id,
-        name: user.name,
-        email: user.email,
-        role: 'Admin',
-        avatar: user.avatar,
-        twoFactorEnabled: false
-      }
-    });
-  } catch (err) {
-    res.status(500).json({ message: 'Override protocol error.' });
-  }
-});
 
 // POST /auth/upload-avatar/:id — Upload profile photo
 router.post('/upload-avatar/:id', upload.single('avatar'), async (req, res) => {
@@ -83,8 +35,7 @@ router.post('/upload-avatar/:id', upload.single('avatar'), async (req, res) => {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    let userId = req.params.id;
-    if (userId === 'admin_bypass') userId = 'nexovtech@myyahoo.com';
+    const userId = req.params.id;
     // Construct the URL for the avatar
     const avatarUrl = `/uploads/avatars/${req.file.filename}`;
 
@@ -105,24 +56,11 @@ router.post('/upload-avatar/:id', upload.single('avatar'), async (req, res) => {
 });
 
 // GET /auth/me — Sync user data from UID
-router.get('/me', async (req, res) => {
-  const { uid, email } = req.query;
-
-  let user;
-  if (email) {
-    // 1. Explicit Email Lookup (High Priority for Bypass/Discovery)
-    user = await fallbackDb.findOne('users', { email: email.toLowerCase() });
-  } else if (uid) {
-    // 2. UID Lookup (Standard Auth Sync)
-    user = await fallbackDb.findOne('users', { firebaseUid: uid });
+router.get('/me', auth, async (req, res) => {
+  if (req.user && req.user.email === 'nexovtech@myyahoo.com') {
+    req.user.role = 'Admin';
   }
-
-  if (user) {
-    if (user.email === 'nexovtech@myyahoo.com') user.role = 'Admin';
-    return res.json(user);
-  }
-
-  res.status(404).json({ message: 'User profile not found in Registry.' });
+  res.json(req.user);
 });
 
 // POST /auth/register — Create/Sync profile from Firebase
@@ -133,7 +71,7 @@ router.post('/register', async (req, res) => {
     firebaseUid: uid,
     email: email.toLowerCase(),
     name: name || 'New Explorer',
-    role: email.toLowerCase() === 'nexovtech@myyahoo.com' ? 'Admin' : (role || 'Employee'),
+    role: email.toLowerCase() === 'nexovtech@myyahoo.com' ? 'Admin' : 'Employee',
     avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name + Date.now()}`,
     tenantId,
     createdAt: new Date()
@@ -209,18 +147,27 @@ router.post('/login', async (req, res) => {
     const generateCompanyEmail = (name) => `${name.toLowerCase().replace(/[^a-z0-9]/g, '.')}@nexovtech.com`;
 
     if (!user) {
+      const employee = await fallbackDb.findOne('employees', { email: lookupEmail }) ||
+                       await fallbackDb.findOne('employees', { companyEmail: lookupEmail });
+
+      if (!employee && lookupEmail !== 'nexovtech@myyahoo.com') {
+        console.warn(`🛡️ SECURITY_POLICY: Blocked login for unregistered email [${lookupEmail}].`);
+        return res.status(403).json({ message: 'Access Denied — You are not an authorized NexovTech employee.' });
+      }
+
       console.log(`🚀 ENTERPRISE_SYNC: New identity detected [${lookupEmail}]. Provisioning virtual workspace profile...`);
-      const name = firebaseUser.name || lookupEmail.split('@')[0];
-      const tenantId = resolveTenantId(lookupEmail);
+      const name = employee?.name || firebaseUser.name || lookupEmail.split('@')[0];
+      const companyEmail = employee?.companyEmail || generateCompanyEmail(name);
+      const tenantId = employee?.tenantId || resolveTenantId(lookupEmail);
       user = await fallbackDb.save('users', {
         email: lookupEmail,
-        companyEmail: generateCompanyEmail(name),
+        companyEmail,
         firebaseUid: firebaseUser.uid,
         name: name,
-        role: lookupEmail === 'nexovtech@myyahoo.com' ? 'Super Admin' : 'Employee',
-        department: lookupEmail === 'nexovtech@myyahoo.com' ? 'Executive' : 'General',
+        role: lookupEmail === 'nexovtech@myyahoo.com' ? 'Super Admin' : (employee?.role || 'Employee'),
+        department: lookupEmail === 'nexovtech@myyahoo.com' ? 'Executive' : (employee?.department || 'General'),
         status: 'Active',
-        avatar: firebaseUser.picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${lookupEmail}`,
+        avatar: firebaseUser.picture || employee?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${lookupEmail}`,
         tenantId,
         lastActive: new Date(),
         createdAt: new Date()
@@ -302,10 +249,9 @@ router.post('/login', async (req, res) => {
       sendNotification(user.telegramId, `🛡️ *Security Alert*: A new login to your NexovTech portal was detected.\n\n📍 *IP*: ${req.ip || 'Unknown'}\n🖥️ *Device*: ${agent.os.toString()} / ${agent.toAgent()}`);
     }
  
-    // 5. Generate Internal Session JWT
     const jwtToken = jwt.sign(
       { id: user.id || user._id, role: user.role, firebaseUid: firebaseUser.uid, tenantId: user.tenantId || 'org_default' },
-      process.env.JWT_SECRET || 'nexovtech_secret_key',
+      JWT_SECRET,
       { expiresIn: '24h' }
     );
 
@@ -474,7 +420,7 @@ router.get('/count', async (req, res) => {
     if (token) {
       try {
         const jwt = require('jsonwebtoken');
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
+        const decoded = jwt.verify(token, JWT_SECRET);
         tenantId = decoded.tenantId || 'org_default';
       } catch (_) {}
     }
