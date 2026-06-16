@@ -2,6 +2,11 @@ const { db } = require('../firebaseAdmin');
 const fallbackDb = require('../utils/fallbackDb');
 const speakeasy = require('speakeasy');
 
+// Helper: normalize phone digits
+const cleanPhone = (p) => (p || '').replace(/\D/g, '');
+// Helper: last 10 digits for flexible matching
+const phoneTail = (p) => cleanPhone(p).slice(-10);
+
 class AuthService {
   async verifyEmail(email) {
     const emailLower = email.toLowerCase();
@@ -40,11 +45,21 @@ class AuthService {
     return false;
   }
 
-  async linkTelegram(telegramId, firebaseUid, email, role) {
+  async linkTelegram(telegramId, firebaseUid, email, role, name) {
+    // Build full mapping with name for greeting
+    let resolvedName = name;
+    if (!resolvedName) {
+      try {
+        const u = await fallbackDb.findOne('users', { email: email.toLowerCase() });
+        resolvedName = u?.name || u?.displayName || email;
+      } catch (e) { resolvedName = email; }
+    }
+
     const mapping = {
       telegramId: telegramId.toString(),
       firebaseUid,
       companyEmail: email,
+      name: resolvedName,
       role,
       workspaceStatus: 'Active',
       linkedAt: new Date()
@@ -53,10 +68,13 @@ class AuthService {
     await fallbackDb.save('telegram_users', mapping);
     
     // Also update the user record to include telegramId
-    const user = await fallbackDb.findOne('users', { email: email.toLowerCase() });
-    if (user) {
-      await fallbackDb.update('users', user.id || user._id, { telegramId: telegramId.toString() });
-    }
+    try {
+      const user = await fallbackDb.findOne('users', { email: email.toLowerCase() }) ||
+                   await fallbackDb.findOne('users', { companyEmail: email.toLowerCase() });
+      if (user) {
+        await fallbackDb.update('users', user.id || user._id, { telegramId: telegramId.toString() });
+      }
+    } catch (e) { console.warn('linkTelegram user update failed:', e.message); }
 
     return mapping;
   }
@@ -66,34 +84,59 @@ class AuthService {
   }
 
   async lookupByPhone(phone) {
-    // 1. Standardize incoming phone number (digits only)
-    const cleanIncoming = phone.replace(/\D/g, '');
-    if (!cleanIncoming) return null;
+    const incomingClean = cleanPhone(phone);
+    if (!incomingClean) return null;
 
-    // 2. Try direct match first (for performance)
-    let user = await fallbackDb.findOne('users', { phone: cleanIncoming });
-    if (user) return user;
+    const incomingTail = phoneTail(incomingClean);
+    console.log(`📱 [AUTH] lookupByPhone: raw="${phone}" clean="${incomingClean}" tail="${incomingTail}"`);
 
-    // 3. Fallback: Robust search (Handle spaces, dashes, etc. in DB)
-    // Since the database might store "+91 12345 67890", a literal match fails.
-    const allUsers = await fallbackDb.find('users', {});
-    
-    // Helper to get last 10 digits
-    const getTail = (p) => p.replace(/\D/g, '').slice(-10);
-    const incomingTail = getTail(cleanIncoming);
-
-    for (const u of allUsers) {
-      if (!u.phone) continue;
-      const dbPhoneClean = u.phone.replace(/\D/g, '');
-      const dbTail = getTail(u.phone);
-
-      // Match full digits or last 10 digits
-      if (dbPhoneClean === cleanIncoming || (dbTail && dbTail === incomingTail)) {
-        return u;
+    // Check any record from a collection for phone match
+    const matchByPhone = (records) => {
+      const PHONE_FIELDS = ['phone', 'phoneNumber', 'mobile', 'contactNumber'];
+      for (const u of records) {
+        for (const field of PHONE_FIELDS) {
+          if (!u[field]) continue;
+          const dbTail = phoneTail(u[field]);
+          const dbClean = cleanPhone(u[field]);
+          console.log(`   checking [${field}="${u[field]}"] tail="${dbTail}" vs incoming tail="${incomingTail}"`);
+          if (dbClean === incomingClean || (dbTail && dbTail.length === 10 && dbTail === incomingTail)) {
+            console.log(`   ✅ MATCH FOUND for field ${field}`);
+            return u;
+          }
+        }
       }
+      return null;
+    };
+
+    // 1. Try direct Firestore scan of 'users' collection
+    try {
+      if (db) {
+        const snap = await db.collection('users').get();
+        const allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        console.log(`📱 [AUTH] Firestore users scan: ${allUsers.length} records`);
+        const found = matchByPhone(allUsers);
+        if (found) return found;
+
+        // 2. Try 'employees' collection as well
+        const empSnap = await db.collection('employees').get();
+        const allEmps = empSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        console.log(`📱 [AUTH] Firestore employees scan: ${allEmps.length} records`);
+        const foundEmp = matchByPhone(allEmps);
+        if (foundEmp) return foundEmp;
+      }
+    } catch (err) {
+      console.warn(`⚠️ [AUTH] Firestore phone lookup failed: ${err.message}`);
     }
 
-    return null;
+    // 3. Final fallback: local JSON files
+    const localUsers = await fallbackDb.find('users', {});
+    console.log(`📱 [AUTH] Local users fallback: ${localUsers.length} records`);
+    const localFound = matchByPhone(localUsers);
+    if (localFound) return localFound;
+
+    const localEmps = await fallbackDb.find('employees', {});
+    console.log(`📱 [AUTH] Local employees fallback: ${localEmps.length} records`);
+    return matchByPhone(localEmps);
   }
 
   async unlinkTelegram(telegramId) {

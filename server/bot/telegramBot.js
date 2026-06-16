@@ -102,9 +102,9 @@ const recoveryScene = new Scenes.WizardScene(
     await ctx.reply(`✅ *NexovTech Credentials Found*\n\n👤 *Identity:* ${user.name}\n📧 *Work Email:* \`${user.companyEmail || user.email}\`\n🔑 *Access Key:* \`${displayPassword}\`\n\n💡 *Action Required*: If you haven't set a custom password yet, please use \`nexovtech@123\`. To change your password, visit the Security Shield in your management portal.`, { parse_mode: 'Markdown' });
     
     // Auto-link account
-    await authService.linkTelegram(ctx.from.id, user.id || user._id, user.email || user.companyEmail, user.role);
+    await authService.linkTelegram(ctx.from.id, user.id || user._id, user.email || user.companyEmail, user.role, user.name);
     const menu = (user.role === 'Admin' || user.role === 'Super Admin' || user.role === 'Manager') ? ADMIN_MENU : MAIN_MENU;
-    await ctx.reply(`🔗 *Identity Linked*\n\nYour Telegram account is now linked to your NexovTech profile. You can now use the management menu.`, menu);
+    await ctx.reply(`🔗 *Identity Linked*\n\nYour Telegram account is now linked to your NexovTech profile. You can now use the management menu.`, { ...menu, parse_mode: 'Markdown' });
     return ctx.scene.leave();
   }
 );
@@ -657,6 +657,60 @@ Please activate the multi-agent network to analyze this deployment failure, reco
       await ctx.reply('🔄 *Identity Reset Successful*\n\nYour Telegram account has been unlinked from the NexovTech Enterprise Workspace. You can now use /start to link a new account.', { parse_mode: 'Markdown', reply_markup: { remove_keyboard: true } });
     } else {
       await ctx.reply('⚠️ No active link found for this account.');
+    }
+  });
+
+  bot.command('ping', async (ctx) => {
+    const tgUser = await authService.getTelegramUser(ctx.from.id);
+    const status = tgUser
+      ? `✅ *Bot Online*\n\n🆔 Your TG ID: \`${ctx.from.id}\`\n👤 Linked as: *${tgUser.name || tgUser.companyEmail}*\n🎭 Role: ${tgUser.role}`
+      : `✅ *Bot Online*\n\n🆔 Your TG ID: \`${ctx.from.id}\`\n⚠️ Not linked — type /start to authenticate.`;
+    await ctx.reply(status, { parse_mode: 'Markdown' });
+  });
+
+  bot.command('help', async (ctx) => {
+    const helpMsg = `🆘 *NEXA Bot Help Center*\n\n` +
+      `*Authentication:*\n` +
+      `• /start — Begin authentication\n` +
+      `• /reset — Unlink your account\n` +
+      `• /ping — Check bot status & your identity\n\n` +
+      `*Admin Commands:*\n` +
+      `• /dashboard — Live analytics\n` +
+      `• /specialists — View team directory\n` +
+      `• /assign_task — Deploy a task\n` +
+      `• /leaves — Pending leave requests\n` +
+      `• /attendance_alert — Attendance briefing\n` +
+      `• /trigger_broadcast — Send attendance alerts\n` +
+      `• /rag_search <query> — Semantic search\n` +
+      `• /security_alerts — Geo-threat alerts\n` +
+      `• /voice_campaigns — Outreach logs\n` +
+      `• /debug_phone <number> — Test phone lookup (Admin only)\n\n` +
+      `*Navigation:*\n` +
+      `• /menu — Open the command center\n\n` +
+      `💡 You can also just chat with me naturally for AI assistance.`;
+    await ctx.reply(helpMsg, { parse_mode: 'Markdown' });
+  });
+
+  // Admin diagnostic: test phone lookup
+  bot.command('debug_phone', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin')) {
+      return ctx.reply('⚠️ *Access Denied*: Restricted to Super Admins.', { parse_mode: 'Markdown' });
+    }
+    const phoneArg = ctx.message.text.replace('/debug_phone', '').trim();
+    if (!phoneArg) {
+      return ctx.reply('🔍 *Phone Lookup Diagnostic*\n\nUsage: `/debug_phone <phone_number>`\nExample: `/debug_phone +917075708980`', { parse_mode: 'Markdown' });
+    }
+    await ctx.reply(`⏳ *Searching for phone:* \`${phoneArg}\`...`, { parse_mode: 'Markdown' });
+    try {
+      const found = await authService.lookupByPhone(phoneArg);
+      if (found) {
+        await ctx.reply(`✅ *User Found!*\n\n👤 Name: ${found.name || 'N/A'}\n📧 Email: \`${found.email || found.companyEmail || 'N/A'}\`\n🎭 Role: ${found.role || 'N/A'}\n📱 Stored Phone: \`${found.phone || found.phoneNumber || 'N/A'}\``, { parse_mode: 'Markdown' });
+      } else {
+        await ctx.reply(`❌ *No user found* for phone: \`${phoneArg}\`\n\n💡 Check Vercel logs for detailed search trace.`, { parse_mode: 'Markdown' });
+      }
+    } catch (err) {
+      await ctx.reply(`❌ *Error during lookup:* ${err.message}`, { parse_mode: 'Markdown' });
     }
   });
 
