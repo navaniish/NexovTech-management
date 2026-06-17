@@ -128,6 +128,26 @@ app.post('/api/telegram-webhook', async (req, res) => {
 // Health Check
 app.get('/health', (req, res) => res.json({ status: 'Operational', timestamp: new Date() }));
 
+// Bot Check
+app.get('/api/bot-check', async (req, res) => {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return res.status(500).json({ error: 'Token missing' });
+  try {
+    const axios = require('axios');
+    const response = await axios.get(`https://api.telegram.org/bot${token}/getMe`);
+    res.json({
+      success: true,
+      botInfo: response.data
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      details: err.response ? err.response.data : null
+    });
+  }
+});
+
 // Root Route
 app.get('/', (req, res) => {
   res.json({
