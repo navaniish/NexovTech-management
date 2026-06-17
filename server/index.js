@@ -148,6 +148,31 @@ app.get('/api/bot-check', async (req, res) => {
   }
 });
 
+// Send Test Message
+app.get('/api/send-test-msg', async (req, res) => {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const { chatId } = req.query;
+  if (!token) return res.status(500).json({ error: 'Token missing' });
+  if (!chatId) return res.status(400).json({ error: 'chatId missing' });
+  try {
+    const axios = require('axios');
+    const response = await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
+      chat_id: chatId,
+      text: '🤖 NEXA Diagnostic: Webhook is operational and communicating with Vercel!'
+    });
+    res.json({
+      success: true,
+      result: response.data
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      details: err.response ? err.response.data : null
+    });
+  }
+});
+
 // Root Route
 app.get('/', (req, res) => {
   res.json({
