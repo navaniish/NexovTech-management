@@ -448,14 +448,18 @@ Please activate the multi-agent network to analyze this deployment failure, reco
 
   // Middleware to check if user is authenticated
   bot.use(async (ctx, next) => {
-    const isStart = ctx.message && ctx.message.text === '/start';
-    const isRecovery = ctx.message && ctx.message.text === '📱 Get My Credentials (Phone)';
+    const text = ctx.message && ctx.message.text;
+    const isStart = text === '/start';
+    const isPing = text === '/ping';
+    const isHelp = text === '/help';
+    const isEmailAuth = text === '🔐 Authenticate via Email';
+    const isRecovery = text === '📱 Get My Credentials (Phone)';
     const isContact = ctx.message && ctx.message.contact;
     
     // Check if user is currently in the middle of an authentication or recovery flow
     const isInAuthFlow = ctx.scene && ctx.scene.current;
     
-    if (isStart || isRecovery || isContact || isInAuthFlow) return next();
+    if (isStart || isPing || isHelp || isEmailAuth || isRecovery || isContact || isInAuthFlow) return next();
     
     if (!ctx.from || !ctx.from.id) return next();
     
