@@ -3,7 +3,7 @@
   "appName": "NexovTech",
   "webDir": "dist",
   "server": {
-    "url": "https://nexovtech-management.netlify.app",
+    "url": "https://nexovtech-management.vercel.app",
     "cleartext": true
   }
 }

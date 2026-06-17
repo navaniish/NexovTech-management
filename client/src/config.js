@@ -1,4 +1,4 @@
-const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL || 'https://nexovtech-management.netlify.app/api';
+const PRODUCTION_URL = import.meta.env.VITE_PRODUCTION_URL || 'https://nexovtech-management.vercel.app/api';
 
 // Detect if we are in a native app environment via Capacitor
 const isNative = !!window.Capacitor || window.location.protocol === 'capacitor:' || window.location.protocol === 'file:';
