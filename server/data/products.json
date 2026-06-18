@@ -1,0 +1,35 @@
+[
+  {
+    "id": "prod_ai_agent",
+    "name": "NEXA Agentic AI Assistant",
+    "description": "Autonomous multi-agent network with custom LLM reasoning integration for B2B client acquisition.",
+    "category": "AI Solutions",
+    "price": 150000,
+    "deliveryTime": "21 Days",
+    "status": "Active",
+    "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500",
+    "createdAt": "2026-06-17T18:25:24.047Z"
+  },
+  {
+    "id": "prod_react_dash",
+    "name": "Futuristic React Dashboard",
+    "description": "Sleek dark-mode Vite/React app with TailwindCSS styling, glassmorphism design, and real-time dashboard analytics.",
+    "category": "Web Development",
+    "price": 85000,
+    "deliveryTime": "14 Days",
+    "status": "Active",
+    "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500",
+    "createdAt": "2026-06-17T18:25:24.966Z"
+  },
+  {
+    "id": "prod_mobile_app",
+    "name": "Mobile Super App (Capacitor/React Native)",
+    "description": "Cross-platform Android & iOS app wrapper with biometric auth and geo-fenced operations check-in scanner.",
+    "category": "Mobile Applications",
+    "price": 120000,
+    "deliveryTime": "30 Days",
+    "status": "Active",
+    "image": "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=500",
+    "createdAt": "2026-06-17T18:25:26.135Z"
+  }
+]

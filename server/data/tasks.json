@@ -1,5 +1,47 @@
 [
   {
+    "id": "2d4tLKjD0MCMxW8WYyKo",
+    "createdAt": "2026-06-17T18:36:36.557Z",
+    "assignedToName": "MANI CHARAN TEJA ",
+    "dueDate": "2026-07-01",
+    "githubIssueNumber": 2,
+    "priority": "High",
+    "projectName": "Naraway - A I Solutions",
+    "title": "Phase 2: Architectural Setup & DB Design",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/naraway---a-i-solutions/issues/2",
+    "projectId": "kRYj8maRSqnxW4Emvtbg",
+    "assignedTo": "manicharanteja.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "FobIql5Eho6MxGpw7SBQ",
+    "createdAt": "2026-06-17T18:36:36.901Z",
+    "assignedToName": "Traced Analyst",
+    "dueDate": "2026-07-08",
+    "githubIssueNumber": 3,
+    "priority": "High",
+    "projectName": "Naraway - A I Solutions",
+    "title": "Phase 3: Core Implementation & API Dev",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/naraway---a-i-solutions/issues/3",
+    "projectId": "kRYj8maRSqnxW4Emvtbg",
+    "assignedTo": "tracedanalyst.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "GirtS8eigfrs3rLhxlQe",
+    "createdAt": "2026-06-17T04:16:58.787Z",
+    "assignedToName": "Traced Analyst",
+    "dueDate": "2026-06-24",
+    "githubIssueNumber": 1,
+    "priority": "High",
+    "projectName": "Spring Health - A I Solutions",
+    "title": "Phase 1: Specs & Requirement Analysis",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/spring-health---a-i-solutions/issues/1",
+    "projectId": "VV7zopyxTpFRpbD4pKrU",
+    "assignedTo": "tracedanalyst.nexovtech@gmail.com",
+    "status": "In Progress"
+  },
+  {
     "id": "LqbgssgjPNjTSRQyCqEG",
     "createdAt": "2026-06-14T16:49:48.749Z",
     "assignedToName": "REKHA SIDHARDHA",
@@ -8,6 +50,20 @@
     "projectName": "Zeal Commerce - A I Solutions",
     "title": "Phase 4: Client Staging & Review",
     "projectId": "Q7exqutp02xr2aK3optC",
+    "assignedTo": "sidhardharekha.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "MIxqQYdjFsNV6Px0V8I7",
+    "createdAt": "2026-06-17T18:40:59.045Z",
+    "assignedToName": "REKHA SIDHARDHA",
+    "dueDate": "2026-07-01",
+    "githubIssueNumber": 2,
+    "priority": "High",
+    "projectName": "Superb Companies - A I  Solutions",
+    "title": "Phase 2: Architectural Setup & DB Design",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/superb-companies---a-i-solutions/issues/2",
+    "projectId": "l3YuK54NavN32rcLr0B5",
     "assignedTo": "sidhardharekha.nexovtech@gmail.com",
     "status": "Pending"
   },
@@ -23,6 +79,20 @@
     "githubIssueUrl": "https://github.com/nexovtech-simulation/acme-test-corp---a-i-solutions/issues/2",
     "projectId": "Irw5q7C6IfTSnFXey4rY",
     "assignedTo": "manicharanteja.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "TR3nXgL9mRnkHB94Ur8h",
+    "createdAt": "2026-06-17T18:40:59.529Z",
+    "assignedToName": "Traced Analyst",
+    "dueDate": "2026-07-08",
+    "githubIssueNumber": 3,
+    "priority": "High",
+    "projectName": "Superb Companies - A I  Solutions",
+    "title": "Phase 3: Core Implementation & API Dev",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/superb-companies---a-i-solutions/issues/3",
+    "projectId": "l3YuK54NavN32rcLr0B5",
+    "assignedTo": "tracedanalyst.nexovtech@gmail.com",
     "status": "Pending"
   },
   {
@@ -47,6 +117,62 @@
     "title": "Phase 4: Client Staging & Review",
     "projectId": "5lZ2hicH82yeqIZRpDLQ",
     "assignedTo": "manicharanteja.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "VZCelLn9uO32S3a1k5N3",
+    "createdAt": "2026-06-17T18:36:36.215Z",
+    "assignedToName": "Traced Analyst",
+    "dueDate": "2026-06-24",
+    "githubIssueNumber": 1,
+    "priority": "High",
+    "projectName": "Naraway - A I Solutions",
+    "title": "Phase 1: Specs & Requirement Analysis",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/naraway---a-i-solutions/issues/1",
+    "projectId": "kRYj8maRSqnxW4Emvtbg",
+    "assignedTo": "tracedanalyst.nexovtech@gmail.com",
+    "status": "In Progress"
+  },
+  {
+    "id": "WQUqqXaOBfcrkRyZfVdr",
+    "createdAt": "2026-06-17T18:40:58.702Z",
+    "assignedToName": "Traced Analyst",
+    "dueDate": "2026-06-24",
+    "githubIssueNumber": 1,
+    "priority": "High",
+    "projectName": "Superb Companies - A I  Solutions",
+    "title": "Phase 1: Specs & Requirement Analysis",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/superb-companies---a-i-solutions/issues/1",
+    "projectId": "l3YuK54NavN32rcLr0B5",
+    "assignedTo": "tracedanalyst.nexovtech@gmail.com",
+    "status": "In Progress"
+  },
+  {
+    "id": "WsDYCY8HsaGd6rfuXbDA",
+    "createdAt": "2026-06-17T18:36:37.441Z",
+    "assignedToName": "MANI CHARAN TEJA ",
+    "dueDate": "2026-07-15",
+    "githubIssueNumber": 4,
+    "priority": "High",
+    "projectName": "Naraway - A I Solutions",
+    "title": "Phase 4: Client Staging & Review",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/naraway---a-i-solutions/issues/4",
+    "projectId": "kRYj8maRSqnxW4Emvtbg",
+    "assignedTo": "manicharanteja.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "Xb528q7GqavFcdwjg8JI",
+    "createdAt": "2026-06-17T04:17:00.347Z",
+    "assignedToName": "Traced Analyst",
+    "dueDate": "2026-07-08",
+    "githubIssueNumber": 3,
+    "priority": "High",
+    "projectName": "Spring Health - A I Solutions",
+    "title": "Phase 3: Core Implementation & API Dev",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/spring-health---a-i-solutions/issues/3",
+    "projectId": "VV7zopyxTpFRpbD4pKrU",
+    "assignedTo": "tracedanalyst.nexovtech@gmail.com",
     "status": "Pending"
   },
   {
@@ -262,6 +388,20 @@
     "status": "In Progress"
   },
   {
+    "id": "o2JcLUGJMpQTYYbbDHd3",
+    "createdAt": "2026-06-17T04:16:59.916Z",
+    "assignedToName": "REKHA SIDHARDHA",
+    "dueDate": "2026-07-01",
+    "githubIssueNumber": 2,
+    "priority": "High",
+    "projectName": "Spring Health - A I Solutions",
+    "title": "Phase 2: Architectural Setup & DB Design",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/spring-health---a-i-solutions/issues/2",
+    "projectId": "VV7zopyxTpFRpbD4pKrU",
+    "assignedTo": "sidhardharekha.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
     "id": "oh5CfCCV37whBT1GiEgL",
     "createdAt": "2026-06-13T16:55:16.821Z",
     "assignedToName": "Saranya Gunda",
@@ -286,6 +426,20 @@
     "status": "In Progress"
   },
   {
+    "id": "qUh2VrLqIEOaLp4RMjYy",
+    "createdAt": "2026-06-17T18:41:00.008Z",
+    "assignedToName": "REKHA SIDHARDHA",
+    "dueDate": "2026-07-15",
+    "githubIssueNumber": 4,
+    "priority": "High",
+    "projectName": "Superb Companies - A I  Solutions",
+    "title": "Phase 4: Client Staging & Review",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/superb-companies---a-i-solutions/issues/4",
+    "projectId": "l3YuK54NavN32rcLr0B5",
+    "assignedTo": "sidhardharekha.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
     "id": "task_1781381416673",
     "createdAt": "2026-06-13T20:10:16.673Z",
     "dueDate": "Next Friday",
@@ -304,6 +458,20 @@
     "projectName": "Charité Berlin - A I Solutions",
     "title": "Phase 2: Architectural Setup & DB Design",
     "projectId": "3Hp2LGqjsXIFCPPzdugu",
+    "assignedTo": "sidhardharekha.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "zD2FXSzk4SU0dV7sWp6O",
+    "createdAt": "2026-06-17T04:17:01.556Z",
+    "assignedToName": "REKHA SIDHARDHA",
+    "dueDate": "2026-07-15",
+    "githubIssueNumber": 4,
+    "priority": "High",
+    "projectName": "Spring Health - A I Solutions",
+    "title": "Phase 4: Client Staging & Review",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/spring-health---a-i-solutions/issues/4",
+    "projectId": "VV7zopyxTpFRpbD4pKrU",
     "assignedTo": "sidhardharekha.nexovtech@gmail.com",
     "status": "Pending"
   },

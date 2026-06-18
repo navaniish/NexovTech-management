@@ -8,7 +8,7 @@ import {
   LogOut, Activity, Fingerprint, Cog, Terminal,
   ChevronRight, ArrowRight, ShieldAlert,
   Camera, Briefcase, ExternalLink, Rocket,
-  CreditCard, Landmark, Hash, Smartphone
+  CreditCard, Landmark, Hash, Smartphone, Download
 } from 'lucide-react';
 import API_URL from '../config';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -85,15 +85,33 @@ const Settings = () => {
   // Test login simulation state
   const [isTestingLogin, setIsTestingLogin] = useState(false);
   const [testLoginStep, setTestLoginStep] = useState(0); // 0: idle, 1: center, 2: blink, 3: tilt, 4: verify
+
+  // Android Compilation states
+  const [androidStatus, setAndroidStatus] = useState({
+    apkExists: false,
+    apkSize: '0 MB',
+    apkModified: null,
+    buildStatus: 'idle',
+    buildError: null,
+    buildLogs: '',
+    startTime: null,
+    endTime: null
+  });
+  const [pollingBuild, setPollingBuild] = useState(false);
+  const [androidPermissions, setAndroidPermissions] = useState([]);
+  const [loadingPermissions, setLoadingPermissions] = useState(false);
   const [testStream, setTestStream] = useState(null);
   const testVideoRef = React.useRef(null);
   const testStreamRef = useRef(null);
   const enrollCanvasRef = useRef(null);
   const testCanvasRef = useRef(null);
 
+  const initialEnrollBlinkCountRef = useRef(-1);
+  const initialTestBlinkCountRef = useRef(-1);
+
   // Real-time eye tracking for each scanner
-  const { eyeData: enrollEyeData, modelState: enrollModelState } = useFaceTracking(enrollVideoRef, enrollCanvasRef, isEnrolling && enrollStep >= 1);
-  const { eyeData: testEyeData,   modelState: testModelState   } = useFaceTracking(testVideoRef,  testCanvasRef,  isTestingLogin && testLoginStep >= 1);
+  const { eyeData: enrollEyeData, modelState: enrollModelState, blinkCount: enrollBlinkCount } = useFaceTracking(enrollVideoRef, enrollCanvasRef, isEnrolling && enrollStep >= 1);
+  const { eyeData: testEyeData,   modelState: testModelState,   blinkCount: testBlinkCount   } = useFaceTracking(testVideoRef,  testCanvasRef,  isTestingLogin && testLoginStep >= 1);
 
   // Eye Tracking Metrics — shared across enrollment and test scanners
   const [eyeMetrics, setEyeMetrics] = useState({ lEye: 14.2, rEye: 14.1, pd: 63.8 });
@@ -143,11 +161,26 @@ const Settings = () => {
       timer = setTimeout(() => setEnrollStep(3), 1500);
     } else if (enrollStep === 3) {
       timer = setTimeout(() => setEnrollStep(4), 1500);
-    } else if (enrollStep === 4) {
-      timer = setTimeout(() => setEnrollStep(5), 1500);
     }
     return () => clearTimeout(timer);
   }, [isEnrolling, enrollStep, enrollEyeData]);
+
+  // Real blink verification for Enrollment Step 4
+  useEffect(() => {
+    if (isEnrolling && enrollStep === 4) {
+      if (initialEnrollBlinkCountRef.current === -1) {
+        initialEnrollBlinkCountRef.current = enrollBlinkCount;
+      }
+      if (enrollBlinkCount > initialEnrollBlinkCountRef.current && initialEnrollBlinkCountRef.current !== -1) {
+        const timer = setTimeout(() => {
+          setEnrollStep(5);
+        }, 800);
+        return () => clearTimeout(timer);
+      }
+    } else {
+      initialEnrollBlinkCountRef.current = -1;
+    }
+  }, [isEnrolling, enrollStep, enrollBlinkCount]);
 
   // Auto-advance test login scanner steps on stable pupil tracking
   useEffect(() => {
@@ -156,13 +189,28 @@ const Settings = () => {
     if (!blackEyesDetected) return;
 
     let timer;
-    if (testLoginStep === 2) {
-      timer = setTimeout(() => setTestLoginStep(3), 1500);
-    } else if (testLoginStep === 3) {
+    if (testLoginStep === 3) {
       timer = setTimeout(() => setTestLoginStep(4), 1500);
     }
     return () => clearTimeout(timer);
   }, [isTestingLogin, testLoginStep, testEyeData]);
+
+  // Real blink verification for Test Login Step 2
+  useEffect(() => {
+    if (isTestingLogin && testLoginStep === 2) {
+      if (initialTestBlinkCountRef.current === -1) {
+        initialTestBlinkCountRef.current = testBlinkCount;
+      }
+      if (testBlinkCount > initialTestBlinkCountRef.current && initialTestBlinkCountRef.current !== -1) {
+        const timer = setTimeout(() => {
+          setTestLoginStep(3);
+        }, 800);
+        return () => clearTimeout(timer);
+      }
+    } else {
+      initialTestBlinkCountRef.current = -1;
+    }
+  }, [isTestingLogin, testLoginStep, testBlinkCount]);
 
   useEffect(() => {
     testStreamRef.current = testStream;
@@ -218,6 +266,109 @@ const Settings = () => {
     }
     return () => clearTimeout(timer);
   }, [isTestingLogin, testLoginStep, testStream]);
+
+  useEffect(() => {
+    let interval;
+    const fetchStatus = async () => {
+      try {
+        const token = localStorage.getItem('nexov_token') || localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/security/android/status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setAndroidStatus(data);
+          if (data.buildStatus !== 'building') {
+            setPollingBuild(false);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to poll android status:', err);
+      }
+    };
+
+    if (activeTab === 'mobile_app' || pollingBuild) {
+      fetchStatus();
+    }
+
+    if (pollingBuild) {
+      interval = setInterval(fetchStatus, 2000);
+    }
+    return () => clearInterval(interval);
+  }, [activeTab, pollingBuild]);
+
+  const handleTriggerAndroidBuild = async () => {
+    setPollingBuild(true);
+    try {
+      const token = localStorage.getItem('nexov_token') || localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/security/android/build`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('Android compilation pipeline activated!', 'success');
+      } else {
+        showToast(data.message || 'Build initialization failed', 'error');
+        setPollingBuild(false);
+      }
+    } catch (err) {
+      showToast('Connection to compiler interrupted', 'error');
+      setPollingBuild(false);
+    }
+  };
+
+  const fetchAndroidPermissions = async () => {
+    setLoadingPermissions(true);
+    try {
+      const token = localStorage.getItem('nexov_token') || localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/security/android/permissions`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAndroidPermissions(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch android permissions:', err);
+    } finally {
+      setLoadingPermissions(false);
+    }
+  };
+
+  const handleSaveAndroidPermissions = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('nexov_token') || localStorage.getItem('token');
+      const permissionsMap = {};
+      androidPermissions.forEach(p => {
+        permissionsMap[p.id] = p.enabled;
+      });
+      const res = await fetch(`${API_URL}/security/android/permissions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(permissionsMap)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('Android permissions sync profile applied successfully!', 'success');
+        fetchAndroidPermissions();
+      } else {
+        showToast(data.message || 'Sync failed', 'error');
+      }
+    } catch (err) {
+      showToast('Network error during sync', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTogglePermission = (id) => {
+    setAndroidPermissions(prev => prev.map(p => p.id === id ? { ...p, enabled: !p.enabled } : p));
+  };
 
   const fetchTrustedDevices = async () => {
     setLoadingDevices(true);
@@ -359,6 +510,8 @@ const Settings = () => {
       }
     } else if (activeTab === 'security_devices') {
       fetchTrustedDevices();
+    } else if (activeTab === 'mobile_app') {
+      fetchAndroidPermissions();
     }
   }, [activeTab, isAdmin]);
 
@@ -471,6 +624,37 @@ const Settings = () => {
       fetchBiometricsStatus();
     } catch (err) {
       showToast(err.message || 'Purge failed', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEnrollWebAuthn = async () => {
+    setLoading(true);
+    try {
+      const BiometricsService = (await import('../services/biometricsService')).default;
+      await BiometricsService.registerWebAuthn(user?.email);
+      showToast("System default biometrics enrolled successfully!", "success");
+      fetchBiometricsStatus();
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || "System biometrics enrollment failed.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteWebAuthn = async () => {
+    if (!window.confirm("Permanently purge system biometric key?")) return;
+    setLoading(true);
+    try {
+      const BiometricsService = (await import('../services/biometricsService')).default;
+      const token = localStorage.getItem('nexov_token') || localStorage.getItem('token');
+      await BiometricsService.deleteWebAuthn(token);
+      showToast("System biometric key purged successfully.", "success");
+      fetchBiometricsStatus();
+    } catch (err) {
+      showToast(err.message || 'Key purge failed', 'error');
     } finally {
       setLoading(false);
     }
@@ -718,7 +902,10 @@ const Settings = () => {
     { id: 'notifications', label: 'Notifications', icon: Mail, color: 'text-blue-500' },
     { id: 'preferences', label: 'Preferences', icon: Cog, color: 'text-emerald-500' },
     { id: 'security_log', label: 'Security Log', icon: Activity, color: 'text-rose-500' },
-    ...(isAdmin ? [{ id: 'team', label: 'Team Access', icon: Crown, color: 'text-indigo-500' }] : []),
+    ...(isAdmin ? [
+      { id: 'team', label: 'Team Access', icon: Crown, color: 'text-indigo-500' },
+      { id: 'mobile_app', label: 'Android Control', icon: Smartphone, color: 'text-cyan-500' }
+    ] : []),
   ];
 
   const handleTabClick = (tab) => {
@@ -1083,6 +1270,57 @@ const Settings = () => {
                     </div>
                   </div>
 
+                  {/* System Default Biometrics Section */}
+                  <div className="pb-5 border-b border-slate-50 mt-10">
+                    <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">System Default Biometrics</h3>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Hardware-level biometric keys</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    <div className="md:col-span-7 p-6 md:p-8 rounded-[24px] md:rounded-[32px] bg-slate-900 text-white shadow-xl border border-slate-800 relative overflow-hidden group">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600/10 to-transparent pointer-events-none" />
+                      <div className="relative z-10 flex flex-col justify-between h-full space-y-6">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-2">
+                            <h4 className="text-base md:text-lg font-black text-white uppercase tracking-tight">System Biometric Key</h4>
+                            <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest inline-block ${biometricsStatus.webAuthnEnrolled ? 'bg-emerald-500 text-white shadow-md' : 'bg-rose-500 text-white shadow-md'}`}>
+                              {biometricsStatus.webAuthnEnrolled ? 'ENROLLED' : 'NOT ENROLLED'}
+                            </span>
+                          </div>
+                          <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/10 text-indigo-400 shrink-0">
+                            <Cpu size={22} className="animate-pulse" />
+                          </div>
+                        </div>
+
+                        <p className="text-[10px] md:text-xs font-medium text-slate-350 leading-relaxed max-w-sm">
+                          {biometricsStatus.webAuthnEnrolled 
+                            ? 'Windows Hello / Touch ID key is catalogued and active. You can bypass passwords on this device.'
+                            : 'Link your native system biometric credential (Windows Hello or Touch ID / Face ID) for passwordless validation.'
+                          }
+                        </p>
+
+                        <div className="flex gap-3">
+                          <button
+                            onClick={handleEnrollWebAuthn}
+                            disabled={loading}
+                            className="px-6 py-3 bg-white text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all flex items-center gap-1.5 cursor-pointer shadow-lg font-bold disabled:opacity-50"
+                          >
+                            <Cpu size={14} /> {biometricsStatus.webAuthnEnrolled ? 'Re-Enroll Key' : 'Enroll System Key'}
+                          </button>
+                          {biometricsStatus.webAuthnEnrolled && (
+                            <button
+                              onClick={handleDeleteWebAuthn}
+                              disabled={loading}
+                              className="px-4 py-3 bg-rose-500/20 hover:bg-rose-500/35 text-rose-350 border border-rose-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 cursor-pointer font-bold disabled:opacity-50"
+                            >
+                              <Trash2 size={13} /> Purge Key
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Admin Security Controls */}
                   {isAdmin && (
                     <div className="p-6 md:p-8 rounded-[24px] md:rounded-[32px] bg-white border border-slate-100 shadow-lg space-y-6">
@@ -1323,6 +1561,148 @@ const Settings = () => {
                   </div>
                 </div>
               )}
+
+              {activeTab === 'mobile_app' && (
+                <div className="space-y-8 md:space-y-10">
+                  <div className="pb-5 border-b border-slate-50">
+                    <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tighter uppercase italic leading-none text-left">Android Compiler & Command</h3>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1 text-left">Capacitor compilation and native permissions center</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    {/* Status & Compile Panel */}
+                    <div className="md:col-span-7 p-6 md:p-8 rounded-[24px] md:rounded-[32px] bg-slate-900 text-white shadow-xl border border-slate-800 relative overflow-hidden group flex flex-col justify-between min-h-[350px]">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-cyan-600/10 via-slate-950/20 to-transparent pointer-events-none" />
+                      
+                      <div className="relative z-10 space-y-6 text-left">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-2">
+                            <h4 className="text-base md:text-lg font-black text-white uppercase tracking-tight">Android Compilation Node</h4>
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest inline-block ${
+                                androidStatus.buildStatus === 'building' 
+                                  ? 'bg-amber-500 text-white animate-pulse' 
+                                  : androidStatus.buildStatus === 'success' 
+                                    ? 'bg-emerald-500 text-white shadow-md' 
+                                    : androidStatus.buildStatus === 'failed'
+                                      ? 'bg-rose-500 text-white shadow-md'
+                                      : 'bg-slate-700 text-white'
+                              }`}>
+                                {androidStatus.buildStatus.toUpperCase()}
+                              </span>
+                              {androidStatus.apkExists && (
+                                <span className="px-2 py-0.5 bg-cyan-600 text-white rounded-md text-[8px] font-black uppercase tracking-widest shadow-md">
+                                  APK Size: {androidStatus.apkSize}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/10 text-cyan-400 shrink-0">
+                            <Smartphone size={22} className={androidStatus.buildStatus === 'building' ? 'animate-bounce' : ''} />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 text-[10px] md:text-xs font-medium text-slate-350 leading-relaxed">
+                          <p>Rebuild the Vite production bundle, synchronize all static assets to Capacitor assets core, and invoke Gradle Compiler to build your enterprise Android binary.</p>
+                          {androidStatus.apkModified && (
+                            <p className="text-[8px] text-slate-400 uppercase font-black">
+                              Last Compiled: {new Date(androidStatus.apkModified).toLocaleString()}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="relative z-10 flex flex-wrap gap-3 mt-6">
+                        <button
+                          onClick={handleTriggerAndroidBuild}
+                          disabled={androidStatus.buildStatus === 'building'}
+                          className="px-6 py-3.5 bg-white text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-200 disabled:opacity-50 transition-all flex items-center gap-1.5 cursor-pointer shadow-lg font-bold"
+                        >
+                          {androidStatus.buildStatus === 'building' ? (
+                            <>
+                              <Loader2 size={14} className="animate-spin text-amber-500" /> Compiling App...
+                            </>
+                          ) : (
+                            <>
+                              <RefreshCw size={14} /> Rebuild Android APK
+                            </>
+                          )}
+                        </button>
+
+                        {androidStatus.apkExists && (
+                          <a
+                            href={`${API_URL}/security/android/download`}
+                            download
+                            className="px-6 py-3.5 bg-cyan-600 hover:bg-cyan-550 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 cursor-pointer shadow-lg font-bold"
+                          >
+                            <Download size={14} /> Download APK
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Permissions Card */}
+                    <div className="md:col-span-5 p-6 md:p-8 rounded-[24px] md:rounded-[32px] bg-slate-50 border border-slate-100 flex flex-col justify-between gap-6 shadow-sm min-h-[350px]">
+                      <div className="space-y-1.5 text-left">
+                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Android Permissions Center</h4>
+                        <p className="text-[8px] font-bold text-slate-400 uppercase">Manage dynamic source permission tags</p>
+                      </div>
+
+                      <div className="flex-1 overflow-y-auto max-h-[200px] pr-1 space-y-3 custom-scrollbar">
+                        {loadingPermissions ? (
+                          <div className="flex flex-col items-center justify-center py-10 gap-2">
+                            <Loader2 size={20} className="animate-spin text-cyan-600" />
+                            <p className="text-[8px] font-black uppercase tracking-widest text-slate-350">Reading AndroidManifest.xml...</p>
+                          </div>
+                        ) : androidPermissions.length === 0 ? (
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center py-6">No permissions loaded</p>
+                        ) : (
+                          androidPermissions.map((permission) => (
+                            <div key={permission.id} className="flex items-start justify-between gap-3 p-2 bg-white rounded-xl border border-slate-100 shadow-sm text-left">
+                              <div className="space-y-0.5">
+                                <span className="text-[9px] font-black text-slate-900 uppercase tracking-wider block">{permission.name}</span>
+                                <p className="text-[8px] text-slate-400 leading-normal">{permission.description}</p>
+                              </div>
+                              <input
+                                type="checkbox"
+                                checked={permission.enabled}
+                                onChange={() => handleTogglePermission(permission.id)}
+                                className="w-4 h-4 accent-cyan-600 cursor-pointer mt-1 shrink-0"
+                              />
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      <button
+                        onClick={handleSaveAndroidPermissions}
+                        disabled={loading || loadingPermissions}
+                        className="w-full h-11 bg-slate-900 text-white rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-cyan-650 transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
+                      >
+                        {loading ? <Loader2 className="animate-spin" size={14} /> : <ShieldCheck size={14} />} Save Permissions Protocol
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Terminal Console Logs */}
+                  <div className="p-6 rounded-[24px] bg-slate-950 border border-slate-900 shadow-2xl space-y-4 font-mono text-left">
+                    <div className="flex items-center justify-between border-b border-slate-900 pb-3">
+                      <div className="flex items-center gap-2">
+                        <Terminal size={14} className="text-cyan-500 animate-pulse" />
+                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Compiler Build Logger Terminal</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                      </div>
+                    </div>
+                    <div className="bg-black/40 p-4 rounded-xl max-h-[300px] overflow-y-auto custom-scrollbar text-[10px] text-cyan-400/90 leading-relaxed whitespace-pre-wrap font-mono select-text text-left">
+                      {androidStatus.buildLogs || 'Compiler Terminal idle. Waiting for build execution...'}
+                    </div>
+                  </div>
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -1509,9 +1889,9 @@ const Settings = () => {
                         <span className="bg-black/80 text-slate-300 text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-slate-600/40">Searching...</span>
                       </div>
                     )}
-                    {enrollStep === 4 && enrollEyeData?.detected && (
+                    {enrollStep === 4 && (
                       <div className="absolute bottom-[20%] left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
-                        <span className="bg-black/80 text-white text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-white/30">BLINK DETECTED</span>
+                        <span className="bg-rose-600/95 text-white text-[9px] font-black font-mono px-3 py-1.5 rounded-full tracking-widest uppercase animate-pulse border border-rose-500 shadow-lg shadow-rose-500/20">⚡ PLEASE BLINK NOW ⚡</span>
                       </div>
                     )}
                     <div className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent shadow-[0_0_6px_rgba(255,255,255,0.5)] laser-line pointer-events-none" style={{ zIndex: 8 }} />
@@ -1699,9 +2079,9 @@ const Settings = () => {
                     <span className="bg-black/80 text-slate-300 text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-slate-600/40">Searching...</span>
                   </div>
                 )}
-                {testLoginStep === 2 && testEyeData?.detected && (
+                {testLoginStep === 2 && (
                   <div className="absolute bottom-[20%] left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
-                    <span className="bg-black/80 text-white text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-white/30">BLINK DETECTED</span>
+                    <span className="bg-rose-600/95 text-white text-[9px] font-black font-mono px-3 py-1.5 rounded-full tracking-widest uppercase animate-pulse border border-rose-500 shadow-lg shadow-rose-500/20">⚡ PLEASE BLINK NOW ⚡</span>
                   </div>
                 )}
                 <div className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent shadow-[0_0_6px_rgba(255,255,255,0.5)] laser-line pointer-events-none" style={{ zIndex: 8 }} />

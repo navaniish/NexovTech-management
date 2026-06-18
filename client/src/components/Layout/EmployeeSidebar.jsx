@@ -54,7 +54,7 @@ const EmployeeSidebar = ({ mobileOpen, setMobileOpen }) => {
 
       <motion.aside
         animate={{ width: isCollapsed ? '80px' : '240px' }}
-        className={`h-screen backdrop-blur-2xl bg-slate-900/95 border-r border-white/10 flex flex-col fixed md:relative z-[110] top-0 bottom-0 transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${
+        className={`h-full backdrop-blur-2xl bg-slate-900/95 border-r border-white/10 flex flex-col fixed md:relative top-0 bottom-0 md:top-auto md:bottom-auto z-[110] transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
         style={{ flexShrink: 0 }}

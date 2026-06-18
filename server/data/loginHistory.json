@@ -460,6 +460,20 @@
     "email": "nexovtech@myyahoo.com"
   },
   {
+    "id": "Rx6bk1UzVCzTWilJ1T6Q",
+    "area": "UTC",
+    "createdAt": "2026-06-18T09:52:44.899Z",
+    "application": "NexovTech Web Portal (Biometric)",
+    "os": "Android 0.0.0",
+    "browser": "Chrome Mobile WebView 148.0.7778",
+    "ipAddress": "127.0.0.1",
+    "location": "Remote Gateway",
+    "loginStatus": "Success",
+    "device": "Infinix $2 X6861.0.0",
+    "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "email": "nexovtech@myyahoo.com"
+  },
+  {
     "id": "Rzf3TAjiSoCrQBnxS3de",
     "area": "UTC",
     "createdAt": {
@@ -477,6 +491,20 @@
     "email": "nexovtech@myyahoo.com"
   },
   {
+    "id": "SVbW6mcpJUfmGFmo4mtL",
+    "area": "UTC",
+    "createdAt": "2026-06-17T03:14:11.270Z",
+    "application": "NexovTech Web Portal (Biometric)",
+    "os": "Android 0.0.0",
+    "browser": "Chrome Mobile WebView 148.0.7778",
+    "ipAddress": "127.0.0.1",
+    "location": "Remote Gateway",
+    "loginStatus": "Success",
+    "device": "Infinix $2 X6861.0.0",
+    "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "email": "nexovtech@myyahoo.com"
+  },
+  {
     "id": "U7Xdr7QmEpbxJrm7cJ0K",
     "createdAt": {
       "_seconds": 1778678093,
@@ -488,6 +516,20 @@
     "location": "Firebase Auth",
     "loginStatus": "Success",
     "device": "Other 0.0.0",
+    "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "email": "nexovtech@myyahoo.com"
+  },
+  {
+    "id": "V1Mi69r2E099LnBZlPFB",
+    "area": "UTC",
+    "createdAt": "2026-06-17T02:09:39.628Z",
+    "application": "NexovTech Web Portal (Biometric)",
+    "os": "Android 0.0.0",
+    "browser": "Chrome Mobile WebView 148.0.7778",
+    "ipAddress": "127.0.0.1",
+    "location": "Remote Gateway",
+    "loginStatus": "Success",
+    "device": "Infinix $2 X6861.0.0",
     "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
     "email": "nexovtech@myyahoo.com"
   },
@@ -518,6 +560,20 @@
     "application": "NexovTech Web Portal",
     "os": "Windows 10.0.0",
     "browser": "Chrome 148.0.0",
+    "ipAddress": "127.0.0.1",
+    "location": "Remote Gateway",
+    "loginStatus": "Success",
+    "device": "Other 0.0.0",
+    "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "email": "nexovtech@myyahoo.com"
+  },
+  {
+    "id": "XidIsDNGfKYuHJgCAY46",
+    "area": "UTC",
+    "createdAt": "2026-06-18T09:53:58.346Z",
+    "application": "NexovTech Web Portal (Fingerprint)",
+    "os": "Windows 10.0.0",
+    "browser": "Chrome 149.0.0",
     "ipAddress": "127.0.0.1",
     "location": "Remote Gateway",
     "loginStatus": "Success",
@@ -714,6 +770,34 @@
     "email": "nexovtech@myyahoo.com"
   },
   {
+    "id": "iOjTzNpskiB6ZUQgqsF5",
+    "area": "UTC",
+    "createdAt": "2026-06-18T10:03:06.074Z",
+    "application": "NexovTech Web Portal (Fingerprint)",
+    "os": "Android 0.0.0",
+    "browser": "Chrome Mobile WebView 148.0.7778",
+    "ipAddress": "127.0.0.1",
+    "location": "Remote Gateway",
+    "loginStatus": "Success",
+    "device": "Infinix $2 X6861.0.0",
+    "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "email": "nexovtech@myyahoo.com"
+  },
+  {
+    "id": "jT2ZRqxz277Js2Aqyd6J",
+    "area": "UTC",
+    "createdAt": "2026-06-16T13:49:27.878Z",
+    "application": "NexovTech Web Portal (Biometric)",
+    "os": "Windows 10.0.0",
+    "browser": "Chrome 149.0.0",
+    "ipAddress": "127.0.0.1",
+    "location": "Remote Gateway",
+    "loginStatus": "Success",
+    "device": "Other 0.0.0",
+    "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "email": "nexovtech@myyahoo.com"
+  },
+  {
     "id": "nbC0YKnttND0cQP2zQRe",
     "createdAt": {
       "_seconds": 1778676445,
@@ -851,6 +935,20 @@
     "email": "nexovtech@myyahoo.com"
   },
   {
+    "id": "uXfkFlX8IOAIzcCN8pwP",
+    "area": "UTC",
+    "createdAt": "2026-06-18T09:53:56.772Z",
+    "application": "NexovTech Web Portal (Fingerprint)",
+    "os": "Windows 10.0.0",
+    "browser": "Chrome 149.0.0",
+    "ipAddress": "127.0.0.1",
+    "location": "Remote Gateway",
+    "loginStatus": "Success",
+    "device": "Other 0.0.0",
+    "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "email": "nexovtech@myyahoo.com"
+  },
+  {
     "id": "vC0cH7myBb8MYhrtWXdg",
     "createdAt": {
       "_seconds": 1778678820,
@@ -894,5 +992,19 @@
     "device": "Other 0.0.0",
     "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
     "email": "nexovtech@myyahoo.com"
+  },
+  {
+    "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "email": "nexovtech@myyahoo.com",
+    "ipAddress": "127.0.0.1",
+    "device": "Other 0.0.0",
+    "browser": "Chrome 149.0.0",
+    "os": "Windows 10.0.0",
+    "loginStatus": "Success",
+    "location": "Remote Gateway",
+    "area": "UTC",
+    "application": "NexovTech Web Portal (System Biometric)",
+    "createdAt": "2026-06-18T10:21:41.911Z",
+    "id": "0lzHDFSje28Zbz6MdDdJ"
   }
 ]

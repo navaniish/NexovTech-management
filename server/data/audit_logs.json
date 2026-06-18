@@ -42,5 +42,77 @@
       "_seconds": 1778577276,
       "_nanoseconds": 569000000
     }
+  },
+  {
+    "type": "MAIL_DISPATCH",
+    "user": "nexovtech@myyahoo.com",
+    "details": "Dispatched real/internal mail: AI Agent Test Dispatch to sidhardharekha.nexovtech@gmail.com (SMTP Dispatched: true)",
+    "timestamp": "2026-06-17T02:38:02.524Z",
+    "priority": "Normal",
+    "id": "ioRcDRIJHo3EtXgYQ6qJ",
+    "createdAt": "2026-06-17T02:38:02.524Z"
+  },
+  {
+    "type": "MAIL_AUTO_REPLY",
+    "user": "nexovtech@myyahoo.com",
+    "details": "AI Auto-reply successfully sent to lead mail@mail.comms.yahoo.net (Yahoo Communications) in response to: \"Tips to keep your inbox secure and junk-free\" (SMTP: true)",
+    "timestamp": "2026-06-17T17:46:57.074Z",
+    "priority": "Normal",
+    "id": "c0z7aSe1LKKqkdjp2huj",
+    "createdAt": "2026-06-17T17:46:57.074Z"
+  },
+  {
+    "type": "MAIL_AUTO_REPLY",
+    "user": "nexovtech@myyahoo.com",
+    "details": "AI Auto-reply successfully sent to employee manicharanteja.nexovtech@gmail.com (MANI CHARAN TEJA ) in response to: \"Requesting clarification on attendance policy\" (SMTP: true)",
+    "timestamp": "2026-06-17T18:04:25.100Z",
+    "priority": "Normal",
+    "id": "tS1mkhE8HpYVfDw2Y6x9",
+    "createdAt": "2026-06-17T18:04:25.100Z"
+  },
+  {
+    "type": "MAIL_AUTO_REPLY",
+    "user": "nexovtech@myyahoo.com",
+    "details": "AI Auto-reply successfully sent to employee sidhardharekha.nexovtech@gmail.com (REKHA SIDHARDHA) in response to: \"Test\" (SMTP: true)",
+    "timestamp": "2026-06-17T18:07:47.640Z",
+    "priority": "Normal",
+    "id": "eMd1uMgMIFyMvYocOVLf",
+    "createdAt": "2026-06-17T18:07:47.641Z"
+  },
+  {
+    "type": "MAIL_AUTO_REPLY",
+    "user": "nexovtech@myyahoo.com",
+    "details": "AI Auto-reply successfully sent to employee sidhardharekha.nexovtech@gmail.com (REKHA SIDHARDHA) in response to: \"Request\" (SMTP: true)",
+    "timestamp": "2026-06-17T18:13:46.948Z",
+    "priority": "Normal",
+    "id": "8B3SD7CKBcD77qjJsE0n",
+    "createdAt": "2026-06-17T18:13:46.948Z"
+  },
+  {
+    "type": "MAIL_AUTO_REPLY",
+    "user": "nexovtech@myyahoo.com",
+    "details": "AI Auto-reply successfully sent to employee sidhardharekha.nexovtech@gmail.com (REKHA SIDHARDHA) in response to: \"Re: Request\" (SMTP: true)",
+    "timestamp": "2026-06-17T18:14:47.622Z",
+    "priority": "Normal",
+    "id": "VCv46B4jY0V6rqCITEmM",
+    "createdAt": "2026-06-17T18:14:47.623Z"
+  },
+  {
+    "type": "STORE_ORDER_CREATE",
+    "user": "sureshbabu@gmail.com",
+    "details": "Created product order ord_1781720727601 for \"NEXA Agentic AI Assistant\" (Amount: ₹150000) - Created pending Revenue transaction inv_1781720728077",
+    "timestamp": "2026-06-17T18:25:29.126Z",
+    "priority": "High",
+    "id": "C3KQrULnvRsnXe4KAJKY",
+    "createdAt": "2026-06-17T18:25:29.126Z"
+  },
+  {
+    "type": "MAIL_DISPATCH",
+    "user": "nexovtech@myyahoo.com",
+    "details": "Dispatched real/internal mail: Re: [NexovTech Security] Verification Code for Biometric Sign-in Challenge to security@nexovtech.com (SMTP Dispatched: true)",
+    "timestamp": "2026-06-17T18:34:50.759Z",
+    "priority": "Normal",
+    "id": "HMHycx6cpq8ABRf6dh13",
+    "createdAt": "2026-06-17T18:34:50.759Z"
   }
 ]

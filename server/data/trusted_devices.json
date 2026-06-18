@@ -1,1 +1,22 @@
-[]
+[
+  {
+    "id": "PeHPaGn5I6nLUZACzUrK",
+    "createdAt": "2026-06-17T02:09:39.534Z",
+    "trustScore": 95,
+    "tenantId": "org_admin_override",
+    "browserFingerprint": "Google Chrome on Android",
+    "deviceId": "dev_znfw4g1vkamllz08v03bme",
+    "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "lastUsed": "2026-06-18T10:03:05.894Z"
+  },
+  {
+    "id": "sNVoZAmEoYvUasc3SmZ4",
+    "createdAt": "2026-06-16T13:49:27.523Z",
+    "trustScore": 95,
+    "tenantId": "org_admin_override",
+    "browserFingerprint": "Microsoft Edge on Windows 10/11",
+    "deviceId": "dev_8shqscj0xmffqusnjrj864",
+    "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "lastUsed": "2026-06-18T09:53:57.209Z"
+  }
+]

@@ -3,6 +3,8 @@ const prisma = require('../config/database');
 const OpenAI = require('openai');
 const axios = require('axios');
 const vectorStore = require('../utils/vectorStore');
+const { sendEmail } = require('../utils/mailer');
+const { performLiveSearch } = require('../utils/searchHelper');
 
 // Enums mapping helpers for strict schema validation in Prisma
 function mapServiceEnum(serviceType) {
@@ -99,12 +101,31 @@ exports.discoverLeads = async (req, res) => {
     let targetList = [];
     let scraperUsedAi = false;
 
+    // 1. Perform a real-time web search using Yahoo search scraping
+    const isGlobal = !region || region.toLowerCase() === 'all countries' || region.toLowerCase() === 'global' || region.toLowerCase() === 'global wide';
+    const targetRegionText = isGlobal ? 'all major countries globally (e.g. US, UK, India, Germany, Canada, Singapore, Australia)' : region;
+    const searchQuery = `${industry} startups ${isGlobal ? 'globally' : region}`;
+    
+    let searchResults = [];
     try {
-      const isGlobal = !region || region.toLowerCase() === 'all countries' || region.toLowerCase() === 'global' || region.toLowerCase() === 'global wide';
-      const targetRegionText = isGlobal ? 'all major countries globally (e.g. US, UK, India, Germany, Canada, Singapore, Australia)' : region;
+      searchResults = await performLiveSearch(searchQuery);
+    } catch (searchErr) {
+      console.warn('⚠️ Web search failed, falling back to LLM direct knowledge:', searchErr.message);
+    }
 
+    let resultsContextText = '';
+    if (searchResults && searchResults.length > 0) {
+      resultsContextText = `Here are real-time live search results from Yahoo search matching the query:\n` +
+        searchResults.map((r, idx) => `[Result ${idx + 1}]\nCompany Domain / Website: ${r.url}\nTitle: ${r.title}\nSnippet: ${r.snippet}\n`).join('\n');
+    } else {
+      resultsContextText = `Note: No direct live search results could be scraped. Fall back to your knowledge of real, existing businesses matching this industry and region.`;
+    }
+
+    try {
       const systemPrompt = `You are the NEXA Lead Generation Scraper AI. Your task is to scrape, search and extract REAL, existing businesses matching the requested industry and target region.
+You must prioritize extracting and structuring the companies found in the provided live web search results. The company name and web domain (website URL) MUST correspond to real, existing companies from the search results context. If there are not enough companies in the search results context, supplement with real, existing businesses in that industry and region.
 You must find real companies (specifically mid-sized or startups), their actual websites, real technologies they use in their stack, realistic company sizes, real emails, phone numbers, and LinkedIn company page URLs.
+For contact coordinates (email, phone, contactName), if not present in the search snippet, you should infer realistic professional coordinates (e.g. info@domain, contact@domain, etc.) based on the domain name.
 For region "${region}", if it is "All Countries" or "Global" or "Global Wide", return companies from different countries around the world.
 Provide precisely ${limit} real companies.
 
@@ -122,11 +143,14 @@ Output ONLY a valid JSON array of objects, each representing a company, conformi
     "linkedinUrl": "https://linkedin.com/company/apex-dental-care"
   }
 ]
-Do NOT wrap the output in markdown code blocks like \`\`\`json. Output ONLY the raw JSON string. If you cannot find real companies, construct highly realistic, high-fidelity existing companies with accurate domains and realistic team coordinates.`;
+Do NOT wrap the output in markdown code blocks like \`\`\`json. Output ONLY the raw JSON string.`;
 
       const userPrompt = `Industry: ${industry}
 Target Region: ${targetRegionText}
-Count: ${limit}`;
+Count: ${limit}
+
+Live Web Search Context:
+${resultsContextText}`;
 
       const responseText = await runQuery(systemPrompt, userPrompt);
       const cleanJson = responseText.trim().substring(responseText.indexOf('['), responseText.lastIndexOf(']') + 1);
@@ -563,6 +587,30 @@ exports.approvePendingDeal = async (req, res) => {
       outreachContent = await runQuery(systemPrompt, `Company: ${lead.companyName}. Shared Proposal Link: ${proposalUrl}`);
     } catch (e) {}
 
+    let recipientEmail = null;
+    if (typeof lead.email === 'string' && lead.email.trim()) {
+      recipientEmail = lead.email.trim();
+    } else if (lead.emails && lead.emails.length > 0) {
+      recipientEmail = lead.emails[0];
+    } else if (lead.contactInfo) {
+      if (typeof lead.contactInfo.email === 'string' && lead.contactInfo.email.trim()) {
+        recipientEmail = lead.contactInfo.email.trim();
+      } else if (lead.contactInfo.emails && lead.contactInfo.emails.length > 0) {
+        recipientEmail = lead.contactInfo.emails[0];
+      }
+    }
+
+    let realEmailSent = false;
+    if (recipientEmail) {
+      console.log(`✉️ Sending auto-dispatched B2B Proposal outreach email to ${recipientEmail}...`);
+      const subject = `[NexovTech] Custom Proposal Ready - ${lead.companyName}`;
+      realEmailSent = await sendEmail(recipientEmail, subject, outreachContent);
+    } else {
+      console.warn(`⚠️ No email address found for lead [${lead.companyName}], proposal email skipped.`);
+    }
+
+    const logStatus = realEmailSent ? 'Sent' : 'Failed';
+
     if (!useFallbackDb) {
       try {
         await prisma.outreachLog.create({
@@ -571,7 +619,7 @@ exports.approvePendingDeal = async (req, res) => {
             channel: 'Email',
             messageType: 'Cold_Outreach',
             contentSent: outreachContent,
-            status: 'Sent'
+            status: logStatus
           }
         });
         await prisma.lead.update({ where: { id: deal.leadId }, data: { status: 'Outreach_Sent' } });
@@ -586,7 +634,7 @@ exports.approvePendingDeal = async (req, res) => {
         channel: 'Email',
         messageType: 'Cold_Outreach',
         contentSent: outreachContent,
-        status: 'Sent'
+        status: logStatus
       });
       await fallbackDb.update('leads', deal.leadId, { status: 'Outreach_Sent' });
     }
@@ -925,6 +973,36 @@ exports.sendOutreach = async (req, res) => {
     }
 
     let log;
+    let recipientEmail = null;
+    if (typeof lead.email === 'string' && lead.email.trim()) {
+      recipientEmail = lead.email.trim();
+    } else if (lead.emails && lead.emails.length > 0) {
+      recipientEmail = lead.emails[0];
+    } else if (lead.contactInfo) {
+      if (typeof lead.contactInfo.email === 'string' && lead.contactInfo.email.trim()) {
+        recipientEmail = lead.contactInfo.email.trim();
+      } else if (lead.contactInfo.emails && lead.contactInfo.emails.length > 0) {
+        recipientEmail = lead.contactInfo.emails[0];
+      }
+    }
+
+    let realEmailSent = false;
+    let subject = `[NexovTech] B2B Proposal & Collaboration Opportunity`;
+    if (messageType) {
+      subject = `[NexovTech] B2B ${messageType.replace(/_/g, ' ')}`;
+    }
+
+    if (channel && channel.toLowerCase() === 'email') {
+      if (recipientEmail) {
+        console.log(`✉️ Sending B2B AI outreach email to ${recipientEmail}...`);
+        realEmailSent = await sendEmail(recipientEmail, subject, finalMessage);
+      } else {
+        console.warn(`⚠️ No email address found for lead [${lead.companyName}], outreach email skipped.`);
+      }
+    }
+
+    const logStatus = (channel?.toLowerCase() === 'email' && !realEmailSent) ? 'Failed' : 'Sent';
+
     if (!useFallbackDb) {
       try {
         log = await prisma.outreachLog.create({
@@ -933,7 +1011,7 @@ exports.sendOutreach = async (req, res) => {
             channel: mapChannelEnum(channel),
             messageType,
             contentSent: finalMessage,
-            status: 'Sent'
+            status: logStatus
           }
         });
 
@@ -954,14 +1032,14 @@ exports.sendOutreach = async (req, res) => {
         channel,
         messageType,
         contentSent: finalMessage,
-        status: 'Sent'
+        status: logStatus
       });
 
       // Update lead status
       await fallbackDb.update('leads', lead.id || lead._id, { status: 'Outreach_Sent' });
     }
 
-    res.status(200).json({ message: 'Outreach campaign triggered successfully', log });
+    res.status(200).json({ message: 'Outreach campaign triggered successfully', log, emailDispatched: realEmailSent });
   } catch (error) {
     res.status(500).json({ message: 'Outreach failed', error: error.message });
   }

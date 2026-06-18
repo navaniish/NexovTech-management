@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "id": "ONJTB7rk5VnE35ofIlKA",
+    "createdAt": "2026-06-16T13:45:59.221Z",
+    "tenantId": "org_admin_override",
+    "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "email": "nexovtech@myyahoo.com",
+    "encryptedTemplate": "template_hash_nexovtech@myyahoo.com"
+  }
+]

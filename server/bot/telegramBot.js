@@ -312,7 +312,8 @@ const distributeApkScene = new Scenes.WizardScene(
       await ctx.reply(
         '❌ Error: The compiled `nexovtech.apk` file is missing from the server root.',
         Markup.inlineKeyboard([
-          Markup.button.callback('🤖 Activate AI Agents', `activate_agents:missing_apk:${match.name}`)
+          [Markup.button.callback('🤖 Activate AI Agents', `activate_agents:missing_apk:${match.name}`)],
+          [Markup.button.callback('🛠️ Rebuild Android APK', `rebuild_apk_trigger`)]
         ])
       );
       return ctx.scene.leave();
@@ -443,6 +444,21 @@ Please activate the multi-agent network to analyze this deployment failure, reco
     } catch (err) {
       console.error('❌ Action AI response error:', err.message);
       await ctx.reply(`❌ Multi-agent network compilation failed: ${err.message}`);
+    }
+  });
+
+  bot.action('rebuild_apk_trigger', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.answerCbQuery('⚠️ Access Denied');
+    }
+    try {
+      const { triggerAndroidBuild } = require('../utils/androidBuilder');
+      await ctx.answerCbQuery('🛠️ Compiling APK in background...');
+      await ctx.reply('⏳ *Android Build Node Activated*\n\nRebuilding Vite bundle, syncing Capacitor assets, and compiling debug Android APK. Notification will follow shortly.');
+      triggerAndroidBuild(user);
+    } catch (err) {
+      await ctx.reply(`❌ *Build Failed:* ${err.message}`);
     }
   });
 
@@ -596,6 +612,20 @@ Please activate the multi-agent network to analyze this deployment failure, reco
       return ctx.reply('⚠️ *Access Denied*: Restricted to administrators.', { parse_mode: 'Markdown' });
     }
     await ctx.scene.enter('DISTRIBUTE_APK_SCENE');
+  });
+
+  bot.command('build_apk', async (ctx) => {
+    const user = ctx.state.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return ctx.reply('⚠️ *Access Denied*: Restricted to administrators.', { parse_mode: 'Markdown' });
+    }
+    try {
+      const { triggerAndroidBuild } = require('../utils/androidBuilder');
+      await ctx.reply('⏳ *Android Build Node Activated*\n\nInitiating Vite web client bundle compile, syncing Capacitor assets, and triggering Android Gradle Wrapper compilation. I will notify you as soon as the APK is built and deployed.');
+      triggerAndroidBuild(user);
+    } catch (err) {
+      await ctx.reply(`❌ *Build Failed to Initialize:* ${err.message}`);
+    }
   });
 
   bot.command('dashboard', async (ctx) => {

@@ -3,6 +3,7 @@ const { pollLinkedInComments } = require('../services/linkedinPollingService');
 const { compileExecutiveBriefingData } = require('../controllers/executiveController');
 const { sendEmail } = require('../utils/mailer');
 const { runMultiAgentOrchestration } = require('../controllers/agentNetworkController');
+const { pollIncomingEmails } = require('./mailPollingService');
 
 let lastTriggeredDate = null;
 
@@ -451,8 +452,13 @@ function startScheduler() {
       await sendDailyAttendanceAlert();
     }
     
-    // Simpler: always call pollLinkedInComments (it handles its own rate limiting)
+    // Simpler: always call pollLinkedInComments and pollIncomingEmails
     await pollLinkedInComments();
+    try {
+      await pollIncomingEmails();
+    } catch (pollErr) {
+      console.error('⏰ SCHEDULER: Incoming emails polling failed:', pollErr.message);
+    }
   }, 30000);
 }
 

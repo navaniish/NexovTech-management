@@ -28,5 +28,50 @@
     "description": "Acme Test Corp - PDF Invoice for Project #Irw5q7C6IfTSnFXey4rY",
     "type": "Revenue",
     "status": "Pending"
+  },
+  {
+    "id": "inv_1781669822005",
+    "date": "2026-06-17T04:17:02.005Z",
+    "createdAt": "2026-06-17T04:17:02.005Z",
+    "amount": 975000,
+    "invoiceUrl": "/uploads/invoices/invoice-VV7zopyxTpFRpbD4pKrU.pdf",
+    "description": "Spring Health - PDF Invoice for Project #VV7zopyxTpFRpbD4pKrU",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "inv_1781720728077",
+    "date": {
+      "_seconds": 1781720728,
+      "_nanoseconds": 77000000
+    },
+    "createdAt": {
+      "_seconds": 1781720728,
+      "_nanoseconds": 77000000
+    },
+    "amount": 150000,
+    "description": "Suresh Babu - Purchased NEXA Agentic AI Assistant (Order ID: ord_1781720727601)",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "inv_1781721397832",
+    "date": "2026-06-17T18:36:37.832Z",
+    "createdAt": "2026-06-17T18:36:37.832Z",
+    "amount": 875000,
+    "invoiceUrl": "/uploads/invoices/invoice-kRYj8maRSqnxW4Emvtbg.pdf",
+    "description": "Naraway - PDF Invoice for Project #kRYj8maRSqnxW4Emvtbg",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "inv_1781721660513",
+    "date": "2026-06-17T18:41:00.513Z",
+    "createdAt": "2026-06-17T18:41:00.513Z",
+    "amount": 400000,
+    "invoiceUrl": "/uploads/invoices/invoice-l3YuK54NavN32rcLr0B5.pdf",
+    "description": "Superb Companies - PDF Invoice for Project #l3YuK54NavN32rcLr0B5",
+    "type": "Revenue",
+    "status": "Pending"
   }
 ]

@@ -1143,10 +1143,10 @@ const AIModule = () => {
                                 </td>
                                 <td className="py-4">
                                   <div className="font-bold text-slate-700 text-xs truncate max-w-[120px]">
-                                    {lead.contactName || 'Primary Lead Contact'}
+                                    {lead.contactName || lead.contactInfo?.primaryContactName || 'Primary Lead Contact'}
                                   </div>
                                   <div className="text-[9px] text-slate-400 mt-0.5">
-                                    {lead.emails?.[0] || 'contact@lead.com'}
+                                    {lead.emails?.[0] || lead.contactInfo?.emails?.[0] || 'contact@lead.com'}
                                   </div>
                                 </td>
                                 <td className="py-4">

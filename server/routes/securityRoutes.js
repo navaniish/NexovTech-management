@@ -268,33 +268,70 @@ router.get('/devices', async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
     const userId = decoded.id;
     
-    const history = await fallbackDb.find('loginHistory', { userId });
+    const trusted = await fallbackDb.find('trusted_devices', { userId }) || [];
+    const history = await fallbackDb.find('loginHistory', { userId }) || [];
     
     const devicesMap = new Map();
-    (history || []).forEach(log => {
-      const os = log.os || 'Unknown OS';
-      const browser = log.browser || 'Unknown Browser';
-      const deviceKey = `${os}-${browser}`;
-      
-      if (!devicesMap.has(deviceKey) || parseDate(log.createdAt) > parseDate(devicesMap.get(deviceKey).createdAt)) {
-        devicesMap.set(deviceKey, log);
+    
+    // First, populate with trusted devices
+    trusted.forEach(dev => {
+      const deviceKey = dev.deviceId || dev.browserFingerprint;
+      if (deviceKey) {
+        devicesMap.set(deviceKey, {
+          id: dev.id || dev._id,
+          deviceId: dev.deviceId,
+          browserFingerprint: dev.browserFingerprint || 'Unknown Browser Node',
+          deviceName: dev.browserFingerprint || 'Unknown Browser Node',
+          trustScore: dev.trustScore || 95,
+          lastUsed: dev.lastUsed || dev.createdAt || new Date().toISOString(),
+          createdAt: dev.lastUsed || dev.createdAt || new Date().toISOString(),
+          lastIp: dev.lastIp || '127.0.0.1',
+          deviceType: 'Desktop', // default
+          isTrusted: true
+        });
       }
     });
     
-    const devicesList = Array.from(devicesMap.values()).map(log => {
+    // Then, merge with login history for completeness
+    history.forEach(log => {
       const os = log.os || 'Unknown OS';
       const browser = log.browser || 'Unknown Browser';
+      const deviceNameStr = `${os} - ${browser}`;
       const isMobile = os.includes('Android') || os.includes('iOS') || os.includes('iPhone') || os.includes('iPad');
       
-      return {
-        deviceType: isMobile ? 'Mobile' : 'Desktop',
-        deviceName: `${os} - ${browser}`,
-        lastIp: log.ipAddress || '127.0.0.1',
-        createdAt: log.createdAt
-      };
+      // Try to match key or device ID
+      let matchedKey = null;
+      for (const [key, dev] of devicesMap.entries()) {
+        if (dev.browserFingerprint && (dev.browserFingerprint.includes(browser) && dev.browserFingerprint.includes(os))) {
+          matchedKey = key;
+          break;
+        }
+      }
+      
+      if (matchedKey) {
+        const existing = devicesMap.get(matchedKey);
+        existing.lastIp = log.ipAddress || existing.lastIp;
+        existing.deviceType = isMobile ? 'Mobile' : existing.deviceType;
+      } else {
+        const key = log.deviceId || `${os}-${browser}`;
+        if (!devicesMap.has(key)) {
+          devicesMap.set(key, {
+            id: log.id || log._id,
+            deviceId: log.deviceId || key,
+            browserFingerprint: deviceNameStr,
+            deviceName: deviceNameStr,
+            trustScore: 70, // lower score for untrusted devices
+            lastUsed: log.createdAt,
+            createdAt: log.createdAt,
+            lastIp: log.ipAddress || '127.0.0.1',
+            deviceType: isMobile ? 'Mobile' : 'Desktop',
+            isTrusted: false
+          });
+        }
+      }
     });
     
-    res.json(devicesList);
+    res.json(Array.from(devicesMap.values()));
   } catch (err) {
     console.error('🔥 GET_SECURITY_DEVICES_FAIL:', err.message);
     res.status(500).json({ message: 'Devices list offline' });
@@ -303,7 +340,7 @@ router.get('/devices', async (req, res) => {
 
 /**
  * DELETE /devices/:deviceName
- * Removes device entries from login history (mocks revocation).
+ * Removes device entries from login history and trusted_devices.
  */
 router.delete('/devices/:deviceName', async (req, res) => {
   const jwt = require('jsonwebtoken');
@@ -317,14 +354,25 @@ router.delete('/devices/:deviceName', async (req, res) => {
     const userId = decoded.id;
     const { deviceName } = req.params;
     
-    const history = await fallbackDb.find('loginHistory', { userId });
+    // Revoke from trusted_devices
+    const trusted = await fallbackDb.find('trusted_devices', { userId }) || [];
+    const targetTrusted = trusted.filter(d => 
+      d.browserFingerprint === deviceName || 
+      d.deviceId === deviceName || 
+      `${d.browserFingerprint}`.includes(deviceName) ||
+      deviceName.includes(`${d.browserFingerprint}`)
+    );
+    for (const d of targetTrusted) {
+      await fallbackDb.deleteOne('trusted_devices', d.id || d._id);
+    }
     
-    const matches = (history || []).filter(log => {
+    // Revoke from loginHistory too
+    const history = await fallbackDb.find('loginHistory', { userId }) || [];
+    const targetHistory = history.filter(log => {
       const name = `${log.os} - ${log.browser}`;
-      return name === deviceName;
+      return name === deviceName || log.deviceId === deviceName;
     });
-    
-    for (const match of matches) {
+    for (const match of targetHistory) {
       await fallbackDb.deleteOne('loginHistory', match.id || match._id);
     }
     
@@ -933,9 +981,17 @@ router.get('/biometrics/status/:userId', async (req, res) => {
     if (!template && user?.email) {
       template = await fallbackDb.findOne('biometrics_templates', { email: user.email.toLowerCase() });
     }
+    
+    let webauthn = await fallbackDb.findOne('webauthn_credentials', { userId });
+    if (!webauthn && user?.email) {
+      webauthn = await fallbackDb.findOne('webauthn_credentials', { email: user.email.toLowerCase() });
+    }
+
     res.json({
       enrolled: !!(template && template.encryptedTemplate),
       enrolledAt: template ? template.createdAt : null,
+      webauthnEnrolled: !!webauthn,
+      webauthnEnrolledAt: webauthn ? webauthn.createdAt : null,
       policy: 'Face-Only Login Enabled (Password Bypass Active)',
       settings: user?.face_auth_settings || template?.settings || {
         enableFaceLogin: true,
@@ -1130,6 +1186,660 @@ router.post('/biometrics/admin/revoke/:userId', async (req, res) => {
   } catch (err) {
     console.error('🔥 BIOMETRICS_REVOKE_FAIL:', err.message);
     res.status(500).json({ message: 'Revocation protocol failed.' });
+  }
+});
+
+// ── GET ANDROID BUILD & COMPILATION STATUS ──
+router.get('/android/status', async (req, res) => {
+  const jwt = require('jsonwebtoken');
+  const fallbackDb = require('../utils/fallbackDb');
+  const { getBuildStatus } = require('../utils/androidBuilder');
+
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
+    const user = await fallbackDb.findById('users', decoded.id);
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return res.status(403).json({ message: 'Access denied: Administrative clearance required.' });
+    }
+
+    const status = getBuildStatus();
+    res.json(status);
+  } catch (err) {
+    console.error('🔥 GET_ANDROID_STATUS_FAIL:', err.message);
+    res.status(500).json({ message: 'Android compiler offline.' });
+  }
+});
+
+// ── TRIGGER ANDROID APK COMPILE & DEPLOYMENT ──
+router.post('/android/build', async (req, res) => {
+  const jwt = require('jsonwebtoken');
+  const fallbackDb = require('../utils/fallbackDb');
+  const { triggerAndroidBuild } = require('../utils/androidBuilder');
+
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
+    const user = await fallbackDb.findById('users', decoded.id);
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return res.status(403).json({ message: 'Access denied: Administrative clearance required.' });
+    }
+
+    const result = triggerAndroidBuild(user);
+    res.json(result);
+  } catch (err) {
+    console.error('🔥 TRIGGER_ANDROID_BUILD_FAIL:', err.message);
+    res.status(400).json({ message: err.message || 'Android build failed to initialize.' });
+  }
+});
+
+// ── GET ANDROID PERMISSIONS CONFIGURATION ──
+router.get('/android/permissions', async (req, res) => {
+  const jwt = require('jsonwebtoken');
+  const fallbackDb = require('../utils/fallbackDb');
+  const fs = require('fs');
+  const path = require('path');
+
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
+    const user = await fallbackDb.findById('users', decoded.id);
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return res.status(403).json({ message: 'Access denied: Administrative clearance required.' });
+    }
+
+    const manifestPath = path.resolve(__dirname, '../../client/android/app/src/main/AndroidManifest.xml');
+    if (!fs.existsSync(manifestPath)) {
+      return res.status(404).json({ message: 'AndroidManifest.xml file not found in client directory.' });
+    }
+
+    const manifestContent = fs.readFileSync(manifestPath, 'utf8');
+
+    const CONTROLLED_PERMISSIONS = [
+      { id: 'android.permission.CAMERA', name: 'Camera Access', description: 'Required for facial verification and biometric liveness checks.' },
+      { id: 'android.permission.RECORD_AUDIO', name: 'Microphone Access', description: 'Required for voice-based liveness verification.' },
+      { id: 'android.permission.POST_NOTIFICATIONS', name: 'Push Notifications', description: 'Allows sending system alarms, task updates, and security logs.' },
+      { id: 'android.permission.ACCESS_FINE_LOCATION', name: 'Fine Location', description: 'Required for geofence validation and automated check-ins.' },
+      { id: 'android.permission.ACCESS_COARSE_LOCATION', name: 'Coarse Location', description: 'Required for approximate area geofence validation.' },
+      { id: 'android.permission.READ_MEDIA_IMAGES', name: 'Read Media Images', description: 'Allows access to device image gallery.' },
+      { id: 'android.permission.READ_MEDIA_VIDEO', name: 'Read Media Video', description: 'Allows access to device video gallery.' },
+      { id: 'android.permission.READ_MEDIA_AUDIO', name: 'Read Media Audio', description: 'Allows access to device audio library.' },
+      { id: 'android.permission.READ_EXTERNAL_STORAGE', name: 'Read External Storage', description: 'Legacy storage read access for Android 12 and below.' },
+      { id: 'android.permission.WRITE_EXTERNAL_STORAGE', name: 'Write External Storage', description: 'Legacy storage write access for Android 9 and below.' }
+    ];
+
+    const permissionsStatus = CONTROLLED_PERMISSIONS.map(p => {
+      let enabled = false;
+      if (p.id === 'android.permission.WRITE_EXTERNAL_STORAGE') {
+        enabled = manifestContent.includes('android.permission.WRITE_EXTERNAL_STORAGE');
+      } else {
+        enabled = manifestContent.includes(`name="${p.id}"`);
+      }
+      return { ...p, enabled };
+    });
+
+    res.json(permissionsStatus);
+  } catch (err) {
+    console.error('🔥 GET_ANDROID_PERMISSIONS_FAIL:', err.message);
+    res.status(500).json({ message: 'Failed to read Android permissions configuration.' });
+  }
+});
+
+// ── SAVE ANDROID PERMISSIONS CONFIGURATION ──
+router.post('/android/permissions', async (req, res) => {
+  const jwt = require('jsonwebtoken');
+  const fallbackDb = require('../utils/fallbackDb');
+  const fs = require('fs');
+  const path = require('path');
+
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
+    const user = await fallbackDb.findById('users', decoded.id);
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return res.status(403).json({ message: 'Access denied: Administrative clearance required.' });
+    }
+
+    const manifestPath = path.resolve(__dirname, '../../client/android/app/src/main/AndroidManifest.xml');
+    const mainActivityPath = path.resolve(__dirname, '../../client/android/app/src/main/java/com/NexovTech/app/MainActivity.java');
+
+    if (!fs.existsSync(manifestPath) || !fs.existsSync(mainActivityPath)) {
+      return res.status(404).json({ message: 'Android source files missing. Cannot apply configurations.' });
+    }
+
+    const CONTROLLED_PERMISSIONS = [
+      { id: 'android.permission.CAMERA' },
+      { id: 'android.permission.RECORD_AUDIO' },
+      { id: 'android.permission.POST_NOTIFICATIONS' },
+      { id: 'android.permission.ACCESS_FINE_LOCATION' },
+      { id: 'android.permission.ACCESS_COARSE_LOCATION' },
+      { id: 'android.permission.READ_MEDIA_IMAGES' },
+      { id: 'android.permission.READ_MEDIA_VIDEO' },
+      { id: 'android.permission.READ_MEDIA_AUDIO' },
+      { id: 'android.permission.READ_EXTERNAL_STORAGE' },
+      { id: 'android.permission.WRITE_EXTERNAL_STORAGE' }
+    ];
+
+    // 1. Rewrite AndroidManifest.xml
+    let manifestContent = fs.readFileSync(manifestPath, 'utf8');
+    const lines = manifestContent.split('\n');
+    const filteredLines = lines.filter(line => {
+      for (const p of CONTROLLED_PERMISSIONS) {
+        if (line.includes(p.id)) return false;
+      }
+      return true;
+    });
+
+    const permissionCommentIndex = filteredLines.findIndex(line => line.includes('<!-- Permissions -->'));
+    if (permissionCommentIndex !== -1) {
+      const newPermissionsLines = [];
+      if (!filteredLines.some(l => l.includes('android.permission.INTERNET'))) {
+        newPermissionsLines.push('    <uses-permission android:name="android.permission.INTERNET" />');
+      }
+
+      for (const p of CONTROLLED_PERMISSIONS) {
+        if (req.body[p.id]) {
+          if (p.id === 'android.permission.WRITE_EXTERNAL_STORAGE') {
+            newPermissionsLines.push('    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />');
+          } else {
+            newPermissionsLines.push(`    <uses-permission android:name="${p.id}" />`);
+          }
+        }
+      }
+      filteredLines.splice(permissionCommentIndex + 1, 0, ...newPermissionsLines);
+    }
+    fs.writeFileSync(manifestPath, filteredLines.join('\n'), 'utf8');
+
+    // 2. Rewrite MainActivity.java dynamically
+    const cameraBlock = req.body['android.permission.CAMERA'] ? `
+        // Camera permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) 
+                != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(Manifest.permission.CAMERA);
+        }
+` : '';
+
+    const recordAudioBlock = req.body['android.permission.RECORD_AUDIO'] ? `
+        // Microphone permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) 
+                != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(Manifest.permission.RECORD_AUDIO);
+        }
+` : '';
+
+    const fineLocationBlock = req.body['android.permission.ACCESS_FINE_LOCATION'] ? `
+        // Fine Location permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) 
+                != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+` : '';
+
+    const coarseLocationBlock = req.body['android.permission.ACCESS_COARSE_LOCATION'] ? `
+        // Coarse Location permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) 
+                != PackageManager.PERMISSION_GRANTED) {
+            permissionsNeeded.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        }
+` : '';
+
+    // SDK 33+ permissions
+    let sdk33Block = '';
+    if (req.body['android.permission.POST_NOTIFICATIONS'] || req.body['android.permission.READ_MEDIA_IMAGES'] || req.body['android.permission.READ_MEDIA_VIDEO'] || req.body['android.permission.READ_MEDIA_AUDIO']) {
+      sdk33Block += `
+        // Notification and Media permissions for Android 13+ (API 33+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {`;
+      if (req.body['android.permission.POST_NOTIFICATIONS']) {
+        sdk33Block += `
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) 
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.POST_NOTIFICATIONS);
+            }`;
+      }
+      if (req.body['android.permission.READ_MEDIA_IMAGES']) {
+        sdk33Block += `
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) 
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.READ_MEDIA_IMAGES);
+            }`;
+      }
+      if (req.body['android.permission.READ_MEDIA_VIDEO']) {
+        sdk33Block += `
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO) 
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.READ_MEDIA_VIDEO);
+            }`;
+      }
+      if (req.body['android.permission.READ_MEDIA_AUDIO']) {
+        sdk33Block += `
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_AUDIO) 
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.READ_MEDIA_AUDIO);
+            }`;
+      }
+      sdk33Block += `
+        }
+      `;
+    }
+
+    // SDK 32- permissions
+    let sdk32Block = '';
+    if (req.body['android.permission.READ_EXTERNAL_STORAGE']) {
+      sdk32Block += `
+        // Storage permissions for Android 12 and below
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) 
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            }
+        }
+      `;
+    }
+
+    const mainActivityContent = `package com.NexovTech.app;
+
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import com.getcapacitor.BridgeActivity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends BridgeActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+        requestRequiredPermissions();
+    }
+
+    private void requestRequiredPermissions() {
+        List<String> permissionsNeeded = new ArrayList<>();
+${cameraBlock}${recordAudioBlock}${fineLocationBlock}${coarseLocationBlock}${sdk33Block}${sdk32Block}
+        if (!permissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(this, 
+                    permissionsNeeded.toArray(new String[0]), 101);
+        }
+    }
+}`;
+
+    fs.writeFileSync(mainActivityPath, mainActivityContent, 'utf8');
+
+    // Save admin configuration action
+    await fallbackDb.save('admin_logs', {
+      action: 'ANDROID_PERMISSIONS_SYNC',
+      status: 'info',
+      performedBy: user.name || user.email,
+      details: req.body,
+      timestamp: new Date()
+    });
+
+    res.json({ success: true, message: 'Android source configurations sync applied successfully.' });
+  } catch (err) {
+    console.error('🔥 POST_ANDROID_PERMISSIONS_FAIL:', err.message);
+    res.status(550).json({ message: 'Failed to write Android permissions config files.' });
+  }
+});
+
+// ── DOWNLOAD COMPILED ANDROID APK ──
+router.get('/android/download', async (req, res) => {
+  const path = require('path');
+  const fs = require('fs');
+  const apkPath = path.resolve(__dirname, '../../nexovtech.apk');
+
+  if (fs.existsSync(apkPath)) {
+    res.download(apkPath, 'nexovtech.apk');
+  } else {
+    res.status(404).json({ message: 'Compiled Android APK package not found on server. Please trigger a compilation build first.' });
+  }
+});
+
+// ── ZERO-TRUST FINGERPRINT LOGIN VERIFY ──
+router.post('/fingerprint/verify', async (req, res) => {
+  const { email, deviceId } = req.body;
+  const fallbackDb = require('../utils/fallbackDb');
+  const jwt = require('jsonwebtoken');
+  const useragent = require('useragent');
+  const agent = useragent.parse(req.headers['user-agent'] || '');
+
+  if (!email || !deviceId) {
+    return res.status(400).json({ message: 'Missing email or device fingerprint.' });
+  }
+
+  try {
+    let user = await fallbackDb.findOne('users', { email: email.toLowerCase() });
+    if (!user) {
+      user = await fallbackDb.findOne('users', { companyEmail: email.toLowerCase() });
+    }
+    if (!user) {
+      return res.status(404).json({ message: 'User profile not found.' });
+    }
+
+    if (user.status === 'Locked') {
+      return res.status(403).json({ message: 'Account is locked. Please contact administration.' });
+    }
+
+    // Check if device is trusted for this user
+    const trustedDevices = await fallbackDb.find('trusted_devices', { userId: user.id || user._id }) || [];
+    const matchedDevice = trustedDevices.find(d => d.deviceId === deviceId);
+
+    if (!matchedDevice) {
+      // Save a failed log
+      await fallbackDb.save('loginHistory', {
+        userId: user.id || user._id,
+        email: user.email,
+        ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
+        device: agent.device.toString(),
+        browser: agent.toAgent(),
+        os: agent.os.toString(),
+        loginStatus: 'Failed_Untrusted_Device',
+        location: 'Remote Gateway',
+        area: 'UTC',
+        application: 'NexovTech Web Portal (Fingerprint)',
+        createdAt: new Date().toISOString()
+      });
+
+      return res.status(401).json({
+        message: 'Untrusted device node. Fingerprint login is only available on verified trusted devices. Please log in with credentials first and trust this device.'
+      });
+    }
+
+    // Device is trusted. Update lastUsed
+    await fallbackDb.update('trusted_devices', matchedDevice.id || matchedDevice._id, {
+      lastUsed: new Date().toISOString()
+    });
+
+    // Record login success
+    await fallbackDb.save('loginHistory', {
+      userId: user.id || user._id,
+      email: user.email,
+      ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
+      device: agent.device.toString(),
+      browser: agent.toAgent(),
+      os: agent.os.toString(),
+      loginStatus: 'Success',
+      location: 'Remote Gateway',
+      area: 'UTC',
+      application: 'NexovTech Web Portal (Fingerprint)',
+      createdAt: new Date().toISOString()
+    });
+
+    // Generate JWT
+    const jwtToken = jwt.sign(
+      { id: user.id || user._id, role: user.role, firebaseUid: user.firebaseUid || '', tenantId: user.tenantId || 'org_default' },
+      process.env.JWT_SECRET || 'nexovtech_secret_key',
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      token: jwtToken,
+      user: {
+        id: user.id || user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        avatar: user.avatar,
+        twoFactorEnabled: user.twoFactorEnabled
+      }
+    });
+
+  } catch (err) {
+    console.error('🔥 FINGERPRINT_VERIFY_FAILURE:', err);
+    res.status(500).json({ message: 'Internal fingerprint login authentication error.' });
+  }
+});
+
+// ── PUBLIC WEBAUTHN STATUS CHECK (no auth required) ──
+router.post('/webauthn/status', async (req, res) => {
+  const { email } = req.body;
+  const fallbackDb = require('../utils/fallbackDb');
+
+  if (!email) return res.status(400).json({ message: 'Missing email.' });
+
+  try {
+    let user = await fallbackDb.findOne('users', { email: email.toLowerCase() });
+    if (!user) user = await fallbackDb.findOne('users', { companyEmail: email.toLowerCase() });
+    if (!user) return res.status(404).json({ message: 'User profile not found.' });
+
+    const credential = await fallbackDb.findOne('webauthn_credentials', { userId: user.id || user._id });
+    res.json({
+      enrolled: !!credential,
+      userId: user.id || user._id
+    });
+  } catch (err) {
+    console.error('🔥 WEBAUTHN_STATUS_FAIL:', err.message);
+    res.status(500).json({ message: 'Failed to check WebAuthn status.' });
+  }
+});
+
+// ── PUBLIC WEBAUTHN REGISTRATION (for first-time fingerprint login) ──
+// This endpoint saves the WebAuthn credential using email as identity — no auth token needed
+router.post('/webauthn/register-public', async (req, res) => {
+  const { email, credentialId, publicKey } = req.body;
+  const fallbackDb = require('../utils/fallbackDb');
+
+  if (!email || !credentialId || !publicKey) {
+    return res.status(400).json({ message: 'Missing fields for WebAuthn registration.' });
+  }
+
+  try {
+    let user = await fallbackDb.findOne('users', { email: email.toLowerCase() });
+    if (!user) user = await fallbackDb.findOne('users', { companyEmail: email.toLowerCase() });
+    if (!user) return res.status(404).json({ message: 'User not found. Please verify your email address.' });
+
+    if (user.status === 'Locked') {
+      return res.status(403).json({ message: 'Account is locked. Contact administration.' });
+    }
+
+    const existing = await fallbackDb.findOne('webauthn_credentials', { userId: user.id || user._id });
+    if (existing) {
+      await fallbackDb.update('webauthn_credentials', existing.id || existing._id, {
+        credentialId,
+        publicKey,
+        updatedAt: new Date().toISOString()
+      });
+    } else {
+      await fallbackDb.save('webauthn_credentials', {
+        userId: user.id || user._id,
+        email: user.email.toLowerCase(),
+        credentialId,
+        publicKey,
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    console.log(`🔐 WEBAUTHN: Public registration for ${user.email}`);
+    res.json({ success: true, message: 'Physical fingerprint registered successfully.' });
+  } catch (err) {
+    console.error('🔥 WEBAUTHN_PUBLIC_REGISTER_FAIL:', err.message);
+    res.status(500).json({ message: 'Failed to register fingerprint.' });
+  }
+});
+
+// ── REGISTER WEBAUTHN DEVICE CREDENTIAL (authenticated, from settings) ──
+router.post('/webauthn/register', async (req, res) => {
+  const { email, credentialId, publicKey } = req.body;
+  const fallbackDb = require('../utils/fallbackDb');
+  const jwt = require('jsonwebtoken');
+
+  if (!email || !credentialId || !publicKey) {
+    return res.status(400).json({ message: 'Missing fields for WebAuthn registration.' });
+  }
+
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
+    let user = await fallbackDb.findById('users', decoded.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Check if user has an existing webauthn credential
+    const existing = await fallbackDb.findOne('webauthn_credentials', { userId: user.id || user._id });
+    if (existing) {
+      await fallbackDb.update('webauthn_credentials', existing.id || existing._id, {
+        credentialId,
+        publicKey,
+        updatedAt: new Date().toISOString()
+      });
+    } else {
+      await fallbackDb.save('webauthn_credentials', {
+        userId: user.id || user._id,
+        email: user.email.toLowerCase(),
+        credentialId,
+        publicKey,
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    res.json({ success: true, message: 'System default biometrics registered successfully.' });
+  } catch (err) {
+    console.error('🔥 WEBAUTHN_REGISTER_FAIL:', err.message);
+    res.status(500).json({ message: 'Failed to register WebAuthn credential.' });
+  }
+});
+
+// ── GET WEBAUTHN CREDENTIALS INFO FOR LOGIN ──
+router.post('/webauthn/challenge', async (req, res) => {
+  const { email } = req.body;
+  const fallbackDb = require('../utils/fallbackDb');
+
+  if (!email) {
+    return res.status(400).json({ message: 'Missing email.' });
+  }
+
+  try {
+    let user = await fallbackDb.findOne('users', { email: email.toLowerCase() });
+    if (!user) {
+      user = await fallbackDb.findOne('users', { companyEmail: email.toLowerCase() });
+    }
+    if (!user) {
+      return res.status(404).json({ message: 'User profile not found.' });
+    }
+
+    const credential = await fallbackDb.findOne('webauthn_credentials', { userId: user.id || user._id });
+    if (!credential) {
+      return res.status(404).json({ message: 'No system default biometrics registered for this email.' });
+    }
+
+    res.json({
+      credentialId: credential.credentialId,
+      userId: user.id || user._id
+    });
+  } catch (err) {
+    console.error('🔥 WEBAUTHN_CHALLENGE_FAIL:', err.message);
+    res.status(500).json({ message: 'Failed to generate WebAuthn challenge.' });
+  }
+});
+
+// ── VERIFY WEBAUTHN AUTHENTICATION ──
+router.post('/webauthn/verify', async (req, res) => {
+  const { email, credentialId } = req.body;
+  const fallbackDb = require('../utils/fallbackDb');
+  const jwt = require('jsonwebtoken');
+  const useragent = require('useragent');
+  const agent = useragent.parse(req.headers['user-agent'] || '');
+
+  if (!email || !credentialId) {
+    return res.status(400).json({ message: 'Missing fields for WebAuthn authentication.' });
+  }
+
+  try {
+    let user = await fallbackDb.findOne('users', { email: email.toLowerCase() });
+    if (!user) {
+      user = await fallbackDb.findOne('users', { companyEmail: email.toLowerCase() });
+    }
+    if (!user) {
+      return res.status(404).json({ message: 'User profile not found.' });
+    }
+
+    if (user.status === 'Locked') {
+      return res.status(403).json({ message: 'Account is locked. Contact administration.' });
+    }
+
+    const credential = await fallbackDb.findOne('webauthn_credentials', { userId: user.id || user._id });
+    if (!credential || credential.credentialId !== credentialId) {
+      return res.status(401).json({ message: 'Biometric hardware key mismatch.' });
+    }
+
+    // Record login success
+    await fallbackDb.save('loginHistory', {
+      userId: user.id || user._id,
+      email: user.email,
+      ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
+      device: agent.device.toString(),
+      browser: agent.toAgent(),
+      os: agent.os.toString(),
+      loginStatus: 'Success',
+      location: 'Remote Gateway',
+      area: 'UTC',
+      application: 'NexovTech Web Portal (System Biometric)',
+      createdAt: new Date().toISOString()
+    });
+
+    const jwtToken = jwt.sign(
+      { id: user.id || user._id, role: user.role, firebaseUid: user.firebaseUid || '', tenantId: user.tenantId || 'org_default' },
+      process.env.JWT_SECRET || 'nexovtech_secret_key',
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      token: jwtToken,
+      user: {
+        id: user.id || user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        avatar: user.avatar,
+        twoFactorEnabled: user.twoFactorEnabled
+      }
+    });
+
+  } catch (err) {
+    console.error('🔥 WEBAUTHN_VERIFY_FAILURE:', err);
+    res.status(500).json({ message: 'Internal WebAuthn verification error.' });
+  }
+});
+
+// ── DELETE WEBAUTHN DEVICE CREDENTIAL ──
+router.delete('/webauthn/delete', async (req, res) => {
+  const jwt = require('jsonwebtoken');
+  const fallbackDb = require('../utils/fallbackDb');
+
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
+    const userId = decoded.id;
+
+    const credential = await fallbackDb.findOne('webauthn_credentials', { userId });
+    if (!credential) {
+      return res.status(404).json({ message: 'No system default biometric credential found for this user.' });
+    }
+
+    await fallbackDb.deleteOne('webauthn_credentials', credential.id || credential._id);
+
+    res.json({ success: true, message: 'System default biometric credential deleted successfully.' });
+  } catch (err) {
+    console.error('🔥 WEBAUTHN_DELETE_FAIL:', err.message);
+    res.status(500).json({ message: 'Failed to delete system default biometric credential.' });
   }
 });
 

@@ -24,17 +24,24 @@
 }
 
 body {
-  /* High-Fidelity Office Theme */
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: #0F172A;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
   background: 
     linear-gradient(rgba(248, 250, 252, 0.6), rgba(226, 232, 240, 0.5)),
     url('/assets/office-bg.png');
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
   background-repeat: no-repeat;
-  min-height: 100vh;
-  font-family: 'Inter', -apple-system, sans-serif;
-  color: #0F172A;
+  pointer-events: none;
 }
 
 .glass-panel {

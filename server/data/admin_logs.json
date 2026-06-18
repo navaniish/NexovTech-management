@@ -10,5 +10,25 @@
     "timestamp": "2026-06-15T14:05:01.052Z",
     "id": "ZTX3HTWY1ZXSOwc2s3pv",
     "createdAt": "2026-06-15T14:05:01.052Z"
+  },
+  {
+    "action": "ANDROID_PERMISSIONS_SYNC",
+    "status": "info",
+    "performedBy": "NEXOVTECH ADMINISTRATION",
+    "details": {
+      "android.permission.CAMERA": true,
+      "android.permission.RECORD_AUDIO": true,
+      "android.permission.POST_NOTIFICATIONS": true,
+      "android.permission.ACCESS_FINE_LOCATION": true,
+      "android.permission.ACCESS_COARSE_LOCATION": true,
+      "android.permission.READ_MEDIA_IMAGES": true,
+      "android.permission.READ_MEDIA_VIDEO": true,
+      "android.permission.READ_MEDIA_AUDIO": true,
+      "android.permission.READ_EXTERNAL_STORAGE": true,
+      "android.permission.WRITE_EXTERNAL_STORAGE": true
+    },
+    "timestamp": "2026-06-18T10:19:35.171Z",
+    "id": "tbAlfUr1q5lbFE1sJNxa",
+    "createdAt": "2026-06-18T10:19:35.171Z"
   }
 ]

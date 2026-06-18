@@ -21,7 +21,10 @@ process.env.JWT_SECRET = JWT_SECRET;
 const auth = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'No token, access denied' });
+    if (!token) {
+      console.warn('🔑 [AUTH] 401 Unauthorized: Authorization header token is missing.');
+      return res.status(401).json({ message: 'No token, access denied' });
+    }
 
     // ── 1. Try internal JWT first (fast, no network call) ────────────────────
     try {
@@ -33,8 +36,11 @@ const auth = async (req, res, next) => {
         req.user = user;
         req.tenantId = user.tenantId || decoded.tenantId || 'org_default';
         return next();
+      } else {
+        console.warn(`🔑 [AUTH] JWT verified but user ID "${decoded.id}" not found in database registry.`);
       }
     } catch (jwtErr) {
+      console.warn(`🔑 [AUTH] JWT Verification failed: ${jwtErr.message}`);
       // Not a valid JWT — may be a Firebase ID token, fall through
     }
 
@@ -60,10 +66,12 @@ const auth = async (req, res, next) => {
       req.tenantId = user.tenantId || 'org_default';
       return next();
     } catch (fbErr) {
+      console.warn(`🔑 [AUTH] Firebase ID Token verification failed: ${fbErr.message}`);
       // Firebase token also invalid
       return res.status(401).json({ message: 'Token expired or invalid' });
     }
   } catch (err) {
+    console.error('🔥 [AUTH] Middleware error:', err.message);
     res.status(401).json({ message: 'Token expired or invalid' });
   }
 };

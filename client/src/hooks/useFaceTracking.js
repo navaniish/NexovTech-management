@@ -288,6 +288,12 @@ function drawHUDLabels(ctx, nosePt) {
 export function useFaceTracking(videoRef, canvasRef, active) {
   const [modelState, setModelState] = useState('loading'); // 'loading' | 'ready' | 'error'
   const [eyeData, setEyeData] = useState(null);
+  const [blinkCount, setBlinkCount] = useState(0);
+
+  const maxEyeHRef = useRef(0);
+  const eyeStateRef = useRef('open'); // 'open' | 'closed'
+  const closedStateTimeRef = useRef(0);
+
   const rafRef = useRef(null);
   const runningRef = useRef(false);
 
@@ -360,6 +366,38 @@ export function useFaceTracking(videoRef, canvasRef, active) {
         // Average face width ~140mm; use face bounding-box width as calibration ref
         const pdMm = ((pdPx / faceW) * 140).toFixed(1);
 
+        // --- Active Real Blink Detection ---
+        const lVal = parseFloat(lH);
+        const rVal = parseFloat(rH);
+        const currentH = (lVal + rVal) / 2;
+
+        if (currentH > maxEyeHRef.current) {
+          maxEyeHRef.current = currentH;
+        }
+
+        if (maxEyeHRef.current > 1.5) {
+          const closedThreshold = maxEyeHRef.current * 0.60;
+          const openThreshold = maxEyeHRef.current * 0.80;
+
+          if (eyeStateRef.current === 'open') {
+            if (currentH < closedThreshold) {
+              eyeStateRef.current = 'closed';
+              closedStateTimeRef.current = Date.now();
+            }
+          } else if (eyeStateRef.current === 'closed') {
+            if (currentH > openThreshold) {
+              eyeStateRef.current = 'open';
+              setBlinkCount(prev => prev + 1);
+              closedStateTimeRef.current = 0;
+            } else if (closedStateTimeRef.current > 0 && Date.now() - closedStateTimeRef.current > 1500) {
+              // Fail-safe calibration reset
+              maxEyeHRef.current = currentH;
+              eyeStateRef.current = 'open';
+              closedStateTimeRef.current = 0;
+            }
+          }
+        }
+
         // Draw
         drawEyeBox(ctx, leftEyePts, lCenter, lH, 'left');
         drawEyeBox(ctx, rightEyePts, rCenter, rH, 'right');
@@ -370,6 +408,9 @@ export function useFaceTracking(videoRef, canvasRef, active) {
       } else {
         // No face detected — clear overlay
         setEyeData({ detected: false });
+        maxEyeHRef.current = 0;
+        eyeStateRef.current = 'open';
+        closedStateTimeRef.current = 0;
       }
     } catch (err) {
       // Silently ignore frame errors (can happen during video setup)
@@ -396,6 +437,10 @@ export function useFaceTracking(videoRef, canvasRef, active) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
       setEyeData(null);
+      setBlinkCount(0);
+      maxEyeHRef.current = 0;
+      eyeStateRef.current = 'open';
+      closedStateTimeRef.current = 0;
     }
 
     return () => {
@@ -404,5 +449,5 @@ export function useFaceTracking(videoRef, canvasRef, active) {
     };
   }, [active, modelState, runDetection, canvasRef]);
 
-  return { eyeData, modelState };
+  return { eyeData, modelState, blinkCount };
 }

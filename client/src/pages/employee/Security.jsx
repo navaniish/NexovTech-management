@@ -44,15 +44,16 @@ const EmployeeSecurity = () => {
   // Biometrics States
   const [biometricsStatus, setBiometricsStatus] = useState({ enrolled: false, enrolledAt: null });
   const [isEnrolling, setIsEnrolling] = useState(false);
-  const [enrollStep, setEnrollStep] = useState(0); // 0: idle, 1: center, 2: left, 3: right, 4: ready
+  const [enrollStep, setEnrollStep] = useState(0); // 0: idle, 1: center, 2: left, 3: right, 4: blink, 5: ready
   const [consentChecked, setConsentChecked] = useState(false);
   const [enrollError, setEnrollError] = useState('');
   const [enrollStream, setEnrollStream] = useState(null);
   const enrollVideoRef = useRef(null);
   const secCanvasRef = useRef(null);
+  const initialEnrollBlinkCountRef = useRef(-1);
 
   // Real-time eye tracking
-  const { eyeData: secEyeData, modelState: secModelState } = useFaceTracking(
+  const { eyeData: secEyeData, modelState: secModelState, blinkCount: secBlinkCount } = useFaceTracking(
     enrollVideoRef,
     secCanvasRef,
     isEnrolling && enrollStep >= 1
@@ -89,6 +90,23 @@ const EmployeeSecurity = () => {
     }
     return () => clearTimeout(timer);
   }, [isEnrolling, enrollStep, secEyeData]);
+
+  // Real blink verification for Employee Enrollment Step 4
+  useEffect(() => {
+    if (isEnrolling && enrollStep === 4) {
+      if (initialEnrollBlinkCountRef.current === -1) {
+        initialEnrollBlinkCountRef.current = secBlinkCount;
+      }
+      if (secBlinkCount > initialEnrollBlinkCountRef.current && initialEnrollBlinkCountRef.current !== -1) {
+        const timer = setTimeout(() => {
+          setEnrollStep(5);
+        }, 800);
+        return () => clearTimeout(timer);
+      }
+    } else {
+      initialEnrollBlinkCountRef.current = -1;
+    }
+  }, [isEnrolling, enrollStep, secBlinkCount]);
 
   const enrollStreamRef = useRef(null);
 
@@ -190,6 +208,35 @@ const EmployeeSecurity = () => {
       fetchBiometricsStatus();
     } catch (err) {
       showToast(err.message || 'Purge failed', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEnrollWebAuthn = async () => {
+    setLoading(true);
+    try {
+      await BiometricsService.registerWebAuthn(user?.email);
+      showToast("System default biometrics enrolled successfully!", "success");
+      fetchBiometricsStatus();
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || "System biometrics enrollment failed.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteWebAuthn = async () => {
+    if (!window.confirm("Permanently purge system biometric key?")) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('nexov_token') || localStorage.getItem('token');
+      await BiometricsService.deleteWebAuthn(token);
+      showToast("System biometric key purged successfully.", "success");
+      fetchBiometricsStatus();
+    } catch (err) {
+      showToast(err.message || 'Key purge failed', 'error');
     } finally {
       setLoading(false);
     }
@@ -369,6 +416,45 @@ const EmployeeSecurity = () => {
                   </button>
                </div>
             </section>
+
+            {/* SYSTEM DEFAULT BIOMETRICS CARD */}
+            <section className="bg-white/[0.02] rounded-[32px] p-8 border border-white/5 relative overflow-hidden group">
+               <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-black text-white uppercase tracking-tight italic">System Biometrics</h3>
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${biometricsStatus.webAuthnEnrolled ? 'bg-emerald-500/10 text-emerald-500' : 'bg-indigo-500/10 text-indigo-500'}`}>
+                     <Cpu size={24} />
+                  </div>
+               </div>
+               <div className="mb-6">
+                  <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest inline-block mb-2 ${biometricsStatus.webAuthnEnrolled ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                     {biometricsStatus.webAuthnEnrolled ? 'ENROLLED' : 'NOT CONFIGURED'}
+                  </span>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed italic">
+                     {biometricsStatus.webAuthnEnrolled 
+                        ? `Windows Hello / Touch ID key catalogued. Registered on: ${new Date(biometricsStatus.webAuthnEnrolledAt).toLocaleDateString()}` 
+                        : 'Link your native system biometrics (Windows Hello, Touch ID, Face ID) for passwordless login.'
+                     }
+                  </p>
+               </div>
+               <div className="flex gap-2 w-full">
+                  {biometricsStatus.webAuthnEnrolled && (
+                     <button
+                        onClick={handleDeleteWebAuthn}
+                        disabled={loading}
+                        className="flex-1 px-4 py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/10 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                     >
+                        <Trash2 size={14} /> Purge Key
+                     </button>
+                  )}
+                  <button
+                     onClick={handleEnrollWebAuthn}
+                     disabled={loading}
+                     className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                     <Cpu size={14} /> {biometricsStatus.webAuthnEnrolled ? 'RE-ENROLL KEY' : 'ENROLL SYSTEM KEY'}
+                  </button>
+               </div>
+            </section>
          </div>
 
          <div className="lg:col-span-8 space-y-6">
@@ -492,7 +578,8 @@ const EmployeeSecurity = () => {
                 {enrollStep === 1 && 'Position your face inside the frame.'}
                 {enrollStep === 2 && 'Look left and keep face aligned.'}
                 {enrollStep === 3 && 'Look right and keep face aligned.'}
-                {enrollStep === 4 && 'Registry Validation.'}
+                {enrollStep === 4 && 'Blink twice slowly.'}
+                {enrollStep === 5 && 'Registry Validation.'}
               </p>
 
               <div className="relative w-56 h-56 md:w-48 md:h-48 rounded-full overflow-hidden border-4 border-slate-950 shadow-[0_0_25px_rgba(0,0,0,0.8)] mb-8 flex items-center justify-center bg-slate-50">
@@ -533,9 +620,9 @@ const EmployeeSecurity = () => {
                     <span className="bg-black/80 text-slate-350 text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-slate-600/40">Searching...</span>
                   </div>
                 )}
-                {enrollStep === 4 && secEyeData?.detected && (
+                {enrollStep === 4 && (
                   <div className="absolute bottom-[20%] left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
-                    <span className="bg-black/80 text-white text-[7px] font-black font-mono px-2 py-1 rounded tracking-widest uppercase animate-pulse border border-white/30 shadow-[0_0_8px_rgba(255,255,255,0.3)]">BLINK DETECTED</span>
+                    <span className="bg-rose-600/95 text-white text-[9px] font-black font-mono px-3 py-1.5 rounded-full tracking-widest uppercase animate-pulse border border-rose-500 shadow-lg shadow-rose-500/20">⚡ PLEASE BLINK NOW ⚡</span>
                   </div>
                 )}
                 <div className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent shadow-[0_0_6px_rgba(255,255,255,0.5)] pointer-events-none" style={{ animation: 'laser-sweep 2s ease-in-out infinite' }} />
@@ -559,18 +646,22 @@ const EmployeeSecurity = () => {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className={enrollStep > 4 ? "text-emerald-500 font-bold" : "text-slate-300"}>✓</span>
-                    <span className={enrollStep > 4 ? "text-slate-700 font-bold" : ""}>Consent & Registry</span>
+                    <span className={enrollStep > 4 ? "text-slate-700 font-bold" : ""}>Blink Check</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 col-span-2">
+                    <span className={enrollStep > 5 ? "text-emerald-500 font-bold" : "text-slate-300"}>✓</span>
+                    <span className={enrollStep > 5 ? "text-slate-700 font-bold" : ""}>Consent & Registry</span>
                   </div>
                 </div>
 
                 <div className="pt-2.5 border-t border-slate-200/60 flex justify-between items-center text-[9px] font-black uppercase text-indigo-600">
                   <span>Enrollment Progress:</span>
-                  <span>{Math.round(Math.min((enrollStep / 4) * 100, 100))}%</span>
+                  <span>{Math.round(Math.min((enrollStep / 5) * 100, 100))}%</span>
                 </div>
               </div>
 
               {/* Next buttons */}
-              {enrollStream && (enrollStep === 2 || enrollStep === 3) && (
+              {enrollStream && (enrollStep === 2 || enrollStep === 3 || enrollStep === 4) && (
                 <button
                   onClick={() => setEnrollStep(prev => prev + 1)}
                   className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-xl font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 cursor-pointer mb-2"
@@ -579,7 +670,7 @@ const EmployeeSecurity = () => {
                 </button>
               )}
 
-              {enrollStep === 4 && (
+              {enrollStep === 5 && (
                 <div className="w-full space-y-3 pt-2">
                   <label className="flex items-start gap-2.5 cursor-pointer p-2.5 bg-slate-50 rounded-lg border border-slate-100">
                     <input

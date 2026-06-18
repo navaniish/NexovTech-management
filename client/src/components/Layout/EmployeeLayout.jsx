@@ -6,10 +6,25 @@ import TopBar from './TopBar';
 const EmployeeLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  useEffect(() => {
+    // Lock body scrolling while dashboard is active to prevent scroll gaps
+    document.body.style.overflow = 'hidden';
+    document.body.style.height = '100%';
+    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.height = '100%';
+
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.height = '';
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.height = '';
+    };
+  }, []);
+
   return (
     <div className="flex flex-col h-[100dvh] w-full overflow-hidden relative">
       {/* 1. FIXED OFFICE BACKGROUND LAYER */}
-      <div className="fixed inset-0 z-0">
+      <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-white/20 z-10" />
         <img
           src="/assets/office-bg.png"
@@ -18,13 +33,13 @@ const EmployeeLayout = () => {
         />
       </div>
 
-      {/* 2. TOPBAR - FULL WIDTH ANCHOR */}
+      {/* 2. TOPBAR - IN FLOW */}
       <div className="relative z-[60]">
         <TopBar onMenuToggle={() => setMobileMenuOpen(true)} />
       </div>
 
       <div className="flex flex-1 overflow-hidden relative z-50">
-        {/* 3. SIDEBAR - FIXED LEFT */}
+        {/* 3. SIDEBAR */}
         <EmployeeSidebar mobileOpen={mobileMenuOpen} setMobileOpen={setMobileMenuOpen} />
 
         {/* 4. SCROLLABLE CONTENT AREA */}

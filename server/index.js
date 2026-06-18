@@ -53,6 +53,7 @@ const timesheetRoutes = require('./routes/timesheetRoutes');
 const nexaRoutes = require('./routes/nexaRoutes');
 const linkedinRoutes = require('./routes/linkedinRoutes');
 const executiveRoutes = require('./routes/executiveRoutes');
+const storeRoutes = require('./routes/storeRoutes');
 
 
 app.use('/api/auth', authRoutes);
@@ -77,6 +78,7 @@ app.use('/api/timesheet', timesheetRoutes);
 app.use('/api/nexa', nexaRoutes);
 app.use('/api/linkedin', linkedinRoutes);
 app.use('/api/executive', executiveRoutes);
+app.use('/api/store', storeRoutes);
 
 // Dynamic Telegram Webhook Setup Endpoint (Bypasses Local Firewalls)
 app.get('/api/set-telegram-webhook', async (req, res) => {

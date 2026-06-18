@@ -38,12 +38,13 @@ router.get('/', auth, async (req, res) => {
 router.post('/', auth, async (req, res) => {
   console.log('🚀 MISSION_CONTROL: Attempting project launch...', req.body);
   try {
+    const tenantIdToSave = req.tenantId === 'org_admin_override' ? 'org_default' : (req.tenantId || 'org_default');
     const projectData = {
       ...req.body,
       budget: Number(req.body.budget) || 0,
       progress: 0,
       status: req.body.status || 'Planning',
-      tenantId: req.tenantId || 'org_default',
+      tenantId: tenantIdToSave,
       createdAt: new Date()
     };
     const saved = await fallbackDb.save('projects', projectData);
@@ -59,10 +60,11 @@ router.post('/', auth, async (req, res) => {
 router.put('/:id', auth, async (req, res) => {
   try {
     const project = await fallbackDb.findById('projects', req.params.id);
-    if (!project || project.tenantId !== (req.tenantId || 'org_default')) {
+    if (!project || (project.tenantId !== (req.tenantId || 'org_default') && req.tenantId !== 'org_admin_override')) {
       return res.status(404).json({ message: 'Project not found' });
     }
-    const updated = await fallbackDb.save('projects', { ...req.body, tenantId: req.tenantId || 'org_default', id: req.params.id });
+    const tenantIdToSave = req.tenantId === 'org_admin_override' ? (project.tenantId || 'org_default') : (req.tenantId || 'org_default');
+    const updated = await fallbackDb.save('projects', { ...req.body, tenantId: tenantIdToSave, id: req.params.id });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: 'Failed to update project intelligence' });
@@ -73,7 +75,7 @@ router.put('/:id', auth, async (req, res) => {
 router.delete('/:id', auth, async (req, res) => {
   try {
     const project = await fallbackDb.findById('projects', req.params.id);
-    if (!project || project.tenantId !== (req.tenantId || 'org_default')) {
+    if (!project || (project.tenantId !== (req.tenantId || 'org_default') && req.tenantId !== 'org_admin_override')) {
       return res.status(404).json({ message: 'Project not found' });
     }
     await fallbackDb.deleteOne('projects', req.params.id);

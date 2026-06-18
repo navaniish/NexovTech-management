@@ -1,5 +1,32 @@
 [
   {
+    "id": "5DrvTyFyxqmPMtXdxByj",
+    "createdAt": "2026-06-17T04:06:05.136Z",
+    "website": "https://global.rakuten.com/corp/",
+    "techStack": [
+      "Java",
+      "Apache Cassandra",
+      "Spring Framework"
+    ],
+    "contactInfo": {
+      "emails": [
+        "ir@rakuten.com"
+      ],
+      "primaryContactName": "Makoto Hasebe",
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/rakuten/"
+      ],
+      "phones": [
+        "+81 3-6839-2000"
+      ]
+    },
+    "companyName": "Rakuten",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "20,000-50,000 | Japan",
+    "status": "Pending_Approval"
+  },
+  {
     "id": "5cHIAx2w28OcHuqBQFaZ",
     "createdAt": "2026-06-13T17:07:46.314Z",
     "website": "luxehome.com",
@@ -55,6 +82,87 @@
     "status": "Archived"
   },
   {
+    "id": "74E4jSskMRBxoB5bQZ3Q",
+    "createdAt": "2026-06-17T04:02:20.127Z",
+    "website": "oura.com",
+    "techStack": [
+      "JavaScript",
+      "React",
+      "Node.js"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@oura.com"
+      ],
+      "primaryContactName": "Peter Szulczewski",
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/oura-ring"
+      ],
+      "phones": [
+        "+1 (855) 464-8776"
+      ]
+    },
+    "companyName": "Oura",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "100-250 | United States",
+    "status": "Pending_Approval"
+  },
+  {
+    "id": "9mpDxe7Pv0p6tRTOJo5c",
+    "createdAt": "2026-06-17T18:38:26.653Z",
+    "website": "meesho.com",
+    "techStack": [
+      "React",
+      "Node.js",
+      "MySQL"
+    ],
+    "contactInfo": {
+      "emails": [
+        "support@meesho.com"
+      ],
+      "primaryContactName": "Sanjay Gupta",
+      "linkedInUrls": [
+        "https://linkedin.com/company/meesho"
+      ],
+      "phones": [
+        "+91 022 55678000"
+      ]
+    },
+    "companyName": " Meesho",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "100-500 | India",
+    "status": "Archived"
+  },
+  {
+    "id": "AdPXmwK8Jo7RLncfpXkt",
+    "createdAt": "2026-06-17T04:00:53.908Z",
+    "website": "revolutionapparel.com",
+    "techStack": [
+      "Shopify",
+      "Adobe Creative Cloud",
+      "Amazon Web Services"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@revolutionapparel.com"
+      ],
+      "primaryContactName": "Emily Tran",
+      "linkedInUrls": [
+        "https://linkedin.com/company/revolution-apparel-inc/"
+      ],
+      "phones": [
+        "+1 (647) 893-4567"
+      ]
+    },
+    "companyName": "Revolution Apparel",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "11-50 | Canada",
+    "status": "Archived"
+  },
+  {
     "id": "C2vrfGxKbCxLm8PqfU3k",
     "createdAt": "2026-06-14T16:37:43.025Z",
     "website": "terrastore.com",
@@ -79,6 +187,60 @@
     "industry": "ecommerce",
     "source": "WebScrape",
     "companySize": "11-50 | United States",
+    "status": "Archived"
+  },
+  {
+    "id": "D21BOWU2uFc7XDIghOZv",
+    "website": "yahoo.com",
+    "contactName": "Yahoo Onboarding Team",
+    "companyName": "Yahoo Communications",
+    "phones": [
+      "+1 (555) 019-2834"
+    ],
+    "industry": "Technology",
+    "source": "WebScrape",
+    "companySize": "10,000+ | United States",
+    "emails": [
+      "mail@mail.comms.yahoo.net"
+    ],
+    "createdAt": "2026-06-17T17:50:26.433Z",
+    "linkedinUrls": [
+      "https://linkedin.com/company/yahoo"
+    ],
+    "techStack": [
+      "Hadoop",
+      "Apache Traffic Server",
+      "Node.js"
+    ],
+    "status": "Discovered"
+  },
+  {
+    "id": "G4Z9gxsMoC5FRKoG00sJ",
+    "createdAt": "2026-06-17T04:24:10.227Z",
+    "website": "https://noirandblanco.com/",
+    "techStack": [
+      "Digital marketing",
+      "SEO",
+      "Content marketing",
+      "Social media marketing",
+      "Influencer marketing"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@noirandblanco.com"
+      ],
+      "primaryContactName": "Noir & Blanco Team",
+      "linkedInUrls": [
+        "https://linkedin.com/company/noir-and-blanco"
+      ],
+      "phones": [
+        "+91 (500) 000-0002"
+      ]
+    },
+    "companyName": "Noir & Blanco",
+    "industry": "agency",
+    "source": "WebScrape",
+    "companySize": "50-200 | India",
     "status": "Archived"
   },
   {
@@ -111,6 +273,33 @@
     "status": "Outreach_Sent"
   },
   {
+    "id": "HgrdI4kWOgBffTYSUjot",
+    "createdAt": "2026-06-17T04:17:21.334Z",
+    "website": "https://storebase.io/",
+    "techStack": [
+      "eCommerce Platform",
+      "Vue.js",
+      "Guzzle"
+    ],
+    "contactInfo": {
+      "emails": [
+        "support@storebase.io"
+      ],
+      "primaryContactName": "Johannes Müller",
+      "linkedInUrls": [
+        "https://linkedin.com/company/storebase"
+      ],
+      "phones": [
+        "+49 89 7654 3210"
+      ]
+    },
+    "companyName": "Storebase",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "6-10 | Germany",
+    "status": "Pending_Approval"
+  },
+  {
     "id": "IVPtcJQkwlUrkTBKkPRF",
     "createdAt": "2026-06-14T16:48:46.063Z",
     "website": "eporch.com",
@@ -137,6 +326,31 @@
     "companySize": "21-100 | Canada",
     "projectId": "phgL2JiHIglKiZUujXRH",
     "status": "Converted"
+  },
+  {
+    "id": "IheevD6ELFyL6r3gx9re",
+    "website": "yahoo.com",
+    "contactName": "Yahoo Onboarding Team",
+    "companyName": "Yahoo Communications",
+    "phones": [
+      "+1 (555) 019-2834"
+    ],
+    "industry": "Technology",
+    "source": "WebScrape",
+    "companySize": "10,000+ | United States",
+    "emails": [
+      "mail@mail.comms.yahoo.net"
+    ],
+    "createdAt": "2026-06-17T18:01:11.083Z",
+    "linkedinUrls": [
+      "https://linkedin.com/company/yahoo"
+    ],
+    "techStack": [
+      "Hadoop",
+      "Apache Traffic Server",
+      "Node.js"
+    ],
+    "status": "Discovered"
   },
   {
     "id": "Kp4PPyHl7XNyqmZSdf4l",
@@ -167,6 +381,33 @@
     "status": "Converted"
   },
   {
+    "id": "L0ujGQOIuSFag8EQdLnu",
+    "createdAt": "2026-06-17T04:02:43.115Z",
+    "website": "biofourmis.com",
+    "techStack": [
+      "Java",
+      "Spring",
+      "MySQL"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@biofourmis.com"
+      ],
+      "primaryContactName": "Karthik Rao",
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/biofourmis/"
+      ],
+      "phones": [
+        "+65 3159 2700"
+      ]
+    },
+    "companyName": "Biofourmis",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "100-250 | Singapore",
+    "status": "Archived"
+  },
+  {
     "id": "Luy9L44vHz1F7IXTuKVH",
     "createdAt": "2026-06-14T16:37:48.546Z",
     "website": "epicwarehouse.net",
@@ -193,6 +434,33 @@
     "companySize": "51-100 | Singapore",
     "projectId": "S3UMSfojTW4C1GHLSvVQ",
     "status": "Converted"
+  },
+  {
+    "id": "NN3MW1sTyf1xNE37II1U",
+    "createdAt": "2026-06-17T04:02:32.108Z",
+    "website": "ada.com",
+    "techStack": [
+      "Angular",
+      "Python",
+      "Django"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@ada.com"
+      ],
+      "primaryContactName": "Claudine Hartmann",
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/ada-impact-berlin-gmbh/"
+      ],
+      "phones": [
+        "+49 30 544 421 10"
+      ]
+    },
+    "companyName": "Ada Health",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "100-250 | Germany",
+    "status": "Archived"
   },
   {
     "id": "QLELEr44KXGEwGLk4I9J",
@@ -251,6 +519,34 @@
     "status": "Scored"
   },
   {
+    "id": "QzGzI6iloV8rdCinPC0Q",
+    "createdAt": "2026-06-17T04:02:45.257Z",
+    "website": "etsy.com",
+    "techStack": [
+      "React",
+      "PostgreSQL",
+      "Apache Cassandra",
+      "Golang"
+    ],
+    "contactInfo": {
+      "emails": [
+        "contact@etsy.com"
+      ],
+      "primaryContactName": "Josh Silverman",
+      "linkedInUrls": [
+        "https://linkedin.com/company/etsy"
+      ],
+      "phones": [
+        "+1 (718) 474 0839"
+      ]
+    },
+    "companyName": "Etsy",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "200-500 | United States",
+    "status": "Pending_Approval"
+  },
+  {
     "id": "RXEDE3frYsn6oJwiK2NM",
     "createdAt": "2026-06-14T16:57:06.740Z",
     "website": "ablebowell.ca",
@@ -276,6 +572,60 @@
     "source": "WebScrape",
     "companySize": "11-50 | Canada",
     "status": "Archived"
+  },
+  {
+    "id": "SKx8qaDBoMeqs9XHRVnS",
+    "createdAt": "2026-06-17T04:00:58.939Z",
+    "website": "trendzone.co",
+    "techStack": [
+      "Magento",
+      "MySQL",
+      "Selenium WebDriver"
+    ],
+    "contactInfo": {
+      "emails": [
+        "hello@trendzone.co"
+      ],
+      "primaryContactName": "Rachel Russell",
+      "linkedInUrls": [
+        "https://linkedin.com/company/trendzone-uk-limited/"
+      ],
+      "phones": [
+        "+44 (20) 8816-6678"
+      ]
+    },
+    "companyName": "TrendZone",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "21-50 | United Kingdom",
+    "status": "Archived"
+  },
+  {
+    "id": "StMJ5SrIJ55mZ686IJTn",
+    "createdAt": "2026-06-17T18:38:21.892Z",
+    "website": "flipkart.com",
+    "techStack": [
+      "React",
+      "Java",
+      "Apache Kafka"
+    ],
+    "contactInfo": {
+      "emails": [
+        "customer@flipkart.com"
+      ],
+      "primaryContactName": "Adarsh Menon",
+      "linkedInUrls": [
+        "https://linkedin.com/company/flipkart"
+      ],
+      "phones": [
+        "+91 022 49700000"
+      ]
+    },
+    "companyName": " Flipkart",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "1000-5000 | India",
+    "status": "Pending_Approval"
   },
   {
     "id": "WKJLlgMKVOyfyBHai1IL",
@@ -334,6 +684,34 @@
     "status": "Scored"
   },
   {
+    "id": "XDD4YhYRvZ6jgdu5wEbA",
+    "createdAt": "2026-06-17T04:02:25.758Z",
+    "website": "springhealth.com",
+    "techStack": [
+      "Ruby on Rails",
+      "PostgreSQL",
+      "AWS"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@springhealth.com"
+      ],
+      "primaryContactName": "Mike Murchison",
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/spring-health-llc/"
+      ],
+      "phones": [
+        "+1 (646) 687-5353"
+      ]
+    },
+    "companyName": "Spring Health",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "51-100 | United States",
+    "projectId": "VV7zopyxTpFRpbD4pKrU",
+    "status": "Converted"
+  },
+  {
     "id": "cMzjmfqxmSOtybMtoYDU",
     "createdAt": "2026-06-14T16:48:51.665Z",
     "website": "spreme.io",
@@ -361,6 +739,114 @@
     "status": "Archived"
   },
   {
+    "id": "f2wHEv5ixd3x0bPO7j7v",
+    "createdAt": "2026-06-17T04:17:09.849Z",
+    "website": "https://groceryalert.co/",
+    "techStack": [
+      "Shopify",
+      "AWS",
+      "Apex Charts"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@groceryalert.co"
+      ],
+      "primaryContactName": "Alex Rodriguez",
+      "linkedInUrls": [
+        "https://linkedin.com/company/groceryalert"
+      ],
+      "phones": [
+        "+1 (555) 019-2834"
+      ]
+    },
+    "companyName": "Grocery Alert",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "11-50 | United States",
+    "status": "Archived"
+  },
+  {
+    "id": "hIli6yjr4smXCK2Rodtp",
+    "createdAt": "2026-06-17T04:24:19.946Z",
+    "website": "https://zeroado.com/",
+    "techStack": [
+      "Digital marketing",
+      "SEO",
+      "Content marketing",
+      "Social media marketing",
+      "Influencer marketing"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@zeroado.com"
+      ],
+      "primaryContactName": "Zeroado Team",
+      "linkedInUrls": [
+        "https://linkedin.com/company/zeroado"
+      ],
+      "phones": [
+        "+91 (500) 000-0004"
+      ]
+    },
+    "companyName": "Zeroado",
+    "industry": "agency",
+    "source": "WebScrape",
+    "companySize": "11-50 | India",
+    "status": "Archived"
+  },
+  {
+    "id": "iPEroZGM7M20trOY9oCi",
+    "createdAt": "2026-06-17T04:05:55.074Z",
+    "website": "https://www.shopee.com/",
+    "techStack": [
+      "React",
+      "MySQL",
+      "Apache Kafka"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@shopee.com"
+      ],
+      "primaryContactName": "Francis Cheong",
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/shopee/"
+      ],
+      "phones": [
+        "+65 6833 6666"
+      ]
+    },
+    "companyName": "Shopee",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "11,000-20,000 | Singapore",
+    "status": "Pending_Approval"
+  },
+  {
+    "id": "iT0p7nmjosSbYOL9tBVt",
+    "website": "yahoo.com",
+    "contactName": "Yahoo Onboarding Team",
+    "companyName": "Yahoo Communications",
+    "phones": [
+      "+1 (555) 019-2834"
+    ],
+    "industry": "Technology",
+    "source": "WebScrape",
+    "companySize": "10,000+ | United States",
+    "emails": [
+      "mail@mail.comms.yahoo.net"
+    ],
+    "createdAt": "2026-06-17T17:46:19.056Z",
+    "linkedinUrls": [
+      "https://linkedin.com/company/yahoo"
+    ],
+    "techStack": [
+      "Hadoop",
+      "Apache Traffic Server",
+      "Node.js"
+    ],
+    "status": "Discovered"
+  },
+  {
     "id": "jMsffpxEJ6PfBOTH46Ty",
     "createdAt": "2026-06-14T16:37:37.525Z",
     "website": "fusionmart.store",
@@ -386,6 +872,36 @@
     "source": "WebScrape",
     "companySize": "101-200 | India",
     "status": "Archived"
+  },
+  {
+    "id": "kiybUiHz2o3M42jeiOoQ",
+    "createdAt": "2026-06-17T04:24:15.129Z",
+    "website": "https://superbcompanies.com/",
+    "techStack": [
+      "Marketing",
+      "SEO",
+      "Digital marketing",
+      "Web development",
+      "E-commerce solutions"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@superbcompanies.com"
+      ],
+      "primaryContactName": "Superb Companies Team",
+      "linkedInUrls": [
+        "https://linkedin.com/company/superb-companies"
+      ],
+      "phones": [
+        "+91 (500) 000-0003"
+      ]
+    },
+    "companyName": "Superb Companies",
+    "industry": "agency",
+    "source": "WebScrape",
+    "companySize": "50-200 | India",
+    "projectId": "l3YuK54NavN32rcLr0B5",
+    "status": "Converted"
   },
   {
     "id": "lead_test_1781502109019",
@@ -513,6 +1029,34 @@
     "status": "Converted"
   },
   {
+    "id": "ljXnBdmC1ESXYwYwthBx",
+    "createdAt": "2026-06-17T04:02:40.419Z",
+    "website": "zalando.de",
+    "techStack": [
+      "Java",
+      "Hibernate",
+      "Apache Kafka",
+      "Big Data"
+    ],
+    "contactInfo": {
+      "emails": [
+        "contact@zalando.de"
+      ],
+      "primaryContactName": "Robert Gentz",
+      "linkedInUrls": [
+        "https://linkedin.com/company/zalando"
+      ],
+      "phones": [
+        "+49 30 204 42 969"
+      ]
+    },
+    "companyName": "Zalando",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "50-200 | Germany",
+    "status": "Archived"
+  },
+  {
     "id": "mCb57BKFGFnxgcl4bB8f",
     "createdAt": "2026-06-14T16:57:01.907Z",
     "website": "smileangeldental.com",
@@ -537,6 +1081,61 @@
     "industry": "healthcare",
     "source": "WebScrape",
     "companySize": "11-50 | Canada",
+    "status": "Archived"
+  },
+  {
+    "id": "nYUZWR22YYfqlhCL9efh",
+    "createdAt": "2026-06-17T04:02:51.010Z",
+    "website": "lazada.com",
+    "techStack": [
+      "React",
+      "Node.js",
+      "GraphQL",
+      "Big Data"
+    ],
+    "contactInfo": {
+      "emails": [
+        "contact@lazada.com"
+      ],
+      "primaryContactName": "Chenyao He",
+      "linkedInUrls": [
+        "https://linkedin.com/company/lazada-group"
+      ],
+      "phones": [
+        "+65 6710 8111"
+      ]
+    },
+    "companyName": "Lazada",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "200-500 | Singapore",
+    "status": "Archived"
+  },
+  {
+    "id": "p9iLiKYnhxQUmjMwWt34",
+    "createdAt": "2026-06-17T18:38:36.208Z",
+    "website": "myntra.com",
+    "techStack": [
+      "React",
+      "Vue.js",
+      "Redis"
+    ],
+    "contactInfo": {
+      "emails": [
+        "customer@myntra.com"
+      ],
+      "primaryContactName": "Amruda Nair",
+      "linkedInUrls": [
+        "https://linkedin.com/company/myntra"
+      ],
+      "phones": [
+        "+91 022 489-73737"
+      ]
+    },
+    "companyName": " Myntra",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "100-500 | India",
     "status": "Archived"
   },
   {
@@ -567,6 +1166,33 @@
     "status": "Archived"
   },
   {
+    "id": "pmkOW37BNekWY29VnItU",
+    "createdAt": "2026-06-17T04:01:05.034Z",
+    "website": "epicalifestyle.in",
+    "techStack": [
+      "Odoo",
+      "Vimeo",
+      "Zapier"
+    ],
+    "contactInfo": {
+      "emails": [
+        "contact@epicalifestyle.in"
+      ],
+      "primaryContactName": "Aarav Bansal",
+      "linkedInUrls": [
+        "https://linkedin.com/company/epica-lifestyle-ltd/"
+      ],
+      "phones": [
+        "+91 (852) 219-9087"
+      ]
+    },
+    "companyName": "Epica Lifestyle",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "6-10 | India",
+    "status": "Archived"
+  },
+  {
     "id": "qOrUh6pSONAxc8ECiSLp",
     "createdAt": "2026-06-13T17:07:34.913Z",
     "website": "shopglow.co",
@@ -593,6 +1219,147 @@
     "source": "WebScrape",
     "companySize": "11-50",
     "projectId": "YJZ7ZRvvtOaKpomWwdgF",
+    "status": "Converted"
+  },
+  {
+    "id": "qoMPusQYDIVxiTDQkmHc",
+    "createdAt": "2026-06-17T04:02:37.137Z",
+    "website": "sofarsound.com",
+    "techStack": [
+      "JavaScript",
+      "React",
+      "Docker"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@sofarsound.com"
+      ],
+      "primaryContactName": "John Monolinos",
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/sofarsound/"
+      ],
+      "phones": [
+        "+1 (617) 357-2100"
+      ]
+    },
+    "companyName": "Sofar Foundry",
+    "industry": "healthcare",
+    "source": "WebScrape",
+    "companySize": "51-100 | United States",
+    "status": "Archived"
+  },
+  {
+    "id": "rgoUOyN79cPcjfifCl6n",
+    "createdAt": "2026-06-17T18:38:41.127Z",
+    "website": "bibaindia.com",
+    "techStack": [
+      "React",
+      "Node.js",
+      "MongoDB"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@bibaindia.com"
+      ],
+      "primaryContactName": "Rahul Mehrotra",
+      "linkedInUrls": [
+        "https://linkedin.com/company/bibaindia"
+      ],
+      "phones": [
+        "+91 022 662 12700"
+      ]
+    },
+    "companyName": " Biba",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "10-100 | India",
+    "status": "Archived"
+  },
+  {
+    "id": "t7cxQe0YjNsob6hEQTxB",
+    "createdAt": "2026-06-17T04:24:04.994Z",
+    "website": "https://startupone.in/",
+    "techStack": [
+      "Digital marketing",
+      "SEO",
+      "Creativity",
+      "Strategy",
+      "Performance-driven execution"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@startupone.in"
+      ],
+      "primaryContactName": "StartupOne Alliance Team",
+      "linkedInUrls": [
+        "https://linkedin.com/company/startupone-alliance"
+      ],
+      "phones": [
+        "+91 (500) 000-0001"
+      ]
+    },
+    "companyName": "StartupOne Alliance",
+    "industry": "agency",
+    "source": "WebScrape",
+    "companySize": "11-50 | India",
+    "status": "Archived"
+  },
+  {
+    "id": "tepzq1GVYlzJa3IRJxTU",
+    "createdAt": "2026-06-17T04:17:15.599Z",
+    "website": "https://fetchery.com/",
+    "techStack": [
+      "SaaS",
+      "Python",
+      "Django"
+    ],
+    "contactInfo": {
+      "emails": [
+        "contact@fetchery.com"
+      ],
+      "primaryContactName": "Priya Sharma",
+      "linkedInUrls": [
+        "https://linkedin.com/company/fetchery"
+      ],
+      "phones": [
+        "+91 888 222 1111"
+      ]
+    },
+    "companyName": "Fetchery",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "21-99 | India",
+    "status": "Archived"
+  },
+  {
+    "id": "u3nTA4z5rRLOqXxm6TsZ",
+    "createdAt": "2026-06-17T04:23:59.934Z",
+    "website": "https://naraway.com/",
+    "techStack": [
+      "IT development",
+      "E-commerce solutions",
+      "Web development",
+      "AI integration",
+      "Digital marketing",
+      "Business services"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@naraway.com"
+      ],
+      "primaryContactName": "Naraway Team",
+      "linkedInUrls": [
+        "https://linkedin.com/company/naraway"
+      ],
+      "phones": [
+        "+91 (500) 000-0000"
+      ]
+    },
+    "companyName": "Naraway",
+    "industry": "agency",
+    "source": "WebScrape",
+    "companySize": "50-200 | India",
+    "projectId": "kRYj8maRSqnxW4Emvtbg",
     "status": "Converted"
   },
   {
@@ -649,6 +1416,33 @@
     "companySize": "51-200 | Canada",
     "projectId": "FRZI4sQ6TeQ9R7fFfWRW",
     "status": "Converted"
+  },
+  {
+    "id": "v3XgMHvG7E9IhAHDyYjq",
+    "createdAt": "2026-06-17T18:38:31.410Z",
+    "website": "nykaa.com",
+    "techStack": [
+      "React",
+      "Django",
+      "PostgreSQL"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@nykaa.com"
+      ],
+      "primaryContactName": "Freddy Burry",
+      "linkedInUrls": [
+        "https://linkedin.com/company/nykaa"
+      ],
+      "phones": [
+        "+91 022 011-075000"
+      ]
+    },
+    "companyName": " Nykaa",
+    "industry": "ecommerce",
+    "source": "WebScrape",
+    "companySize": "100-500 | India",
+    "status": "Archived"
   },
   {
     "id": "vbANPLATLWLjzgDVUyQT",

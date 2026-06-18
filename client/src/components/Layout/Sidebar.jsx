@@ -91,7 +91,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
           width: isCollapsed ? '80px' : '280px', 
           minWidth: isCollapsed ? '80px' : '280px' 
         }}
-        className={`h-full bg-slate-900/98 backdrop-blur-3xl border-r border-white/5 flex flex-col fixed md:relative z-[110] shrink-0 transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1) ${
+        className={`h-full bg-slate-900/98 backdrop-blur-3xl border-r border-white/5 flex flex-col fixed md:relative top-0 bottom-0 md:top-auto md:bottom-auto z-[110] shrink-0 transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1) ${
           mobileOpen ? 'translate-x-0 shadow-2xl shadow-black/50' : '-translate-x-full md:translate-x-0'
         }`}
       >

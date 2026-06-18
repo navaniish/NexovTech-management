@@ -80,6 +80,32 @@
     "invoiceUrl": "/uploads/invoices/invoice-Irw5q7C6IfTSnFXey4rY.pdf"
   },
   {
+    "id": "VV7zopyxTpFRpbD4pKrU",
+    "createdAt": "2026-06-17T04:16:58.341Z",
+    "githubRepoUrl": "https://github.com/nexovtech-simulation/spring-health---a-i-solutions",
+    "client": "Spring Health",
+    "description": "Develop a scalable and secure enterprise-level portal utilizing Ruby on Rails, integrating with a PostgreSQL database and hosted on the Amazon Web Services (AWS) cloud infrastructure, to provide Spring Health with a comprehensive AISolutions platform for streamlined customer onboarding and service delivery. The project should leverage AWS services to ensure high availability, auto-scaling, and cost-effectiveness within the allocated budget of $975,000. Key features include robust authentication, role-based access control, and seamless data synchronization across various interfaces.",
+    "progress": 0,
+    "team": [
+      {
+        "id": "wezrxkT3lmKjO5yZLtx6",
+        "name": "Traced Analyst",
+        "email": "tracedanalyst.nexovtech@gmail.com",
+        "role": "Security Analyst"
+      },
+      {
+        "id": "tPjcv5Z4RbfkshESoh4B",
+        "name": "REKHA SIDHARDHA",
+        "email": "sidhardharekha.nexovtech@gmail.com",
+        "role": "Editor"
+      }
+    ],
+    "projectName": "Spring Health - A I Solutions",
+    "budget": 975000,
+    "status": "In Progress",
+    "invoiceUrl": "/uploads/invoices/invoice-VV7zopyxTpFRpbD4pKrU.pdf"
+  },
+  {
     "id": "cDI09YBIITCHkwUTyvJO",
     "createdAt": {
       "_seconds": 1781274778,
@@ -97,41 +123,17 @@
     "status": "Planning"
   },
   {
-    "id": "mt2NohMdHqvCRiEPVtax",
-    "createdAt": "2026-06-15T06:23:47.437Z",
-    "client": "NEXOV Testing Corp",
-    "description": "Provide automated services matching AISolutions specs.",
-    "progress": 0,
-    "team": [
-      {
-        "id": "rWHj3Vg3YQY7es1PyT3Q",
-        "name": "MANI CHARAN TEJA ",
-        "email": "manicharanteja.nexovtech@gmail.com",
-        "role": "Editor"
-      },
-      {
-        "id": "tPjcv5Z4RbfkshESoh4B",
-        "name": "REKHA SIDHARDHA",
-        "email": "sidhardharekha.nexovtech@gmail.com",
-        "role": "Editor"
-      }
-    ],
-    "projectName": "NEXOV Testing Corp - A I Solutions",
-    "budget": 1125000,
-    "status": "In Progress"
-  },
-  {
-    "id": "o0xYWcAfcChfC9JKdQmp",
-    "createdAt": "2026-06-15T07:19:05.858Z",
-    "githubRepoUrl": "https://github.com/nexovtech-simulation/acme-test-corp---a-i-solutions",
-    "client": "Acme Test Corp",
-    "description": "As the NEXA Agentic AI Project Architect, we propose a project to design and develop a cutting-edge AISolutions platform for Acme Test Corp utilizing a Node.js backend, React frontend, and MongoDB database, aligned with the $120,000 budget to deliver a scalable, secure, and user-centric solution. This platform will enable seamless integration of artificial intelligence, IoT, and data analytics to drive business growth and competitiveness. Key features will include real-time data processing, predictive analytics, and robust API management to ensure a comprehensive AISolutions experience.",
+    "id": "kRYj8maRSqnxW4Emvtbg",
+    "createdAt": "2026-06-17T18:36:35.864Z",
+    "githubRepoUrl": "https://github.com/nexovtech-simulation/naraway---a-i-solutions",
+    "client": "Naraway",
+    "description": "We will design and develop a comprehensive NEXA platform for Naraway, integrating cutting-edge AI technologies with a robust e-commerce solution, leveraging a tech stack that combines IT development, web development, and digital marketing expertise to drive business growth within the allocated $875,000 budget. The platform will feature intelligent product recommendations, automated order management, and real-time analytics to enhance the user experience and streamline business operations. Our goal is to deliver a scalable, secure, and user-centric platform that meets Naraway's evolving business needs and sets a new standard for e-commerce excellence.",
     "progress": 0,
     "team": [
       {
         "id": "wezrxkT3lmKjO5yZLtx6",
         "name": "Traced Analyst",
-        "email": "test_traced_user@nexovtech.com",
+        "email": "tracedanalyst.nexovtech@gmail.com",
         "role": "Security Analyst"
       },
       {
@@ -141,33 +143,35 @@
         "role": "Editor"
       }
     ],
-    "projectName": "Acme Test Corp - A I Solutions",
-    "budget": 120000,
+    "projectName": "Naraway - A I Solutions",
+    "budget": 875000,
     "status": "In Progress",
-    "invoiceUrl": "/uploads/invoices/invoice-o0xYWcAfcChfC9JKdQmp.pdf"
+    "invoiceUrl": "/uploads/invoices/invoice-kRYj8maRSqnxW4Emvtbg.pdf"
   },
   {
-    "id": "s3ZrhzViZ9LylpoGKqj2",
-    "createdAt": "2026-06-15T06:24:19.110Z",
-    "client": "NEXOV Testing Corp",
-    "description": "Provide automated services matching AISolutions specs.",
+    "id": "l3YuK54NavN32rcLr0B5",
+    "createdAt": "2026-06-17T18:40:58.348Z",
+    "githubRepoUrl": "https://github.com/nexovtech-simulation/superb-companies---a-i-solutions",
+    "client": "Superb Companies",
+    "description": "Here's a concise 3-sentence technical project brief based on the client's requirements:\n\nFor the AI Solutions project with Superb Companies, we will design and develop a cutting-edge AI-powered digital marketing platform utilizing our tech stack, comprising marketing automation, SEO optimization, and e-commerce solutions, to drive efficient and targeted campaign execution. The platform will be built with scalability and maintainability in mind, leveraging web development best practices and utilizing cloud-based infrastructure to ensure seamless deployment and minimal downtime. Our team will deliver a customized solution within the allotted budget of $400,000, providing enhanced customer engagement and business growth opportunities for Superb Companies.",
     "progress": 0,
     "team": [
+      {
+        "id": "wezrxkT3lmKjO5yZLtx6",
+        "name": "Traced Analyst",
+        "email": "tracedanalyst.nexovtech@gmail.com",
+        "role": "Security Analyst"
+      },
       {
         "id": "tPjcv5Z4RbfkshESoh4B",
         "name": "REKHA SIDHARDHA",
         "email": "sidhardharekha.nexovtech@gmail.com",
         "role": "Editor"
-      },
-      {
-        "id": "L2CAoeF1K5TuHB71HVzb4oNvzwy2",
-        "name": "Saranya Gunda",
-        "email": "gundasaranya.nexovtech@gmail.com",
-        "role": "DEVELOPER"
       }
     ],
-    "projectName": "NEXOV Testing Corp - A I Solutions",
-    "budget": 1000000,
-    "status": "In Progress"
+    "projectName": "Superb Companies - A I  Solutions",
+    "budget": 400000,
+    "status": "In Progress",
+    "invoiceUrl": "/uploads/invoices/invoice-l3YuK54NavN32rcLr0B5.pdf"
   }
 ]

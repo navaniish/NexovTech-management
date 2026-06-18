@@ -13,7 +13,8 @@ import {
   Lock,
   RefreshCw,
   Eye,
-  CheckCircle2
+  CheckCircle2,
+  Cpu
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { sentinel } from '../services/securityService';
@@ -22,8 +23,17 @@ import { useFaceTracking } from '../hooks/useFaceTracking';
 const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loginMethod, setLoginMethod] = useState('google'); // 'google' | 'face' | 'admin'
+  const [loginMethod, setLoginMethod] = useState('google'); // 'google' | 'face' | 'fingerprint' | 'admin'
   const [adminCreds, setAdminCreds] = useState({ email: '', password: '' });
+
+  // Fingerprint State
+  const [fingerprintEmail, setFingerprintEmail] = useState('');
+  const [fingerprintProgress, setFingerprintProgress] = useState(0);
+  const [isFingerprintScanning, setIsFingerprintScanning] = useState(false);
+  const fingerprintIntervalRef = useRef(null);
+  // Step: 'idle' | 'checking' | 'registering' | 'scanning' | 'verifying' | 'success' | 'error'
+  const [fingerprintStep, setFingerprintStep] = useState('idle');
+  const [isFirstTimeEnroll, setIsFirstTimeEnroll] = useState(false);
 
   // Biometric Auth State
   const [faceEmail, setFaceEmail] = useState('');
@@ -48,7 +58,8 @@ const Login = () => {
   const authTriggeredRef = useRef(false);
 
   // Real-time eye tracking
-  const { eyeData, modelState } = useFaceTracking(videoRef, canvasRef, isScanning);
+  const { eyeData, modelState, blinkCount } = useFaceTracking(videoRef, canvasRef, isScanning);
+  const initialBlinkCountRef = useRef(0);
 
   const { user, signInWithGoogle, adminLogin, adminOverride, biometricLogin, completeBiometricLogin } = useAuth();
   const navigate = useNavigate();
@@ -113,16 +124,27 @@ const Login = () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
+      if (fingerprintIntervalRef.current) {
+        clearInterval(fingerprintIntervalRef.current);
+      }
     };
   }, []);
 
-  // Make sure we stop camera on method change
+  // Make sure we stop camera and reset scanning on method change
   useEffect(() => {
     stopCamera();
     setIsScanning(false);
     setScanStep(0);
     setError('');
+    setIsFingerprintScanning(false);
+    setFingerprintProgress(0);
+    setFingerprintStep('idle');
+    setIsFirstTimeEnroll(false);
+    if (fingerprintIntervalRef.current) {
+      clearInterval(fingerprintIntervalRef.current);
+    }
   }, [loginMethod]);
+
 
   const startCamera = async () => {
     setError('');
@@ -145,6 +167,112 @@ const Login = () => {
     } catch (err) {
       console.error("Camera access failed:", err);
       setError("Webcam connection blocked. Please check browser permissions.");
+    }
+  };
+
+  const startFingerprintScan = () => {
+    if (!fingerprintEmail) return;
+    setIsFingerprintScanning(true);
+    setFingerprintProgress(0);
+    setError('');
+
+    fingerprintIntervalRef.current = setInterval(() => {
+      setFingerprintProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(fingerprintIntervalRef.current);
+          handleFingerprintVerify();
+          return 100;
+        }
+        return prev + 4;
+      });
+    }, 40);
+  };
+
+  const stopFingerprintScan = () => {
+    clearInterval(fingerprintIntervalRef.current);
+    setIsFingerprintScanning(false);
+    if (fingerprintProgress < 100) {
+      setFingerprintProgress(0);
+    }
+  };
+
+  const handleFingerprintVerify = async () => {
+    setLoading(true);
+    try {
+      const BiometricsService = (await import('../services/biometricsService')).default;
+      const result = await BiometricsService.verifyFingerprint(fingerprintEmail);
+
+      if (result.token) {
+        setIdentityConfirmed(true);
+        setResolvedName(result.user?.name || 'NAVANEESWAR');
+        setScanStep(5);
+        setTimeout(() => {
+          setIsFingerprintScanning(false);
+          setFingerprintProgress(0);
+          completeBiometricLogin(result.token, result.user);
+        }, 2000);
+      } else {
+        throw new Error(result.message || 'Fingerprint verification failed.');
+      }
+    } catch (err) {
+      setError(err.message || 'Fingerprint verification failed.');
+      setIsFingerprintScanning(false);
+      setFingerprintProgress(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSystemBiometricVerify = async () => {
+    if (!fingerprintEmail) return;
+    setError('');
+    setFingerprintStep('checking');
+    try {
+      const BiometricsService = (await import('../services/biometricsService')).default;
+
+      // Check if this is first-time registration
+      let enrolled = false;
+      try {
+        const status = await BiometricsService.checkWebAuthnStatus(fingerprintEmail);
+        enrolled = status.enrolled;
+      } catch (e) {
+        // If user not found, surface that error
+        throw e;
+      }
+
+      if (!enrolled) {
+        setIsFirstTimeEnroll(true);
+        setFingerprintStep('registering');
+        // Register the physical fingerprint (triggers OS biometric prompt)
+        await BiometricsService.registerWebAuthnPublic(fingerprintEmail);
+      }
+
+      setFingerprintStep('scanning');
+      setIsFirstTimeEnroll(false);
+
+      // Authenticate with the physical sensor
+      const result = await BiometricsService.authenticateWebAuthn(fingerprintEmail);
+
+      if (result.token) {
+        setFingerprintStep('success');
+        setScanStep(5);
+        setResolvedName(result.user?.name || fingerprintEmail.split('@')[0].toUpperCase());
+        setTimeout(() => {
+          completeBiometricLogin(result.token, result.user);
+        }, 2000);
+      } else {
+        throw new Error(result.message || 'Fingerprint verification failed.');
+      }
+    } catch (err) {
+      const msg = err.message || '';
+      // User cancelled the OS dialog
+      if (msg.includes('cancelled') || msg.includes('canceled') || msg.includes('NotAllowedError') || err.name === 'NotAllowedError') {
+        setFingerprintStep('idle');
+        setError('Biometric prompt was cancelled. Please try again.');
+      } else {
+        setFingerprintStep('error');
+        setError(msg || 'Physical fingerprint verification failed.');
+      }
     }
   };
 
@@ -194,13 +322,20 @@ const Login = () => {
 
       if (elapsed >= 1500) {
         setGazeVerified(true);
-        setBlinkVerified(true); // Gaze and Liveness successfully verified
+        initialBlinkCountRef.current = blinkCount;
       }
     } else if (!blackEyesDetected && !gazeVerified) {
       stableStartTimeRef.current = null;
       setGazeProgress(0);
     }
-  }, [isScanning, eyeData, gazeVerified]);
+
+    // 4. Verify Blink Liveness
+    if (gazeVerified && !blinkVerified) {
+      if (blinkCount > initialBlinkCountRef.current) {
+        setBlinkVerified(true);
+      }
+    }
+  }, [isScanning, eyeData, gazeVerified, blinkVerified, blinkCount]);
 
   // Trigger Biometric Verification on Gaze Lock
   useEffect(() => {
@@ -387,7 +522,7 @@ const Login = () => {
       `}</style>
 
       {/* ── CINEMATIC OFFICE GRID BACKGROUND ── */}
-      <div className="absolute inset-0 z-0">
+      <div className="fixed inset-0 z-0">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
           style={{ backgroundImage: "url('/assets/nexovtech-final-branded.png')" }}
@@ -485,6 +620,12 @@ const Login = () => {
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 ${loginMethod === 'face' ? 'bg-white text-slate-950 shadow-sm border border-slate-250/20' : 'text-slate-500 hover:text-slate-900'}`}
             >
               <Camera size={12} /> Face ID
+            </button>
+            <button
+              onClick={() => setLoginMethod('fingerprint')}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 ${loginMethod === 'fingerprint' ? 'bg-white text-slate-950 shadow-sm border border-slate-250/20' : 'text-slate-500 hover:text-slate-900'}`}
+            >
+              <Fingerprint size={12} /> Fingerprint
             </button>
             <button
               onClick={() => setLoginMethod('admin')}
@@ -748,6 +889,14 @@ const Login = () => {
                       </div>
                     )}
 
+                    {isScanning && modelState === 'ready' && eyeData?.detected && gazeVerified && !blinkVerified && (
+                      <div className="absolute bottom-4 left-0 right-0 flex justify-center" style={{ zIndex: 15 }}>
+                        <span className="bg-rose-950/90 text-rose-400 text-[7.5px] font-black font-mono px-3 py-1.5 rounded-full tracking-widest uppercase animate-pulse border border-rose-500/30 shadow-[0_0_12px_rgba(239,68,68,0.2)]">
+                          ⚡ PLEASE BLINK NOW ⚡
+                        </span>
+                      </div>
+                    )}
+
                     {/* Laser sweep */}
                     <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_8px_#22d3ee] laser-line pointer-events-none" style={{ zIndex: 8 }} />
                   </div>
@@ -819,6 +968,187 @@ const Login = () => {
                     className="w-full h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-black text-[9px] uppercase tracking-wider transition-all"
                   >
                     Cancel Scan
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          ) : loginMethod === 'fingerprint' ? (
+            // ── PHYSICAL FINGERPRINT AUTH PANEL ──
+            <motion.div
+              key="fingerprint"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              className="space-y-4"
+            >
+              {scanStep === 5 ? (
+                // ── SUCCESS SCREEN ──
+                <motion.div
+                  key="fingerprint_success"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center justify-center py-6 text-center space-y-4"
+                >
+                  <div className="relative">
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-emerald-500/35 flex items-center justify-center">
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                        className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.5)]"
+                      >
+                        <CheckCircle2 size={36} className="text-white" />
+                      </motion.div>
+                    </div>
+                    <motion.div
+                      animate={{ scale: [1, 1.3, 1], opacity: [0.15, 0.35, 0.15] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                      className="absolute -inset-4 bg-emerald-500/10 rounded-full -z-10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">Biometric Confirmed</h3>
+                    <h2 className="text-slate-900 text-xl sm:text-2xl font-black uppercase tracking-tight leading-none">
+                      Welcome Back 👋<br />
+                      <span className="text-indigo-600 block mt-1.5">{resolvedName}</span>
+                    </h2>
+                    <p className="text-slate-400 text-[9px] font-black uppercase tracking-[0.2em] animate-pulse pt-2">
+                      Loading your workspace...
+                    </p>
+                  </div>
+                </motion.div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Email Input */}
+                  <div className="space-y-1.5 text-left">
+                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Account Identity Email</label>
+                    <input
+                      required
+                      type="email"
+                      placeholder="specialist.name@nexovtech.com"
+                      value={fingerprintEmail}
+                      onChange={(e) => { setFingerprintEmail(e.target.value); setFingerprintStep('idle'); setError(''); }}
+                      disabled={fingerprintStep !== 'idle' && fingerprintStep !== 'error'}
+                      className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-900 focus:outline-none focus:border-indigo-500 transition-all font-medium text-xs sm:text-sm placeholder-slate-400 disabled:opacity-60"
+                    />
+                  </div>
+
+                  {/* Fingerprint Scanner HUD */}
+                  <div className="bg-slate-950 rounded-2xl p-5 border border-slate-800 text-center relative overflow-hidden flex flex-col items-center justify-center gap-4">
+                    <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent pointer-events-none" />
+
+                    {/* Animated Scanner Ring + Fingerprint Icon */}
+                    <div className="relative w-28 h-28 flex items-center justify-center">
+                      {/* Outer decorative rings */}
+                      <div className="absolute inset-0 border border-slate-800 rounded-full circle-scan" />
+                      <div className="absolute inset-2 border border-dashed border-indigo-500/15 rounded-full circle-scan-reverse" />
+
+                      {/* Progress ring SVG */}
+                      <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 112 112">
+                        <circle cx="56" cy="56" r="50" stroke="#1e293b" strokeWidth="2.5" fill="transparent" />
+                        <circle
+                          cx="56" cy="56" r="50"
+                          stroke={fingerprintStep === 'error' ? '#ef4444' : fingerprintStep === 'success' ? '#10b981' : '#6366f1'}
+                          strokeWidth="2.5"
+                          fill="transparent"
+                          strokeDasharray={2 * Math.PI * 50}
+                          strokeDashoffset={2 * Math.PI * 50 * (
+                            fingerprintStep === 'idle' ? 1 :
+                            fingerprintStep === 'checking' ? 0.7 :
+                            fingerprintStep === 'registering' ? 0.45 :
+                            fingerprintStep === 'scanning' ? 0.2 :
+                            0
+                          )}
+                          style={{ transition: 'stroke-dashoffset 0.6s ease, stroke 0.3s ease' }}
+                        />
+                      </svg>
+
+                      {/* Central tap button */}
+                      <button
+                        onClick={handleSystemBiometricVerify}
+                        disabled={!fingerprintEmail || (fingerprintStep !== 'idle' && fingerprintStep !== 'error')}
+                        className={`w-[72px] h-[72px] rounded-full flex items-center justify-center border-2 transition-all duration-300 relative select-none z-10 ${
+                          !fingerprintEmail
+                            ? 'bg-slate-900 border-slate-800 text-slate-700 opacity-40 cursor-not-allowed'
+                            : fingerprintStep === 'error'
+                              ? 'bg-rose-950 border-rose-500/60 text-rose-400 cursor-pointer hover:border-rose-400'
+                              : (fingerprintStep !== 'idle')
+                                ? 'bg-indigo-950 border-indigo-500 text-indigo-400 shadow-[0_0_24px_rgba(99,102,241,0.45)] cursor-wait'
+                                : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-indigo-400 hover:border-indigo-500 cursor-pointer hover:shadow-[0_0_18px_rgba(99,102,241,0.3)]'
+                        }`}
+                      >
+                        <Fingerprint
+                          size={30}
+                          className={fingerprintStep !== 'idle' && fingerprintStep !== 'error' ? 'animate-pulse' : ''}
+                        />
+                        {/* laser sweep on active states */}
+                        {fingerprintStep !== 'idle' && fingerprintStep !== 'error' && (
+                          <div className="absolute left-0 right-0 h-px bg-indigo-400/70 shadow-[0_0_8px_#818cf8] laser-line pointer-events-none" />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Step Status Console */}
+                    <div className="w-full bg-slate-900/80 rounded-xl p-3 border border-slate-800 font-mono text-left space-y-1.5 text-[9px]">
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-1.5">
+                        <span className="text-cyan-400 font-black tracking-widest uppercase text-[8px]">Biometric Pipeline</span>
+                        <span className={`text-[8px] font-mono animate-pulse ${
+                          fingerprintStep === 'error' ? 'text-rose-400' : 'text-slate-500'
+                        }`}>
+                          {fingerprintStep === 'idle' ? 'STANDBY' :
+                           fingerprintStep === 'error' ? 'FAILED' : 'ACTIVE'}
+                        </span>
+                      </div>
+
+                      {[
+                        { key: 'checking',    label: 'Verifying identity...',           done: ['registering','scanning','verifying','success'].includes(fingerprintStep) },
+                        { key: 'registering', label: isFirstTimeEnroll ? 'Enrolling fingerprint (first time)...' : 'Credential found, skipping...', done: ['scanning','verifying','success'].includes(fingerprintStep) },
+                        { key: 'scanning',    label: 'Touch your fingerprint sensor...', done: ['verifying','success'].includes(fingerprintStep) },
+                        { key: 'verifying',   label: 'Verifying with server...',         done: ['success'].includes(fingerprintStep) },
+                      ].map(({ key, label, done }) => {
+                        const active = fingerprintStep === key;
+                        return (
+                          <div key={key} className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full shrink-0 border flex items-center justify-center text-[7px] ${
+                              done    ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' :
+                              active  ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-400 animate-pulse' :
+                                        'bg-slate-900 border-slate-800 text-slate-600'
+                            }`}>{done ? '✓' : active ? '◉' : '⬡'}</div>
+                            <span className={done ? 'text-emerald-400 font-bold' : active ? 'text-indigo-300 font-semibold' : 'text-slate-500'}>
+                              {label}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Instruction / CTA text */}
+                    <p className="text-slate-500 text-[9px] leading-relaxed max-w-[240px] mx-auto">
+                      {!fingerprintEmail
+                        ? 'Enter your email address above to enable the biometric scanner.'
+                        : fingerprintStep === 'idle' || fingerprintStep === 'error'
+                          ? 'Tap the fingerprint icon or button below. Your device will prompt for Touch ID, Windows Hello, or your fingerprint sensor.'
+                          : fingerprintStep === 'registering'
+                            ? 'First-time setup: follow your device biometric prompt to enroll.'
+                            : fingerprintStep === 'scanning'
+                              ? '👆 Touch the fingerprint sensor on your device now.'
+                              : 'Please wait...'}
+                    </p>
+                  </div>
+
+                  {/* CTA button */}
+                  <button
+                    onClick={handleSystemBiometricVerify}
+                    disabled={!fingerprintEmail || (fingerprintStep !== 'idle' && fingerprintStep !== 'error')}
+                    className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-[0.2em] transition-all shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2"
+                  >
+                    <Fingerprint size={14} />
+                    {fingerprintStep === 'idle' ? 'Scan Physical Fingerprint' :
+                     fingerprintStep === 'error' ? 'Retry Fingerprint Scan' :
+                     fingerprintStep === 'checking' ? 'Checking Account...' :
+                     fingerprintStep === 'registering' ? 'Enrolling Fingerprint...' :
+                     fingerprintStep === 'scanning' ? 'Awaiting Biometric...' :
+                     'Verifying...'}
                   </button>
                 </div>
               )}
