@@ -150,6 +150,7 @@ app.get('/api/bot-check', async (req, res) => {
       error: err.message,
       details: err.response ? err.response.data : null
     });
+  }
 });
 
 // DB Check
