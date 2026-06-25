@@ -150,8 +150,27 @@ app.get('/api/bot-check', async (req, res) => {
       error: err.message,
       details: err.response ? err.response.data : null
     });
+});
+
+// DB Check
+app.get('/api/db-check', async (req, res) => {
+  try {
+    const { db } = require('./firebaseAdmin');
+    res.json({
+      success: true,
+      dbInitialized: db !== null,
+      hasServiceAccountEnv: !!process.env.FIREBASE_SERVICE_ACCOUNT,
+      nodeEnv: process.env.NODE_ENV,
+      isServerless: IS_SERVERLESS
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
   }
 });
+
 
 // Send Test Message
 app.get('/api/send-test-msg', async (req, res) => {
