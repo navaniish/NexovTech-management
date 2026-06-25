@@ -1,0 +1,11 @@
+client/android/
+node_modules/
+.git/
+.vercel/
+.netlify/
+brain/
+knowledge/
+.gemini/
+dist/
+client/dist/
+/nexovtech.apk

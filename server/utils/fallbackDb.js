@@ -172,6 +172,22 @@ const fallbackDb = {
         data.push(finalizedItem);
       }
       writeLocalData(collection, data);
+
+      // Mirror local cache update
+      const email = (finalizedItem.email || '').toLowerCase().trim();
+      const isMaster = email === 'nexovtech@myyahoo.com';
+      if (!isMaster && (collection === 'users' || collection === 'employees')) {
+        const mirrorColl = collection === 'users' ? 'employees' : 'users';
+        const mirrorData = readLocalData(mirrorColl);
+        const mirrorIndex = mirrorData.findIndex(i => i.id === id);
+        if (mirrorIndex > -1) {
+          mirrorData[mirrorIndex] = { ...mirrorData[mirrorIndex], ...finalizedItem };
+        } else {
+          mirrorData.push(finalizedItem);
+        }
+        writeLocalData(mirrorColl, mirrorData);
+        console.log(`📁 LOCAL-SYNC: Specialist ${id} mirrored to local [${mirrorColl}] cache.`);
+      }
     } catch (err) {
       console.warn(`⚠️ CACHE_UPDATE_FAILED [${collection}]: ${err.message}`);
     }

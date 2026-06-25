@@ -23,6 +23,7 @@ import {
   Activity
 } from 'lucide-react';
 import DigitalPayslip from '../components/Payroll/DigitalPayslip';
+import CTCBreakdown from '../components/Payroll/CTCBreakdown';
 import {
   BarChart,
   Bar,
@@ -54,6 +55,31 @@ const StatCard = ({ title, value, icon: Icon, color, bgColor }) => (
   </div>
 );
 
+const EMPTY_CTC = {
+  components: {
+    basicSalary: 0, hra: 0, specialAllowance: 0, performanceBonus: 0,
+    lta: 0, medicalAllowance: 0, telephoneAllowance: 0, conveyanceAllowance: 0
+  },
+  employerContributions: {
+    epfEmployer: 0, esicEmployer: 0, gratuity: 0,
+    healthInsurance: 0, lifeInsurance: 0, professionalTax: 2400
+  },
+  effectiveDate: new Date().toISOString().split('T')[0],
+  currency: 'INR'
+};
+
+const CTC_EARNING_LABELS = {
+  basicSalary: 'Basic Salary', hra: 'HRA', specialAllowance: 'Special Allowance',
+  performanceBonus: 'Performance Bonus', lta: 'LTA',
+  medicalAllowance: 'Medical Allowance', telephoneAllowance: 'Telephone Allowance',
+  conveyanceAllowance: 'Conveyance Allowance'
+};
+const CTC_CONTRIB_LABELS = {
+  epfEmployer: "EPF Employer (12%)", esicEmployer: 'ESIC Employer',
+  gratuity: 'Gratuity (4.81%)', healthInsurance: 'Health Insurance',
+  lifeInsurance: 'Life Insurance', professionalTax: 'Professional Tax'
+};
+
 const AdminPayroll = () => {
   const [payrolls, setPayrolls] = useState([]);
   const [team, setTeam] = useState([]);
@@ -70,15 +96,25 @@ const AdminPayroll = () => {
   const [generating, setGenerating] = useState(false);
   const [viewingPayslip, setViewingPayslip] = useState(null);
 
+  // ── CTC state ──
+  const [activeTab, setActiveTab] = useState('payroll'); // 'payroll' | 'ctc'
+  const [ctcList, setCtcList] = useState([]);
+  const [ctcConfigTarget, setCtcConfigTarget] = useState(null);   // employee being configured
+  const [ctcFormData, setCtcFormData] = useState(EMPTY_CTC);
+  const [ctcSaving, setCtcSaving] = useState(false);
+  const [viewingCTC, setViewingCTC] = useState(null);             // { ctc, name }
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [payRes, teamRes] = await Promise.all([
+      const [payRes, teamRes, ctcRes] = await Promise.all([
         fetch(`${API_URL}/payroll`),
-        fetch(`${API_URL}/team`)
+        fetch(`${API_URL}/team`),
+        fetch(`${API_URL}/payroll/ctc/all`)
       ]);
       if (payRes.ok) setPayrolls(await payRes.json());
       if (teamRes.ok) setTeam(await teamRes.json());
+      if (ctcRes.ok) setCtcList(await ctcRes.json());
     } catch (err) {
       console.error('Fetch failed');
     } finally {
@@ -89,6 +125,95 @@ const AdminPayroll = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // ── CTC helpers ──
+  const openCTCConfig = async (emp) => {
+    setCtcConfigTarget(emp);
+    try {
+      const res = await fetch(`${API_URL}/payroll/ctc/${emp.id || emp._id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setCtcFormData(data ? {
+          components: { ...EMPTY_CTC.components, ...data.components },
+          employerContributions: { ...EMPTY_CTC.employerContributions, ...data.employerContributions },
+          effectiveDate: data.effectiveDate || EMPTY_CTC.effectiveDate,
+          currency: data.currency || 'INR'
+        } : { ...EMPTY_CTC, components: { ...EMPTY_CTC.components }, employerContributions: { ...EMPTY_CTC.employerContributions } });
+      } else {
+        setCtcFormData({ ...EMPTY_CTC, components: { ...EMPTY_CTC.components }, employerContributions: { ...EMPTY_CTC.employerContributions } });
+      }
+    } catch {
+      setCtcFormData({ ...EMPTY_CTC, components: { ...EMPTY_CTC.components }, employerContributions: { ...EMPTY_CTC.employerContributions } });
+    }
+  };
+
+  const autoFillEPF = (components) => {
+    const basic = Number(components.basicSalary || 0);
+    return {
+      epfEmployer:  Math.round(basic * 0.12),
+      gratuity:     Math.round(basic * 0.0481),
+      esicEmployer: 0, healthInsurance: 0, lifeInsurance: 0, professionalTax: 2400
+    };
+  };
+
+  const saveCTC = async (e) => {
+    e.preventDefault();
+    if (!ctcConfigTarget) return;
+    setCtcSaving(true);
+    try {
+      const res = await fetch(`${API_URL}/payroll/ctc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          employeeId: ctcConfigTarget.id || ctcConfigTarget._id,
+          employeeName: ctcConfigTarget.name,
+          ...ctcFormData
+        })
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setCtcList(prev => {
+          const idx = prev.findIndex(c => c.employeeId === (ctcConfigTarget.id || ctcConfigTarget._id));
+          return idx >= 0 ? prev.map((c, i) => i === idx ? saved : c) : [...prev, saved];
+        });
+        setCtcConfigTarget(null);
+      }
+    } catch (err) {
+      console.error('CTC save failed:', err);
+    } finally {
+      setCtcSaving(false);
+    }
+  };
+
+  const updateComponent = (key, val) => {
+    const updated = { ...ctcFormData.components, [key]: Number(val) };
+    const autoContrib = autoFillEPF(updated);
+    setCtcFormData(prev => ({
+      ...prev,
+      components: updated,
+      employerContributions: {
+        ...prev.employerContributions,
+        epfEmployer: autoContrib.epfEmployer,
+        gratuity: autoContrib.gratuity
+      }
+    }));
+  };
+
+  const updateContrib = (key, val) => {
+    setCtcFormData(prev => ({
+      ...prev,
+      employerContributions: { ...prev.employerContributions, [key]: Number(val) }
+    }));
+  };
+
+  // Derived live CTC totals for the modal
+  const liveEarnings = Object.values(ctcFormData.components).reduce((a, b) => a + Number(b || 0), 0);
+  const liveContrib  = Object.values(ctcFormData.employerContributions).reduce((a, b) => a + Number(b || 0), 0);
+  const liveAnnualCTC = liveEarnings + liveContrib;
+  const liveMonthlyCTC = Math.round(liveAnnualCTC / 12);
+  const liveEPFEmp = Math.round((Number(ctcFormData.components.basicSalary) / 12) * 0.12);
+  const livePT = Math.round(Number(ctcFormData.employerContributions.professionalTax || 0) / 12);
+  const liveInHand = Math.round(liveEarnings / 12) - liveEPFEmp - livePT;
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -209,23 +334,36 @@ const AdminPayroll = () => {
         </div>
         
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 md:gap-6 w-full lg:w-auto">
-           <select
-             value={selectedMonth}
-             onChange={e => setSelectedMonth(e.target.value)}
-             className="w-full sm:w-auto h-12 px-6 bg-white border border-slate-100 rounded-2xl text-[13px] font-black text-slate-900 outline-none shadow-sm focus:border-indigo-500 transition-all cursor-pointer"
-           >
-             {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
-               <option key={m} value={i + 1}>{m}</option>
+           {/* Tab Switcher */}
+           <div className="flex p-1 bg-slate-100 rounded-2xl">
+             {[{ id: 'payroll', label: 'Payroll' }, { id: 'ctc', label: 'CTC Matrix' }].map(t => (
+               <button key={t.id} onClick={() => setActiveTab(t.id)}
+                 className={`px-5 h-10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                   activeTab === t.id ? 'bg-white text-indigo-600 shadow-md' : 'text-slate-400 hover:text-slate-700'
+                 }`}>{t.label}</button>
              ))}
-           </select>
-           <button
-             onClick={handleGenerate}
-             disabled={generating}
-             className="w-full sm:w-auto h-12 px-8 bg-indigo-600 text-white text-[12px] font-black rounded-2xl hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-100 flex items-center justify-center gap-3 uppercase tracking-widest disabled:opacity-50"
-           >
-             {generating ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
-             {generating ? 'Processing Registry...' : 'Generate Payroll'}
-           </button>
+           </div>
+           {activeTab === 'payroll' && (
+             <>
+               <select
+                 value={selectedMonth}
+                 onChange={e => setSelectedMonth(e.target.value)}
+                 className="w-full sm:w-auto h-12 px-6 bg-white border border-slate-100 rounded-2xl text-[13px] font-black text-slate-900 outline-none shadow-sm focus:border-indigo-500 transition-all cursor-pointer"
+               >
+                 {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
+                   <option key={m} value={i + 1}>{m}</option>
+                 ))}
+               </select>
+               <button
+                 onClick={handleGenerate}
+                 disabled={generating}
+                 className="w-full sm:w-auto h-12 px-8 bg-indigo-600 text-white text-[12px] font-black rounded-2xl hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-100 flex items-center justify-center gap-3 uppercase tracking-widest disabled:opacity-50"
+               >
+                 {generating ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
+                 {generating ? 'Processing Registry...' : 'Generate Payroll'}
+               </button>
+             </>
+           )}
         </div>
       </section>
 
@@ -491,6 +629,101 @@ const AdminPayroll = () => {
 
       </div>
 
+      {/* ── CTC MATRIX TAB ── */}
+      <AnimatePresence mode="wait">
+        {activeTab === 'ctc' && (
+          <motion.div
+            key="ctc-tab"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            className="glass-card p-0 overflow-hidden"
+          >
+            <div className="p-6 md:p-8 border-b border-slate-100 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-[18px] font-black text-slate-900 tracking-tight">CTC Matrix</h2>
+                <p className="text-[11px] text-slate-400 font-bold mt-1">Cost to Company configurations for all specialists</p>
+              </div>
+              <span className="text-[10px] font-black text-indigo-500 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-100">
+                {ctcList.length} configured
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left min-w-[600px]">
+                <thead>
+                  <tr className="bg-slate-50/50">
+                    {['Specialist', 'Annual CTC', 'Monthly CTC', 'Monthly In-Hand', 'EPF (Emp)', 'Effective Date', ''].map(h => (
+                      <th key={h} className="p-5 md:p-7 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {team.map(emp => {
+                    const ctc = ctcList.find(c => c.employeeId === (emp.id || emp._id));
+                    return (
+                      <tr key={emp.id || emp._id} className="group hover:bg-slate-50/30 transition-colors">
+                        <td className="p-5 md:p-7">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-sm shrink-0">
+                              {emp.name?.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="text-[13px] font-black text-slate-900">{emp.name}</p>
+                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{emp.role}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-5 md:p-7">
+                          {ctc ? (
+                            <span className="text-[14px] font-black text-slate-900">₹{Number(ctc.totals?.annualCTC || 0).toLocaleString()}</span>
+                          ) : <span className="text-[11px] text-slate-300 font-bold">Not configured</span>}
+                        </td>
+                        <td className="p-5 md:p-7">
+                          {ctc && <span className="text-[13px] font-bold text-slate-700">₹{Number(ctc.totals?.monthlyCTC || 0).toLocaleString()}</span>}
+                        </td>
+                        <td className="p-5 md:p-7">
+                          {ctc && (
+                            <span className="text-[13px] font-bold text-emerald-600">₹{Number(ctc.totals?.monthlyInHand || 0).toLocaleString()}</span>
+                          )}
+                        </td>
+                        <td className="p-5 md:p-7">
+                          {ctc && <span className="text-[12px] font-bold text-slate-600">₹{Number(ctc.totals?.epfEmployee || 0).toLocaleString()}/mo</span>}
+                        </td>
+                        <td className="p-5 md:p-7">
+                          {ctc && <span className="text-[11px] font-bold text-slate-400">{ctc.effectiveDate}</span>}
+                        </td>
+                        <td className="p-5 md:p-7 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {ctc && (
+                              <button
+                                onClick={() => setViewingCTC({ ctc, name: emp.name })}
+                                className="p-2 text-slate-300 hover:text-indigo-600 transition-all"
+                                title="View Breakdown"
+                              >
+                                <Eye size={15} />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => openCTCConfig(emp)}
+                              className="px-4 py-1.5 bg-indigo-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-100"
+                            >
+                              {ctc ? 'Edit' : 'Configure'}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {team.length === 0 && (
+                    <tr><td colSpan={7} className="py-16 text-center text-[11px] font-bold text-slate-400">No team members found.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* 6. MODAL SYSTEMS */}
       <AnimatePresence>
         {showConfig && (
@@ -569,6 +802,109 @@ const AdminPayroll = () => {
           />
         )}
       </AnimatePresence>
+
+      {/* CTC Config Modal */}
+      <AnimatePresence>
+        {ctcConfigTarget && (
+          <div className="fixed inset-0 z-[150] flex items-start justify-center p-4 sm:p-6 overflow-y-auto">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setCtcConfigTarget(null)} className="fixed inset-0 bg-slate-900/50 backdrop-blur-xl" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl glass-card p-6 md:p-10 z-10 my-8"
+            >
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tighter">CTC CONFIG</h2>
+                  <p className="text-[11px] font-bold text-indigo-500 mt-1">{ctcConfigTarget.name}</p>
+                </div>
+                <button onClick={() => setCtcConfigTarget(null)} className="p-2 text-slate-400 hover:text-slate-900 transition-all"><X size={22} /></button>
+              </div>
+
+              <form onSubmit={saveCTC} className="space-y-8">
+                {/* Effective Date */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Effective Date</label>
+                  <input type="date" value={ctcFormData.effectiveDate}
+                    onChange={e => setCtcFormData(p => ({ ...p, effectiveDate: e.target.value }))}
+                    className="h-12 px-5 bg-slate-50 rounded-2xl text-[13px] font-bold outline-none focus:ring-1 focus:ring-indigo-600 border-none w-full sm:w-64" />
+                </div>
+
+                {/* Earnings */}
+                <div>
+                  <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-indigo-500" /> Earnings (Annual ₹)
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {Object.keys(ctcFormData.components).map(key => (
+                      <div key={key} className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{CTC_EARNING_LABELS[key] || key}</label>
+                        <input type="number" min="0"
+                          value={ctcFormData.components[key] || ''}
+                          onChange={e => updateComponent(key, e.target.value)}
+                          placeholder="0"
+                          className="h-11 px-4 bg-slate-50 rounded-xl text-[13px] font-bold text-slate-900 outline-none focus:ring-1 focus:ring-indigo-600 border-none" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Employer Contributions */}
+                <div>
+                  <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-rose-500" /> Employer Contributions (Annual ₹)
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {Object.keys(ctcFormData.employerContributions).map(key => (
+                      <div key={key} className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{CTC_CONTRIB_LABELS[key] || key}</label>
+                        <input type="number" min="0"
+                          value={ctcFormData.employerContributions[key] || ''}
+                          onChange={e => updateContrib(key, e.target.value)}
+                          placeholder="0"
+                          className="h-11 px-4 bg-slate-50 rounded-xl text-[13px] font-bold text-slate-900 outline-none focus:ring-1 focus:ring-indigo-600 border-none" />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[9px] text-slate-400 font-bold mt-3 ml-1">💡 EPF (12%) and Gratuity (4.81%) auto-fill based on Basic Salary.</p>
+                </div>
+
+                {/* Live Summary */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[
+                    { label: 'Annual CTC', value: `₹${liveAnnualCTC.toLocaleString()}`, accent: 'bg-indigo-600 text-white' },
+                    { label: 'Monthly CTC', value: `₹${liveMonthlyCTC.toLocaleString()}`, accent: 'bg-slate-900 text-white' },
+                    { label: 'Monthly In-Hand*', value: `₹${liveInHand.toLocaleString()}`, accent: 'bg-emerald-500 text-white' },
+                    { label: 'EPF (Employee)', value: `₹${liveEPFEmp.toLocaleString()}/mo`, accent: 'bg-amber-500 text-white' },
+                  ].map(({ label, value, accent }) => (
+                    <div key={label} className={`flex flex-col p-4 rounded-2xl ${accent}`}>
+                      <span className="text-[8px] font-black uppercase tracking-widest opacity-70 mb-1">{label}</span>
+                      <span className="text-base font-black tracking-tighter">{value}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <button type="submit" disabled={ctcSaving}
+                  className="w-full h-14 bg-indigo-600 text-white text-[12px] font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-indigo-100 hover:bg-indigo-500 transition-all flex items-center justify-center gap-3 disabled:opacity-50">
+                  {ctcSaving ? <Loader2 className="animate-spin" size={18} /> : <CreditCard size={18} />}
+                  {ctcSaving ? 'Saving...' : 'Save CTC Configuration'}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* CTC Breakdown Viewer */}
+      {viewingCTC && (
+        <CTCBreakdown
+          ctc={viewingCTC.ctc}
+          name={viewingCTC.name}
+          onClose={() => setViewingCTC(null)}
+        />
+      )}
     </div>
   );
 };

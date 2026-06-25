@@ -1,1 +1,332 @@
-[]
+[
+  {
+    "id": "pr_L2CAoeF1K5TuHB71HVzb4oNvzwy2_1_2026",
+    "createdAt": {
+      "_seconds": 1782325527,
+      "_nanoseconds": 358000000
+    },
+    "employeeName": "Saranya Gunda",
+    "metadata": {
+      "service": "General",
+      "projectName": "General Operations"
+    },
+    "month": 1,
+    "calculatedSalary": {
+      "total": 0,
+      "bonus": 0,
+      "breakdown": {
+        "systems": 25,
+        "web": 25,
+        "ai": 25,
+        "video": 25
+      },
+      "deductions": 0,
+      "base": 0
+    },
+    "year": 2026,
+    "employeeId": "L2CAoeF1K5TuHB71HVzb4oNvzwy2",
+    "attendanceSummary": {
+      "overtimeHours": 0,
+      "presentDays": 22,
+      "absentDays": 0
+    },
+    "paymentStatus": "Pending"
+  },
+  {
+    "id": "pr_L2CAoeF1K5TuHB71HVzb4oNvzwy2_6_2026",
+    "createdAt": {
+      "_seconds": 1782325476,
+      "_nanoseconds": 28000000
+    },
+    "employeeName": "Saranya Gunda",
+    "metadata": {
+      "service": "General",
+      "projectName": "General Operations"
+    },
+    "month": 6,
+    "calculatedSalary": {
+      "total": 0,
+      "bonus": 0,
+      "breakdown": {
+        "systems": 25,
+        "web": 25,
+        "ai": 25,
+        "video": 25
+      },
+      "deductions": 0,
+      "base": 0
+    },
+    "year": 2026,
+    "employeeId": "L2CAoeF1K5TuHB71HVzb4oNvzwy2",
+    "attendanceSummary": {
+      "overtimeHours": 0,
+      "presentDays": 22,
+      "absentDays": 0
+    },
+    "paymentStatus": "Pending"
+  },
+  {
+    "id": "pr_W82hAWDuXQUEmtlErLdwMlRQ6yH2_1_2026",
+    "createdAt": {
+      "_seconds": 1782325527,
+      "_nanoseconds": 723000000
+    },
+    "employeeName": "NEXOVTECH ADMINISTRATION",
+    "metadata": {
+      "service": "Executive",
+      "projectName": "General Operations"
+    },
+    "month": 1,
+    "calculatedSalary": {
+      "total": 0,
+      "bonus": 0,
+      "breakdown": {
+        "systems": 25,
+        "web": 25,
+        "ai": 25,
+        "video": 25
+      },
+      "deductions": 0,
+      "base": 0
+    },
+    "year": 2026,
+    "employeeId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "attendanceSummary": {
+      "overtimeHours": 0,
+      "presentDays": 22,
+      "absentDays": 0
+    },
+    "paymentStatus": "Pending"
+  },
+  {
+    "id": "pr_W82hAWDuXQUEmtlErLdwMlRQ6yH2_6_2026",
+    "createdAt": {
+      "_seconds": 1782325476,
+      "_nanoseconds": 379000000
+    },
+    "employeeName": "NEXOVTECH ADMINISTRATION",
+    "metadata": {
+      "service": "Executive",
+      "projectName": "General Operations"
+    },
+    "month": 6,
+    "calculatedSalary": {
+      "total": 0,
+      "bonus": 0,
+      "breakdown": {
+        "systems": 25,
+        "web": 25,
+        "ai": 25,
+        "video": 25
+      },
+      "deductions": 0,
+      "base": 0
+    },
+    "year": 2026,
+    "employeeId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
+    "attendanceSummary": {
+      "overtimeHours": 0,
+      "presentDays": 22,
+      "absentDays": 0
+    },
+    "paymentStatus": "Pending"
+  },
+  {
+    "id": "pr_Ykdj0ytfNXgRJozFnn9N_1_2026",
+    "createdAt": {
+      "_seconds": 1782325528,
+      "_nanoseconds": 194000000
+    },
+    "employeeName": "DAGGUPATI NAVANEESWAR",
+    "metadata": {
+      "service": "General",
+      "projectName": "General Operations"
+    },
+    "month": 1,
+    "calculatedSalary": {
+      "total": 0,
+      "bonus": 0,
+      "breakdown": {
+        "systems": 25,
+        "web": 25,
+        "ai": 25,
+        "video": 25
+      },
+      "deductions": 0,
+      "base": 0
+    },
+    "year": 2026,
+    "employeeId": "Ykdj0ytfNXgRJozFnn9N",
+    "attendanceSummary": {
+      "overtimeHours": 0,
+      "presentDays": 22,
+      "absentDays": 0
+    },
+    "paymentStatus": "Pending"
+  },
+  {
+    "id": "pr_Ykdj0ytfNXgRJozFnn9N_6_2026",
+    "createdAt": {
+      "_seconds": 1782325476,
+      "_nanoseconds": 836000000
+    },
+    "employeeName": "DAGGUPATI NAVANEESWAR",
+    "metadata": {
+      "service": "General",
+      "projectName": "General Operations"
+    },
+    "month": 6,
+    "calculatedSalary": {
+      "total": 0,
+      "bonus": 0,
+      "breakdown": {
+        "systems": 25,
+        "web": 25,
+        "ai": 25,
+        "video": 25
+      },
+      "deductions": 0,
+      "base": 0
+    },
+    "year": 2026,
+    "employeeId": "Ykdj0ytfNXgRJozFnn9N",
+    "attendanceSummary": {
+      "overtimeHours": 0,
+      "presentDays": 1,
+      "absentDays": 21
+    },
+    "paymentStatus": "Pending"
+  },
+  {
+    "id": "pr_rWHj3Vg3YQY7es1PyT3Q_1_2026",
+    "createdAt": {
+      "_seconds": 1782325528,
+      "_nanoseconds": 675000000
+    },
+    "employeeName": "MANI CHARAN TEJA ",
+    "metadata": {
+      "service": "General",
+      "projectName": "General Operations"
+    },
+    "month": 1,
+    "calculatedSalary": {
+      "total": 0,
+      "bonus": 0,
+      "breakdown": {
+        "systems": 25,
+        "web": 25,
+        "ai": 25,
+        "video": 25
+      },
+      "deductions": 0,
+      "base": 0
+    },
+    "year": 2026,
+    "employeeId": "rWHj3Vg3YQY7es1PyT3Q",
+    "attendanceSummary": {
+      "overtimeHours": 0,
+      "presentDays": 22,
+      "absentDays": 0
+    },
+    "paymentStatus": "Pending"
+  },
+  {
+    "id": "pr_rWHj3Vg3YQY7es1PyT3Q_6_2026",
+    "createdAt": {
+      "_seconds": 1782325477,
+      "_nanoseconds": 315000000
+    },
+    "employeeName": "MANI CHARAN TEJA ",
+    "metadata": {
+      "service": "General",
+      "projectName": "General Operations"
+    },
+    "month": 6,
+    "calculatedSalary": {
+      "total": 0,
+      "bonus": 0,
+      "breakdown": {
+        "systems": 25,
+        "web": 25,
+        "ai": 25,
+        "video": 25
+      },
+      "deductions": 0,
+      "base": 0
+    },
+    "year": 2026,
+    "employeeId": "rWHj3Vg3YQY7es1PyT3Q",
+    "attendanceSummary": {
+      "overtimeHours": 0,
+      "presentDays": 22,
+      "absentDays": 0
+    },
+    "paymentStatus": "Pending"
+  },
+  {
+    "id": "pr_tPjcv5Z4RbfkshESoh4B_1_2026",
+    "createdAt": {
+      "_seconds": 1782325529,
+      "_nanoseconds": 27000000
+    },
+    "employeeName": "REKHA SIDHARDHA",
+    "metadata": {
+      "service": "General",
+      "projectName": "General Operations"
+    },
+    "month": 1,
+    "calculatedSalary": {
+      "total": 0,
+      "bonus": 0,
+      "breakdown": {
+        "systems": 25,
+        "web": 25,
+        "ai": 25,
+        "video": 25
+      },
+      "deductions": 0,
+      "base": 0
+    },
+    "year": 2026,
+    "employeeId": "tPjcv5Z4RbfkshESoh4B",
+    "attendanceSummary": {
+      "overtimeHours": 0,
+      "presentDays": 22,
+      "absentDays": 0
+    },
+    "paymentStatus": "Pending"
+  },
+  {
+    "id": "pr_tPjcv5Z4RbfkshESoh4B_6_2026",
+    "createdAt": {
+      "_seconds": 1782325477,
+      "_nanoseconds": 688000000
+    },
+    "employeeName": "REKHA SIDHARDHA",
+    "metadata": {
+      "service": "General",
+      "projectName": "General Operations"
+    },
+    "month": 6,
+    "calculatedSalary": {
+      "total": 0,
+      "bonus": 0,
+      "breakdown": {
+        "systems": 25,
+        "web": 25,
+        "ai": 25,
+        "video": 25
+      },
+      "deductions": 0,
+      "base": 0
+    },
+    "year": 2026,
+    "employeeId": "tPjcv5Z4RbfkshESoh4B",
+    "attendanceSummary": {
+      "overtimeHours": 0,
+      "presentDays": 22,
+      "absentDays": 0
+    },
+    "paymentStatus": "Pending"
+  }
+]

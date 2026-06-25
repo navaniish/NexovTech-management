@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Shield, 
-  Lock, 
-  Users, 
-  Activity, 
-  AlertCircle, 
-  UserPlus, 
-  Trash2, 
-  CheckCircle2, 
+import {
+  Shield,
+  Lock,
+  Users,
+  Activity,
+  AlertCircle,
+  UserPlus,
+  Trash2,
+  CheckCircle2,
   XCircle,
   Eye,
   Terminal,
@@ -20,7 +20,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { collection, query, getDocs, orderBy, limit } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, auth as firebaseAuth } from '../firebase';
 import { sentinel } from '../services/securityService';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
@@ -35,11 +35,24 @@ const SecurityShield = () => {
   const [anomalies, setAnomalies] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Shared helper — prefers nexov_token, falls back to Firebase ID token
+  const getBestToken = useCallback(async () => {
+    const stored = localStorage.getItem('nexov_token');
+    if (stored && stored !== 'null' && stored !== 'undefined') return stored;
+    try {
+      const fbUser = firebaseAuth.currentUser;
+      if (fbUser) return await fbUser.getIdToken();
+    } catch (e) {
+      console.warn('[SHIELD] Firebase token fallback failed:', e.message);
+    }
+    return null;
+  }, []);
+
   // Biometrics Console State
-  const [biometricsData, setBiometricsData] = useState({ 
-    logs: [], 
-    devices: [], 
-    stats: { totalUsers: 0, enrolledUsers: 0, failedAttempts: 0, activeDevices: 0 } 
+  const [biometricsData, setBiometricsData] = useState({
+    logs: [],
+    devices: [],
+    stats: { totalUsers: 0, enrolledUsers: 0, failedAttempts: 0, activeDevices: 0 }
   });
   const [loadingBiometrics, setLoadingBiometrics] = useState(false);
 
@@ -47,7 +60,7 @@ const SecurityShield = () => {
     setLoadingBiometrics(true);
     try {
       const BiometricsService = (await import('../services/biometricsService')).default;
-      const token = localStorage.getItem('nexov_token');
+      const token = await getBestToken();
       const data = await BiometricsService.getAdminLogs(token);
       setBiometricsData(data);
     } catch (err) {
@@ -62,7 +75,7 @@ const SecurityShield = () => {
     const loader = toast.loading(`Revoking biometric template...`);
     try {
       const BiometricsService = (await import('../services/biometricsService')).default;
-      const token = localStorage.getItem('nexov_token');
+      const token = await getBestToken();
       await BiometricsService.revoke(userId, token);
       toast.success('Biometric profile revoked successfully.', { id: loader });
       fetchBiometricsAdminData();
@@ -75,7 +88,7 @@ const SecurityShield = () => {
     if (!window.confirm(`Revoke trust for device: ${deviceName}?`)) return;
     const loader = toast.loading(`Revoking device trust...`);
     try {
-      const token = localStorage.getItem('nexov_token');
+      const token = await getBestToken();
       const res = await fetch(`${API_URL}/security/devices/${encodeURIComponent(deviceName)}`, {
         method: 'DELETE',
         headers: {
@@ -168,7 +181,7 @@ const SecurityShield = () => {
             <p className="text-slate-400 text-xs font-black uppercase tracking-[0.4em] mt-1">Enterprise Admin Management & Security Monitor</p>
           </div>
         </div>
-        
+
         <div className="relative z-10 flex gap-3">
           <button className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">Emergency Revoke</button>
           <button className="px-6 py-3 bg-rose-600 hover:bg-rose-700 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-rose-600/30 transition-all">System Lockdown</button>
@@ -205,11 +218,10 @@ const SecurityShield = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${
-                activeTab === tab.id 
-                ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/20 translate-x-2' 
-                : 'bg-white text-slate-400 border border-slate-50 hover:bg-slate-50'
-              }`}
+              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === tab.id
+                  ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/20 translate-x-2'
+                  : 'bg-white text-slate-400 border border-slate-50 hover:bg-slate-50'
+                }`}
             >
               <tab.icon size={18} />
               {tab.label}
@@ -230,28 +242,28 @@ const SecurityShield = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                   <div className="space-y-4">
-                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Threat Detection</h4>
-                      <div className="p-6 bg-slate-50 rounded-[32px] border border-slate-100 relative overflow-hidden group">
-                         <Activity className="absolute top-4 right-4 text-slate-200 group-hover:text-indigo-500 transition-colors" size={40} />
-                         <p className="text-sm font-bold text-slate-900 leading-relaxed">No unauthorized duplicate attempts detected in the last 72 hours.</p>
-                         <button className="mt-4 text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Run Deep Scan</button>
-                      </div>
-                   </div>
-                   <div className="space-y-4">
-                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Sessions</h4>
-                      <div className="space-y-3">
-                         {admins.slice(0, 3).map((a, i) => (
-                           <div key={i} className="flex items-center justify-between p-3 bg-white border border-slate-50 rounded-xl shadow-sm">
-                              <div className="flex items-center gap-3">
-                                 <Smartphone size={14} className="text-slate-400" />
-                                 <span className="text-[10px] font-black text-slate-700 uppercase">{a.name}</span>
-                              </div>
-                              <span className="text-[8px] font-black text-emerald-500 uppercase">Live</span>
-                           </div>
-                         ))}
-                      </div>
-                   </div>
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Threat Detection</h4>
+                    <div className="p-6 bg-slate-50 rounded-[32px] border border-slate-100 relative overflow-hidden group">
+                      <Activity className="absolute top-4 right-4 text-slate-200 group-hover:text-indigo-500 transition-colors" size={40} />
+                      <p className="text-sm font-bold text-slate-900 leading-relaxed">No unauthorized duplicate attempts detected in the last 72 hours.</p>
+                      <button className="mt-4 text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Run Deep Scan</button>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Sessions</h4>
+                    <div className="space-y-3">
+                      {admins.slice(0, 3).map((a, i) => (
+                        <div key={i} className="flex items-center justify-between p-3 bg-white border border-slate-50 rounded-xl shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <Smartphone size={14} className="text-slate-400" />
+                            <span className="text-[10px] font-black text-slate-700 uppercase">{a.name}</span>
+                          </div>
+                          <span className="text-[8px] font-black text-emerald-500 uppercase">Live</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -262,45 +274,45 @@ const SecurityShield = () => {
                   <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight italic">Admin Management</h2>
                   <button className="px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">+ New Admin</button>
                 </div>
-                
+
                 <div className="overflow-x-auto">
-                   <table className="w-full">
-                      <thead>
-                        <tr className="text-left border-b border-slate-100">
-                          <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Admin Node</th>
-                          <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Clearance</th>
-                          <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                          <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                  <table className="w-full">
+                    <thead>
+                      <tr className="text-left border-b border-slate-100">
+                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Admin Node</th>
+                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Clearance</th>
+                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                        <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {admins.map((adm) => (
+                        <tr key={adm.id} className="group hover:bg-slate-50/50 transition-colors">
+                          <td className="py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                <Shield size={14} />
+                              </div>
+                              <div>
+                                <p className="text-[11px] font-black text-slate-900 uppercase">{adm.name}</p>
+                                <p className="text-[9px] text-slate-400">{adm.email}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4"><span className="px-2 py-1 bg-slate-900 text-white text-[8px] font-black rounded uppercase tracking-tighter">{adm.role}</span></td>
+                          <td className="py-4"><span className="flex items-center gap-1.5 text-[9px] font-black text-emerald-500 uppercase"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" /> Active</span></td>
+                          <td className="py-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-slate-900 transition-all shadow-sm"><Eye size={14} /></button>
+                              {adm.role !== 'Super Admin' && (
+                                <button className="p-2 hover:bg-rose-50 rounded-lg text-slate-400 hover:text-rose-500 transition-all"><Trash2 size={14} /></button>
+                              )}
+                            </div>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-50">
-                        {admins.map((adm) => (
-                          <tr key={adm.id} className="group hover:bg-slate-50/50 transition-colors">
-                            <td className="py-4">
-                               <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                                     <Shield size={14} />
-                                  </div>
-                                  <div>
-                                     <p className="text-[11px] font-black text-slate-900 uppercase">{adm.name}</p>
-                                     <p className="text-[9px] text-slate-400">{adm.email}</p>
-                                  </div>
-                               </div>
-                            </td>
-                            <td className="py-4"><span className="px-2 py-1 bg-slate-900 text-white text-[8px] font-black rounded uppercase tracking-tighter">{adm.role}</span></td>
-                            <td className="py-4"><span className="flex items-center gap-1.5 text-[9px] font-black text-emerald-500 uppercase"><div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" /> Active</span></td>
-                            <td className="py-4 text-right">
-                               <div className="flex items-center justify-end gap-2">
-                                  <button className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-slate-900 transition-all shadow-sm"><Eye size={14} /></button>
-                                  {adm.role !== 'Super Admin' && (
-                                    <button className="p-2 hover:bg-rose-50 rounded-lg text-slate-400 hover:text-rose-500 transition-all"><Trash2 size={14} /></button>
-                                  )}
-                               </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                   </table>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </motion.div>
             )}
@@ -390,7 +402,7 @@ const SecurityShield = () => {
                             <Lock size={12} /> Lockout Node
                           </button>
                         </div>
-                        
+
                         <div className="grid grid-cols-3 gap-3">
                           {[
                             { label: 'From', val: anom.location1 || 'Mumbai, IN' },
@@ -466,11 +478,10 @@ const SecurityShield = () => {
                               <p className="text-[8px] text-slate-300 mt-0.5">{new Date(log.timestamp).toLocaleString()}</p>
                             </div>
                             <div className="text-right shrink-0">
-                              <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter ${
-                                log.status === 'Success' ? 'bg-emerald-100 text-emerald-600' :
-                                log.status === 'Failed_Liveness' ? 'bg-rose-100 text-rose-600 animate-pulse' :
-                                'bg-rose-100 text-rose-600'
-                              }`}>
+                              <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter ${log.status === 'Success' ? 'bg-emerald-100 text-emerald-600' :
+                                  log.status === 'Failed_Liveness' ? 'bg-rose-100 text-rose-600 animate-pulse' :
+                                    'bg-rose-100 text-rose-600'
+                                }`}>
                                 {log.status}
                               </span>
                               {log.attemptType === 'Enrollment' && log.status === 'Success' && (
@@ -536,15 +547,15 @@ const SecurityShield = () => {
             {activeTab === 'logs' && (
               <motion.div key="log" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
                 <div className="bg-slate-900 rounded-[32px] p-6 font-mono text-[11px] text-slate-300 space-y-2 overflow-y-auto max-h-[500px] shadow-2xl border border-white/5">
-                   <p className="text-rose-500 font-bold mb-4 uppercase tracking-[0.2em]">{'>'} SENTINEL_AI: LIVE AUDIT STREAMING</p>
-                   {logs.map((log) => (
-                     <div key={log.id} className="flex gap-4 py-1 hover:bg-white/5 px-2 rounded transition-colors group">
-                        <span className="text-slate-500 shrink-0">[{new Date(log.timestamp?.toDate()).toLocaleTimeString()}]</span>
-                        <span className={log.status === 'warning' ? 'text-rose-400' : 'text-emerald-400'}>[{log.action}]</span>
-                        <span className="text-slate-400">IDENTITY: {log.performedBy}</span>
-                        <span className="hidden md:inline text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity">| DEVICE: {log.deviceInfo?.platform}</span>
-                     </div>
-                   ))}
+                  <p className="text-rose-500 font-bold mb-4 uppercase tracking-[0.2em]">{'>'} SENTINEL_AI: LIVE AUDIT STREAMING</p>
+                  {logs.map((log) => (
+                    <div key={log.id} className="flex gap-4 py-1 hover:bg-white/5 px-2 rounded transition-colors group">
+                      <span className="text-slate-500 shrink-0">[{new Date(log.timestamp?.toDate()).toLocaleTimeString()}]</span>
+                      <span className={log.status === 'warning' ? 'text-rose-400' : 'text-emerald-400'}>[{log.action}]</span>
+                      <span className="text-slate-400">IDENTITY: {log.performedBy}</span>
+                      <span className="hidden md:inline text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity">| DEVICE: {log.deviceInfo?.platform}</span>
+                    </div>
+                  ))}
                 </div>
               </motion.div>
             )}

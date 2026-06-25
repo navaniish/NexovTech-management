@@ -7,6 +7,7 @@ import android.os.Bundle;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.getcapacitor.BridgeActivity;
+import ee.forgr.biometric.NativeBiometric;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,23 @@ import java.util.List;
 public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        registerPlugin(NativeBiometric.class);
         super.onCreate(savedInstanceState);
+        
+        // Google Sign-In WebView User-Agent fix
+        try {
+            android.webkit.WebView webView = this.bridge.getWebView();
+            if (webView != null) {
+                android.webkit.WebSettings settings = webView.getSettings();
+                String defaultUserAgent = settings.getUserAgentString();
+                String newUserAgent = defaultUserAgent
+                    .replace("; wv", "")
+                    .replaceAll("Version/\\d+\\.\\d+\\s+", "");
+                settings.setUserAgentString(newUserAgent);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         
         requestRequiredPermissions();
     }

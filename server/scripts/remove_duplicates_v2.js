@@ -20,9 +20,11 @@ async function removeDuplicates() {
 
     docs.forEach(doc => {
       // Use email as unique key for users/employees, userId for idcards
-      const key = (col === 'idcards' ? (doc.userId || doc.id) : (doc.email?.toLowerCase())).toString();
+      const rawKey = col === 'idcards' ? (doc.userId || doc.id) : (doc.email || doc.companyEmail);
+      if (!rawKey) return;
+      const key = rawKey.toString().toLowerCase().trim();
       
-      if (!key || key === 'undefined') return;
+      if (!key || key === 'undefined' || key === '') return;
 
       if (seen.has(key)) {
         // Duplicate found! Keep the one with firebaseUid or the most recent one

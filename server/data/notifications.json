@@ -1,5 +1,15 @@
 [
   {
+    "id": "1AA8Pz13CvVbMu4WY9VU",
+    "createdAt": "2026-06-23T13:40:35.932Z",
+    "link": "/employee/tasks",
+    "message": "You have been assigned to: Hii",
+    "title": "New Mission Assigned",
+    "type": "TASK_ASSIGNED",
+    "userId": "Ykdj0ytfNXgRJozFnn9N",
+    "read": true
+  },
+  {
     "id": "3EhUSQ8TFir085gOhWWf",
     "createdAt": "2026-05-16T18:24:54.659Z",
     "read": false,

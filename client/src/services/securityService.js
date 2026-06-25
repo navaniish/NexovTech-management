@@ -1,4 +1,5 @@
 import { db } from '../firebase';
+import { auth as firebaseAuth } from '../firebase';
 import API_URL from '../config';
 import { 
   collection, 
@@ -110,11 +111,30 @@ class SecurityService {
   }
 
   /**
+   * Helper: Get the best available auth token.
+   * Prefers the backend JWT (nexov_token), falls back to Firebase ID token.
+   * This resolves 401s caused by the race between page load and backend sync.
+   */
+  async getBestToken() {
+    const stored = localStorage.getItem('nexov_token');
+    if (stored && stored !== 'null' && stored !== 'undefined') return stored;
+    // Fallback: use Firebase current user's fresh ID token
+    try {
+      const fbUser = firebaseAuth.currentUser;
+      if (fbUser) return await fbUser.getIdToken();
+    } catch (e) {
+      console.warn('[SENTINEL] Firebase token fallback failed:', e.message);
+    }
+    return null;
+  }
+
+  /**
    * 5. GET SECURITY ANOMALIES
    */
   async getAnomalies() {
     try {
-      const token = localStorage.getItem('nexov_token');
+      const token = await this.getBestToken();
+      if (!token) return [];
       const res = await fetch(`${API_URL}/security/anomalies`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -133,7 +153,8 @@ class SecurityService {
    */
   async lockUser(userId) {
     try {
-      const token = localStorage.getItem('nexov_token');
+      const token = await this.getBestToken();
+      if (!token) return { success: false, message: 'No auth token available.' };
       const res = await fetch(`${API_URL}/security/lockout/${userId}`, {
         method: 'POST',
         headers: {

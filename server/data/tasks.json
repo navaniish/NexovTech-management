@@ -14,6 +14,34 @@
     "status": "Pending"
   },
   {
+    "id": "4iPBaFxsRS3RECqN7fkp",
+    "createdAt": "2026-06-25T08:23:15.201Z",
+    "assignedToName": "DAGGUPATI NAVANEESWAR",
+    "dueDate": "2026-07-02",
+    "githubIssueNumber": 1,
+    "priority": "High",
+    "projectName": "Block - A I Solutions",
+    "title": "Phase 1: Specs & Requirement Analysis",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/block---a-i-solutions/issues/1",
+    "projectId": "VOj7YpCAArOnzVOsX0qH",
+    "assignedTo": "daggupatinavaneeswar.nexovtech@gmail.com",
+    "status": "In Progress"
+  },
+  {
+    "id": "8asyFDL6SyoRIsOUl5no",
+    "createdAt": "2026-06-23T16:37:28.928Z",
+    "assignedToName": "DAGGUPATI NAVANEESWAR",
+    "dueDate": "2026-06-30",
+    "githubIssueNumber": 1,
+    "priority": "High",
+    "projectName": "Shopify - A I Solutions",
+    "title": "Phase 1: Specs & Requirement Analysis",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/shopify---a-i-solutions/issues/1",
+    "projectId": "r8ZkuTHv0uBBMAD7cABv",
+    "assignedTo": "daggupatinavaneeswar8980@gmail.com",
+    "status": "In Progress"
+  },
+  {
     "id": "FobIql5Eho6MxGpw7SBQ",
     "createdAt": "2026-06-17T18:36:36.901Z",
     "assignedToName": "Traced Analyst",
@@ -42,6 +70,20 @@
     "status": "In Progress"
   },
   {
+    "id": "HeLFTVlaPvVAzrnyyDNW",
+    "createdAt": "2026-06-25T08:23:15.777Z",
+    "assignedToName": "REKHA SIDHARDHA",
+    "dueDate": "2026-07-09",
+    "githubIssueNumber": 2,
+    "priority": "High",
+    "projectName": "Block - A I Solutions",
+    "title": "Phase 2: Architectural Setup & DB Design",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/block---a-i-solutions/issues/2",
+    "projectId": "VOj7YpCAArOnzVOsX0qH",
+    "assignedTo": "sidhardharekha.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
     "id": "LqbgssgjPNjTSRQyCqEG",
     "createdAt": "2026-06-14T16:49:48.749Z",
     "assignedToName": "REKHA SIDHARDHA",
@@ -68,18 +110,74 @@
     "status": "Pending"
   },
   {
-    "id": "PbTYaYvWFbQpJTfiDIFE",
-    "createdAt": "2026-06-15T07:22:28.360Z",
-    "assignedToName": "MANI CHARAN TEJA ",
-    "dueDate": "2026-06-29",
-    "githubIssueNumber": 2,
+    "id": "MWskof9aZ8pY0p631f1f",
+    "createdAt": "2026-06-24T04:40:24.807Z",
+    "assignedToName": "DAGGUPATI NAVANEESWAR",
+    "dueDate": "2026-07-15",
+    "githubIssueNumber": 3,
     "priority": "High",
-    "projectName": "Acme Test Corp - A I Solutions",
-    "title": "Phase 2: Architectural Setup & DB Design",
-    "githubIssueUrl": "https://github.com/nexovtech-simulation/acme-test-corp---a-i-solutions/issues/2",
-    "projectId": "Irw5q7C6IfTSnFXey4rY",
+    "projectName": "Paytm - A I Solutions",
+    "title": "Phase 3: Core Implementation & API Dev",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/paytm---a-i-solutions/issues/3",
+    "projectId": "TOmFVH9FadwWXqEWkLd1",
+    "assignedTo": "daggupatinavaneeswar.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "NvsdFx0akfAM2sVNonXt",
+    "createdAt": "2026-06-25T08:24:59.419Z",
+    "assignedToName": "DAGGUPATI NAVANEESWAR",
+    "dueDate": "2026-07-16",
+    "githubIssueNumber": 3,
+    "priority": "High",
+    "projectName": "Stripe - A I Solutions",
+    "title": "Phase 3: Core Implementation & API Dev",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/stripe---a-i-solutions/issues/3",
+    "projectId": "pTbI1ksLwWnbmLZpuT28",
+    "assignedTo": "daggupatinavaneeswar.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "Qjv291Pit9AoRr35iPMq",
+    "createdAt": "2026-06-25T08:24:08.720Z",
+    "assignedToName": "DAGGUPATI NAVANEESWAR",
+    "dueDate": "2026-07-16",
+    "githubIssueNumber": 3,
+    "priority": "High",
+    "projectName": "MoonPay - A I Solutions",
+    "title": "Phase 3: Core Implementation & API Dev",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/moonpay---a-i-solutions/issues/3",
+    "projectId": "0d8lCRKZ7ATvQXqSomtN",
+    "assignedTo": "daggupatinavaneeswar.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "RS91WRRevj8MrhvkiPUy",
+    "createdAt": "2026-06-25T08:24:59.918Z",
+    "assignedToName": "MANI CHARAN TEJA ",
+    "dueDate": "2026-07-23",
+    "githubIssueNumber": 4,
+    "priority": "High",
+    "projectName": "Stripe - A I Solutions",
+    "title": "Phase 4: Client Staging & Review",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/stripe---a-i-solutions/issues/4",
+    "projectId": "pTbI1ksLwWnbmLZpuT28",
     "assignedTo": "manicharanteja.nexovtech@gmail.com",
     "status": "Pending"
+  },
+  {
+    "id": "SrPdb0t6x4NqAS7x01F2",
+    "createdAt": "2026-06-24T04:40:24.461Z",
+    "assignedToName": "DAGGUPATI NAVANEESWAR",
+    "dueDate": "2026-07-01",
+    "githubIssueNumber": 1,
+    "priority": "High",
+    "projectName": "Paytm - A I Solutions",
+    "title": "Phase 1: Specs & Requirement Analysis",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/paytm---a-i-solutions/issues/1",
+    "projectId": "TOmFVH9FadwWXqEWkLd1",
+    "assignedTo": "daggupatinavaneeswar.nexovtech@gmail.com",
+    "status": "In Progress"
   },
   {
     "id": "TR3nXgL9mRnkHB94Ur8h",
@@ -134,6 +232,20 @@
     "status": "In Progress"
   },
   {
+    "id": "VwdXMylwh7kz0v4Uc738",
+    "createdAt": "2026-06-25T08:24:07.904Z",
+    "assignedToName": "DAGGUPATI NAVANEESWAR",
+    "dueDate": "2026-07-02",
+    "githubIssueNumber": 1,
+    "priority": "High",
+    "projectName": "MoonPay - A I Solutions",
+    "title": "Phase 1: Specs & Requirement Analysis",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/moonpay---a-i-solutions/issues/1",
+    "projectId": "0d8lCRKZ7ATvQXqSomtN",
+    "assignedTo": "daggupatinavaneeswar.nexovtech@gmail.com",
+    "status": "In Progress"
+  },
+  {
     "id": "WQUqqXaOBfcrkRyZfVdr",
     "createdAt": "2026-06-17T18:40:58.702Z",
     "assignedToName": "Traced Analyst",
@@ -176,20 +288,6 @@
     "status": "Pending"
   },
   {
-    "id": "YmP8TrIITUFyDpF1b0TV",
-    "createdAt": "2026-06-15T07:19:48.909Z",
-    "assignedToName": "Traced Analyst",
-    "dueDate": "2026-07-06",
-    "githubIssueNumber": 3,
-    "priority": "High",
-    "projectName": "Acme Test Corp - A I Solutions",
-    "title": "Phase 3: Core Implementation & API Dev",
-    "githubIssueUrl": "https://github.com/nexovtech-simulation/acme-test-corp---a-i-solutions/issues/3",
-    "projectId": "5IuYXrVMAcXHsToB86z7",
-    "assignedTo": "test_traced_user@nexovtech.com",
-    "status": "Pending"
-  },
-  {
     "id": "YwixpFrQL4v7CC3BfnQB",
     "createdAt": "2026-06-14T16:55:43.863Z",
     "assignedToName": "Saranya Gunda",
@@ -200,6 +298,20 @@
     "projectId": "YJZ7ZRvvtOaKpomWwdgF",
     "assignedTo": "gundasaranya.nexovtech@gmail.com",
     "status": "In Progress"
+  },
+  {
+    "id": "acvSWBXLbpYqfVXq4aGr",
+    "createdAt": "2026-06-23T16:37:29.709Z",
+    "assignedToName": "DAGGUPATI NAVANEESWAR",
+    "dueDate": "2026-07-14",
+    "githubIssueNumber": 3,
+    "priority": "High",
+    "projectName": "Shopify - A I Solutions",
+    "title": "Phase 3: Core Implementation & API Dev",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/shopify---a-i-solutions/issues/3",
+    "projectId": "r8ZkuTHv0uBBMAD7cABv",
+    "assignedTo": "daggupatinavaneeswar8980@gmail.com",
+    "status": "Pending"
   },
   {
     "id": "bahrKqAIAqHDEK10tPk4",
@@ -238,6 +350,20 @@
     "status": "Pending"
   },
   {
+    "id": "bmzbSfRil96Yn6E0ZmpD",
+    "createdAt": "2026-06-23T16:37:30.055Z",
+    "assignedToName": "Saranya Gunda",
+    "dueDate": "2026-07-21",
+    "githubIssueNumber": 4,
+    "priority": "High",
+    "projectName": "Shopify - A I Solutions",
+    "title": "Phase 4: Client Staging & Review",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/shopify---a-i-solutions/issues/4",
+    "projectId": "r8ZkuTHv0uBBMAD7cABv",
+    "assignedTo": "gundasaranya.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
     "id": "cL6stcVWWIEcsprqbQ3V",
     "createdAt": "2026-06-14T16:55:44.980Z",
     "assignedToName": "MANI CHARAN TEJA ",
@@ -262,6 +388,20 @@
     "status": "Pending"
   },
   {
+    "id": "deTNE8JZAz8rPUN9OLQO",
+    "createdAt": "2026-06-25T08:23:16.835Z",
+    "assignedToName": "REKHA SIDHARDHA",
+    "dueDate": "2026-07-23",
+    "githubIssueNumber": 4,
+    "priority": "High",
+    "projectName": "Block - A I Solutions",
+    "title": "Phase 4: Client Staging & Review",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/block---a-i-solutions/issues/4",
+    "projectId": "VOj7YpCAArOnzVOsX0qH",
+    "assignedTo": "sidhardharekha.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
     "id": "du9yQsTNsWslaVDZkuey",
     "createdAt": "2026-06-13T16:55:18.290Z",
     "assignedToName": "MANI CHARAN TEJA ",
@@ -271,18 +411,6 @@
     "title": "Phase 2: Architectural Setup & DB Design",
     "projectId": "CvRT1cdPWkjHPke4wHU2",
     "assignedTo": "manicharanteja.nexovtech@gmail.com",
-    "status": "Pending"
-  },
-  {
-    "id": "dvpzeuIEivn7i7DeuXxy",
-    "createdAt": "2026-06-15T06:24:20.371Z",
-    "assignedToName": "REKHA SIDHARDHA",
-    "dueDate": "2026-07-06",
-    "priority": "High",
-    "projectName": "NEXOV Testing Corp - A I Solutions",
-    "title": "Phase 3: Core Implementation & API Dev",
-    "projectId": "s3ZrhzViZ9LylpoGKqj2",
-    "assignedTo": "sidhardharekha.nexovtech@gmail.com",
     "status": "Pending"
   },
   {
@@ -310,32 +438,6 @@
     "status": "Pending"
   },
   {
-    "id": "lP8Poqin0kgadu4lcCRQ",
-    "createdAt": "2026-06-15T06:24:19.959Z",
-    "assignedToName": "Saranya Gunda",
-    "dueDate": "2026-06-29",
-    "priority": "High",
-    "projectName": "NEXOV Testing Corp - A I Solutions",
-    "title": "Phase 2: Architectural Setup & DB Design",
-    "projectId": "s3ZrhzViZ9LylpoGKqj2",
-    "assignedTo": "gundasaranya.nexovtech@gmail.com",
-    "status": "Pending"
-  },
-  {
-    "id": "mL8Y7VfxjakLynmaKibh",
-    "createdAt": "2026-06-15T07:19:08.111Z",
-    "assignedToName": "Traced Analyst",
-    "dueDate": "2026-07-06",
-    "githubIssueNumber": 3,
-    "priority": "High",
-    "projectName": "Acme Test Corp - A I Solutions",
-    "title": "Phase 3: Core Implementation & API Dev",
-    "githubIssueUrl": "https://github.com/nexovtech-simulation/acme-test-corp---a-i-solutions/issues/3",
-    "projectId": "o0xYWcAfcChfC9JKdQmp",
-    "assignedTo": "test_traced_user@nexovtech.com",
-    "status": "Pending"
-  },
-  {
     "id": "mPfEeu3MITa7XfHQYsOW",
     "createdAt": "2026-06-14T16:57:41.620Z",
     "assignedToName": "Saranya Gunda",
@@ -348,17 +450,17 @@
     "status": "Pending"
   },
   {
-    "id": "nOG6baa6tbiYxx6hSKto",
-    "createdAt": "2026-06-15T07:22:29.912Z",
-    "assignedToName": "MANI CHARAN TEJA ",
-    "dueDate": "2026-07-13",
-    "githubIssueNumber": 4,
+    "id": "nI978HuYS0rrBHa6Awex",
+    "createdAt": "2026-06-25T08:23:16.394Z",
+    "assignedToName": "DAGGUPATI NAVANEESWAR",
+    "dueDate": "2026-07-16",
+    "githubIssueNumber": 3,
     "priority": "High",
-    "projectName": "Acme Test Corp - A I Solutions",
-    "title": "Phase 4: Client Staging & Review",
-    "githubIssueUrl": "https://github.com/nexovtech-simulation/acme-test-corp---a-i-solutions/issues/4",
-    "projectId": "Irw5q7C6IfTSnFXey4rY",
-    "assignedTo": "manicharanteja.nexovtech@gmail.com",
+    "projectName": "Block - A I Solutions",
+    "title": "Phase 3: Core Implementation & API Dev",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/block---a-i-solutions/issues/3",
+    "projectId": "VOj7YpCAArOnzVOsX0qH",
+    "assignedTo": "daggupatinavaneeswar.nexovtech@gmail.com",
     "status": "Pending"
   },
   {
@@ -374,20 +476,6 @@
     "status": "Pending"
   },
   {
-    "id": "nil6F1bvtzRqrm2JyNAL",
-    "createdAt": "2026-06-15T07:22:27.184Z",
-    "assignedToName": "Traced Analyst",
-    "dueDate": "2026-06-22",
-    "githubIssueNumber": 1,
-    "priority": "High",
-    "projectName": "Acme Test Corp - A I Solutions",
-    "title": "Phase 1: Specs & Requirement Analysis",
-    "githubIssueUrl": "https://github.com/nexovtech-simulation/acme-test-corp---a-i-solutions/issues/1",
-    "projectId": "Irw5q7C6IfTSnFXey4rY",
-    "assignedTo": "test_traced_user@nexovtech.com",
-    "status": "In Progress"
-  },
-  {
     "id": "o2JcLUGJMpQTYYbbDHd3",
     "createdAt": "2026-06-17T04:16:59.916Z",
     "assignedToName": "REKHA SIDHARDHA",
@@ -399,6 +487,20 @@
     "githubIssueUrl": "https://github.com/nexovtech-simulation/spring-health---a-i-solutions/issues/2",
     "projectId": "VV7zopyxTpFRpbD4pKrU",
     "assignedTo": "sidhardharekha.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "o2eLtoaxEmBWf5f9t3Pn",
+    "createdAt": "2026-06-24T04:40:24.594Z",
+    "assignedToName": "MANI CHARAN TEJA ",
+    "dueDate": "2026-07-08",
+    "githubIssueNumber": 2,
+    "priority": "High",
+    "projectName": "Paytm - A I Solutions",
+    "title": "Phase 2: Architectural Setup & DB Design",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/paytm---a-i-solutions/issues/2",
+    "projectId": "TOmFVH9FadwWXqEWkLd1",
+    "assignedTo": "manicharanteja.nexovtech@gmail.com",
     "status": "Pending"
   },
   {
@@ -440,6 +542,34 @@
     "status": "Pending"
   },
   {
+    "id": "rCLP9EhCN6C4xx4bgC9U",
+    "createdAt": "2026-06-23T16:37:29.365Z",
+    "assignedToName": "Saranya Gunda",
+    "dueDate": "2026-07-07",
+    "githubIssueNumber": 2,
+    "priority": "High",
+    "projectName": "Shopify - A I Solutions",
+    "title": "Phase 2: Architectural Setup & DB Design",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/shopify---a-i-solutions/issues/2",
+    "projectId": "r8ZkuTHv0uBBMAD7cABv",
+    "assignedTo": "gundasaranya.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "sGRSQ3bviXMFBW8ijEOQ",
+    "createdAt": "2026-06-25T08:24:08.298Z",
+    "assignedToName": "Saranya Gunda",
+    "dueDate": "2026-07-09",
+    "githubIssueNumber": 2,
+    "priority": "High",
+    "projectName": "MoonPay - A I Solutions",
+    "title": "Phase 2: Architectural Setup & DB Design",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/moonpay---a-i-solutions/issues/2",
+    "projectId": "0d8lCRKZ7ATvQXqSomtN",
+    "assignedTo": "gundasaranya.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
     "id": "task_1781381416673",
     "createdAt": "2026-06-13T20:10:16.673Z",
     "dueDate": "Next Friday",
@@ -448,6 +578,72 @@
     "projectId": "general",
     "assignedTo": "L2CAoeF1K5TuHB71HVzb4oNvzwy2",
     "status": "Assigned"
+  },
+  {
+    "id": "task_1782222035519",
+    "createdAt": "2026-06-23T13:40:35.520Z",
+    "dueDate": "Tomorrow",
+    "description": "Hello",
+    "title": "Hii",
+    "projectId": "general",
+    "assignedTo": "Ykdj0ytfNXgRJozFnn9N",
+    "status": "Completed"
+  },
+  {
+    "id": "uiHtI8wdw2Yy7Mq0puGk",
+    "createdAt": "2026-06-25T08:24:09.127Z",
+    "assignedToName": "Saranya Gunda",
+    "dueDate": "2026-07-23",
+    "githubIssueNumber": 4,
+    "priority": "High",
+    "projectName": "MoonPay - A I Solutions",
+    "title": "Phase 4: Client Staging & Review",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/moonpay---a-i-solutions/issues/4",
+    "projectId": "0d8lCRKZ7ATvQXqSomtN",
+    "assignedTo": "gundasaranya.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "uvb0bi8LxnkrMuTUmgRz",
+    "createdAt": "2026-06-24T04:40:24.897Z",
+    "assignedToName": "MANI CHARAN TEJA ",
+    "dueDate": "2026-07-22",
+    "githubIssueNumber": 4,
+    "priority": "High",
+    "projectName": "Paytm - A I Solutions",
+    "title": "Phase 4: Client Staging & Review",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/paytm---a-i-solutions/issues/4",
+    "projectId": "TOmFVH9FadwWXqEWkLd1",
+    "assignedTo": "manicharanteja.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "vAOuHQYaoiJIJbfGvnD3",
+    "createdAt": "2026-06-25T08:24:59.066Z",
+    "assignedToName": "MANI CHARAN TEJA ",
+    "dueDate": "2026-07-09",
+    "githubIssueNumber": 2,
+    "priority": "High",
+    "projectName": "Stripe - A I Solutions",
+    "title": "Phase 2: Architectural Setup & DB Design",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/stripe---a-i-solutions/issues/2",
+    "projectId": "pTbI1ksLwWnbmLZpuT28",
+    "assignedTo": "manicharanteja.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "vgHuj1vhQsSYN0tN6419",
+    "createdAt": "2026-06-25T08:24:58.681Z",
+    "assignedToName": "DAGGUPATI NAVANEESWAR",
+    "dueDate": "2026-07-02",
+    "githubIssueNumber": 1,
+    "priority": "High",
+    "projectName": "Stripe - A I Solutions",
+    "title": "Phase 1: Specs & Requirement Analysis",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/stripe---a-i-solutions/issues/1",
+    "projectId": "pTbI1ksLwWnbmLZpuT28",
+    "assignedTo": "daggupatinavaneeswar.nexovtech@gmail.com",
+    "status": "In Progress"
   },
   {
     "id": "xxzLJEeqdHUj4WPVdPkK",
@@ -486,5 +682,61 @@
     "projectId": "phgL2JiHIglKiZUujXRH",
     "assignedTo": "manicharanteja.nexovtech@gmail.com",
     "status": "Pending"
+  },
+  {
+    "projectId": "GMwMyrAPnTQLnWZCrgdW",
+    "projectName": "Phia - A I Solutions",
+    "title": "Phase 1: Specs & Requirement Analysis",
+    "assignedTo": "daggupatinavaneeswar.nexovtech@gmail.com",
+    "assignedToName": "DAGGUPATI NAVANEESWAR",
+    "status": "In Progress",
+    "priority": "High",
+    "dueDate": "2026-07-02",
+    "createdAt": "2026-06-25T08:26:22.468Z",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/phia---a-i-solutions/issues/1",
+    "githubIssueNumber": 1,
+    "id": "0F2ZxGRJc9A7uTifTgjz"
+  },
+  {
+    "projectId": "GMwMyrAPnTQLnWZCrgdW",
+    "projectName": "Phia - A I Solutions",
+    "title": "Phase 2: Architectural Setup & DB Design",
+    "assignedTo": "sidhardharekha.nexovtech@gmail.com",
+    "assignedToName": "REKHA SIDHARDHA",
+    "status": "Pending",
+    "priority": "High",
+    "dueDate": "2026-07-09",
+    "createdAt": "2026-06-25T08:26:22.927Z",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/phia---a-i-solutions/issues/2",
+    "githubIssueNumber": 2,
+    "id": "7xcbgJcgQMhBVjnASLRc"
+  },
+  {
+    "projectId": "GMwMyrAPnTQLnWZCrgdW",
+    "projectName": "Phia - A I Solutions",
+    "title": "Phase 3: Core Implementation & API Dev",
+    "assignedTo": "daggupatinavaneeswar.nexovtech@gmail.com",
+    "assignedToName": "DAGGUPATI NAVANEESWAR",
+    "status": "Pending",
+    "priority": "High",
+    "dueDate": "2026-07-16",
+    "createdAt": "2026-06-25T08:26:23.406Z",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/phia---a-i-solutions/issues/3",
+    "githubIssueNumber": 3,
+    "id": "GbebVJNzQla6LHNjiSlW"
+  },
+  {
+    "projectId": "GMwMyrAPnTQLnWZCrgdW",
+    "projectName": "Phia - A I Solutions",
+    "title": "Phase 4: Client Staging & Review",
+    "assignedTo": "sidhardharekha.nexovtech@gmail.com",
+    "assignedToName": "REKHA SIDHARDHA",
+    "status": "Pending",
+    "priority": "High",
+    "dueDate": "2026-07-23",
+    "createdAt": "2026-06-25T08:26:23.885Z",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/phia---a-i-solutions/issues/4",
+    "githubIssueNumber": 4,
+    "id": "VB8tDBHfgLzoshYGCVad"
   }
 ]

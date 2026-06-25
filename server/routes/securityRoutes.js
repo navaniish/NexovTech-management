@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const OpenAI = require('openai');
+const fallbackDb = require('../utils/fallbackDb');
+const { auth } = require('../middleware/auth');
 
 let aiClient;
 try {
@@ -223,16 +225,11 @@ const parseDate = (dateVal) => {
  * GET /logs
  * Retrieve the current employee/user login history logs.
  */
-router.get('/logs', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.get('/logs', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
   
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    const userId = decoded.id;
+    const userId = req.user.id;
     
     const history = await fallbackDb.find('loginHistory', { userId });
     const sorted = (history || []).sort((a, b) => parseDate(b.createdAt) - parseDate(a.createdAt));
@@ -257,16 +254,11 @@ router.get('/logs', async (req, res) => {
  * GET /devices
  * Retrieve unique trusted devices based on user login history.
  */
-router.get('/devices', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.get('/devices', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
   
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    const userId = decoded.id;
+    const userId = req.user.id;
     
     const trusted = await fallbackDb.find('trusted_devices', { userId }) || [];
     const history = await fallbackDb.find('loginHistory', { userId }) || [];
@@ -342,16 +334,11 @@ router.get('/devices', async (req, res) => {
  * DELETE /devices/:deviceName
  * Removes device entries from login history and trusted_devices.
  */
-router.delete('/devices/:deviceName', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.delete('/devices/:deviceName', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
   
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    const userId = decoded.id;
+    const userId = req.user.id;
     const { deviceName } = req.params;
     
     // Revoke from trusted_devices
@@ -417,20 +404,22 @@ function calculateDistance(coords1, coords2) {
   return R * c;
 }
 
-router.get('/anomalies', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.get('/anomalies', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
   
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    const tenantId = decoded.tenantId || 'org_default';
+    // Only allow Admin, Super Admin, or Manager
+    const user = req.user;
+    if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
+      return res.status(403).json({ message: 'Access denied: Administrative clearance required.' });
+    }
+    const tenantId = req.tenantId || 'org_default';
     
     // Fetch all users in this tenant
     const users = await fallbackDb.find('users', { tenantId }) || [];
-    const userIds = users.map(u => u.id || u._id);
+    const userIds = users
+      .map(u => u.id || u._id)
+      .filter(id => id && id !== 'undefined' && id !== 'null');
     
     const allHistory = [];
     for (const uid of userIds) {
@@ -441,6 +430,7 @@ router.get('/anomalies', async (req, res) => {
     const anomalies = [];
     const userHistoryMap = {};
     allHistory.forEach(log => {
+      if (!log.userId || log.userId === 'undefined' || log.userId === 'null') return;
       if (!userHistoryMap[log.userId]) userHistoryMap[log.userId] = [];
       userHistoryMap[log.userId].push(log);
     });
@@ -495,18 +485,11 @@ router.get('/anomalies', async (req, res) => {
   }
 });
 
-router.post('/lockout/:userId', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.post('/lockout/:userId', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
   
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied' });
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    const adminId = decoded.id;
-    const admin = await fallbackDb.findById('users', adminId);
-    
+    const admin = req.user;
     if (!admin || (admin.role !== 'Admin' && admin.role !== 'Super Admin' && admin.role !== 'Manager')) {
       return res.status(403).json({ message: 'Access denied: Admin permissions required.' });
     }
@@ -549,16 +532,11 @@ router.post('/lockout/:userId', async (req, res) => {
 });
 
 // ── FACIAL BIOMETRICS ENROLLMENT ──
-router.post('/biometrics/enroll', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.post('/biometrics/enroll', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
 
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    const userId = decoded.id;
+    const userId = req.user.id;
 
     const { biometricTemplate, consent } = req.body;
     
@@ -976,13 +954,46 @@ router.get('/biometrics/status/:userId', async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
 
   try {
-    const user = await fallbackDb.findById('users', userId);
+    let user = null;
+    if (userId && userId.includes('@')) {
+      user = await fallbackDb.findOne('users', { email: userId.toLowerCase() });
+      if (!user) {
+        user = await fallbackDb.findOne('users', { companyEmail: userId.toLowerCase() });
+      }
+    } else {
+      user = await fallbackDb.findById('users', userId);
+      if (!user) {
+        user = await fallbackDb.findOne('users', { id: userId });
+      }
+      if (!user) {
+        user = await fallbackDb.findOne('users', { firebaseUid: userId });
+      }
+    }
+
     let template = await fallbackDb.findOne('biometrics_templates', { userId });
+    if (!template && user) {
+      const possibleIds = [user.id, user._id, user.firebaseUid].filter(Boolean);
+      for (const id of possibleIds) {
+        if (id !== userId) {
+          template = await fallbackDb.findOne('biometrics_templates', { userId: id });
+          if (template) break;
+        }
+      }
+    }
     if (!template && user?.email) {
       template = await fallbackDb.findOne('biometrics_templates', { email: user.email.toLowerCase() });
     }
     
     let webauthn = await fallbackDb.findOne('webauthn_credentials', { userId });
+    if (!webauthn && user) {
+      const possibleIds = [user.id, user._id, user.firebaseUid].filter(Boolean);
+      for (const id of possibleIds) {
+        if (id !== userId) {
+          webauthn = await fallbackDb.findOne('webauthn_credentials', { userId: id });
+          if (webauthn) break;
+        }
+      }
+    }
     if (!webauthn && user?.email) {
       webauthn = await fallbackDb.findOne('webauthn_credentials', { email: user.email.toLowerCase() });
     }
@@ -991,7 +1002,9 @@ router.get('/biometrics/status/:userId', async (req, res) => {
       enrolled: !!(template && template.encryptedTemplate),
       enrolledAt: template ? template.createdAt : null,
       webauthnEnrolled: !!webauthn,
+      webAuthnEnrolled: !!webauthn,
       webauthnEnrolledAt: webauthn ? webauthn.createdAt : null,
+      webAuthnEnrolledAt: webauthn ? webauthn.createdAt : null,
       policy: 'Face-Only Login Enabled (Password Bypass Active)',
       settings: user?.face_auth_settings || template?.settings || {
         enableFaceLogin: true,
@@ -1001,21 +1014,17 @@ router.get('/biometrics/status/:userId', async (req, res) => {
       }
     });
   } catch (err) {
+    console.error('🔥 STATUS_CHECK_ERROR:', err);
     res.status(500).json({ message: 'Failed to retrieve biometrics status.' });
   }
 });
 
 // ── UPDATE FACIAL BIOMETRICS SETTINGS ──
-router.post('/biometrics/settings', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.post('/biometrics/settings', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
 
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    const userId = decoded.id;
+    const userId = req.user.id;
     const { settings } = req.body;
 
     // Update user profile settings (persistent preference fallback)
@@ -1039,16 +1048,11 @@ router.post('/biometrics/settings', async (req, res) => {
 });
 
 // ── FACIAL BIOMETRICS DELETE ──
-router.delete('/biometrics/delete', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.delete('/biometrics/delete', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
 
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    const userId = decoded.id;
+    const userId = req.user.id;
 
     const template = await fallbackDb.findOne('biometrics_templates', { userId });
     if (!template) {
@@ -1060,13 +1064,13 @@ router.delete('/biometrics/delete', async (req, res) => {
     // Save deletion log
     await fallbackDb.save('biometrics_logs', {
       userId,
-      email: decoded.email || '',
+      email: req.user.email || '',
       attemptType: 'Revocation',
       status: 'Success',
       ipAddress: req.ip || req.headers['x-forwarded-for'] || '127.0.0.1',
       deviceScore: 100,
       timestamp: new Date().toISOString(),
-      tenantId: decoded.tenantId || 'org_default'
+      tenantId: req.tenantId || 'org_default'
     });
 
     res.json({ success: true, message: 'Facial biometric template deleted successfully.' });
@@ -1077,23 +1081,16 @@ router.delete('/biometrics/delete', async (req, res) => {
 });
 
 // ── ADMIN: BIOMETRICS LOGS & STATS ──
-router.get('/biometrics/admin/logs', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.get('/biometrics/admin/logs', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
 
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    
-    // Check if admin
-    const user = await fallbackDb.findById('users', decoded.id);
+    const user = req.user;
     if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
       return res.status(403).json({ message: 'Access denied: Administrative clearance required.' });
     }
 
-    const tenantId = decoded.tenantId || 'org_default';
+    const tenantId = req.tenantId || 'org_default';
 
     // Fetch biometrics logs
     const logs = await fallbackDb.find('biometrics_logs', { tenantId }) || [];
@@ -1127,18 +1124,11 @@ router.get('/biometrics/admin/logs', async (req, res) => {
 });
 
 // ── ADMIN: REVOKE BIOMETRIC TEMPLATE ──
-router.post('/biometrics/admin/revoke/:userId', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.post('/biometrics/admin/revoke/:userId', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
 
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    
-    // Check if admin
-    const admin = await fallbackDb.findById('users', decoded.id);
+    const admin = req.user;
     if (!admin || (admin.role !== 'Admin' && admin.role !== 'Super Admin' && admin.role !== 'Manager')) {
       return res.status(403).json({ message: 'Access denied: Administrative clearance required.' });
     }
@@ -1190,17 +1180,12 @@ router.post('/biometrics/admin/revoke/:userId', async (req, res) => {
 });
 
 // ── GET ANDROID BUILD & COMPILATION STATUS ──
-router.get('/android/status', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.get('/android/status', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
   const { getBuildStatus } = require('../utils/androidBuilder');
 
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    const user = await fallbackDb.findById('users', decoded.id);
+    const user = req.user;
     if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
       return res.status(403).json({ message: 'Access denied: Administrative clearance required.' });
     }
@@ -1214,17 +1199,12 @@ router.get('/android/status', async (req, res) => {
 });
 
 // ── TRIGGER ANDROID APK COMPILE & DEPLOYMENT ──
-router.post('/android/build', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.post('/android/build', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
   const { triggerAndroidBuild } = require('../utils/androidBuilder');
 
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    const user = await fallbackDb.findById('users', decoded.id);
+    const user = req.user;
     if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
       return res.status(403).json({ message: 'Access denied: Administrative clearance required.' });
     }
@@ -1238,18 +1218,13 @@ router.post('/android/build', async (req, res) => {
 });
 
 // ── GET ANDROID PERMISSIONS CONFIGURATION ──
-router.get('/android/permissions', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.get('/android/permissions', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
   const fs = require('fs');
   const path = require('path');
 
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    const user = await fallbackDb.findById('users', decoded.id);
+    const user = req.user;
     if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
       return res.status(403).json({ message: 'Access denied: Administrative clearance required.' });
     }
@@ -1271,7 +1246,9 @@ router.get('/android/permissions', async (req, res) => {
       { id: 'android.permission.READ_MEDIA_VIDEO', name: 'Read Media Video', description: 'Allows access to device video gallery.' },
       { id: 'android.permission.READ_MEDIA_AUDIO', name: 'Read Media Audio', description: 'Allows access to device audio library.' },
       { id: 'android.permission.READ_EXTERNAL_STORAGE', name: 'Read External Storage', description: 'Legacy storage read access for Android 12 and below.' },
-      { id: 'android.permission.WRITE_EXTERNAL_STORAGE', name: 'Write External Storage', description: 'Legacy storage write access for Android 9 and below.' }
+      { id: 'android.permission.WRITE_EXTERNAL_STORAGE', name: 'Write External Storage', description: 'Legacy storage write access for Android 9 and below.' },
+      { id: 'android.permission.USE_BIOMETRIC', name: 'Biometric Scanner (Modern)', description: 'Required for modern fingerprint and facial sensor authentication APIs.' },
+      { id: 'android.permission.USE_FINGERPRINT', name: 'Fingerprint Sensor (Legacy)', description: 'Required for legacy fingerprint touch sensor hardware.' }
     ];
 
     const permissionsStatus = CONTROLLED_PERMISSIONS.map(p => {
@@ -1292,18 +1269,13 @@ router.get('/android/permissions', async (req, res) => {
 });
 
 // ── SAVE ANDROID PERMISSIONS CONFIGURATION ──
-router.post('/android/permissions', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.post('/android/permissions', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
   const fs = require('fs');
   const path = require('path');
 
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    const user = await fallbackDb.findById('users', decoded.id);
+    const user = req.user;
     if (!user || (user.role !== 'Admin' && user.role !== 'Super Admin' && user.role !== 'Manager')) {
       return res.status(403).json({ message: 'Access denied: Administrative clearance required.' });
     }
@@ -1325,7 +1297,9 @@ router.post('/android/permissions', async (req, res) => {
       { id: 'android.permission.READ_MEDIA_VIDEO' },
       { id: 'android.permission.READ_MEDIA_AUDIO' },
       { id: 'android.permission.READ_EXTERNAL_STORAGE' },
-      { id: 'android.permission.WRITE_EXTERNAL_STORAGE' }
+      { id: 'android.permission.WRITE_EXTERNAL_STORAGE' },
+      { id: 'android.permission.USE_BIOMETRIC' },
+      { id: 'android.permission.USE_FINGERPRINT' }
     ];
 
     // 1. Rewrite AndroidManifest.xml
@@ -1495,14 +1469,14 @@ ${cameraBlock}${recordAudioBlock}${fineLocationBlock}${coarseLocationBlock}${sdk
 
 // ── DOWNLOAD COMPILED ANDROID APK ──
 router.get('/android/download', async (req, res) => {
-  const path = require('path');
-  const fs = require('fs');
-  const apkPath = path.resolve(__dirname, '../../nexovtech.apk');
-
-  if (fs.existsSync(apkPath)) {
-    res.download(apkPath, 'nexovtech.apk');
-  } else {
-    res.status(404).json({ message: 'Compiled Android APK package not found on server. Please trigger a compilation build first.' });
+  try {
+    const config = await fallbackDb.findOne('settings', { id: 'android_config' }) || 
+                   await fallbackDb.findById('settings', 'android_config');
+                   
+    const firebaseApkUrl = config?.apkUrl || 'https://storage.googleapis.com/nexovtech-management.firebasestorage.app/apk/nexovtech.apk';
+    return res.redirect(firebaseApkUrl);
+  } catch (err) {
+    return res.redirect('https://storage.googleapis.com/nexovtech-management.firebasestorage.app/apk/nexovtech.apk');
   }
 });
 
@@ -1670,21 +1644,16 @@ router.post('/webauthn/register-public', async (req, res) => {
 });
 
 // ── REGISTER WEBAUTHN DEVICE CREDENTIAL (authenticated, from settings) ──
-router.post('/webauthn/register', async (req, res) => {
+router.post('/webauthn/register', auth, async (req, res) => {
   const { email, credentialId, publicKey } = req.body;
   const fallbackDb = require('../utils/fallbackDb');
-  const jwt = require('jsonwebtoken');
 
   if (!email || !credentialId || !publicKey) {
     return res.status(400).json({ message: 'Missing fields for WebAuthn registration.' });
   }
 
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    let user = await fallbackDb.findById('users', decoded.id);
+    let user = req.user;
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
@@ -1818,16 +1787,11 @@ router.post('/webauthn/verify', async (req, res) => {
 });
 
 // ── DELETE WEBAUTHN DEVICE CREDENTIAL ──
-router.delete('/webauthn/delete', async (req, res) => {
-  const jwt = require('jsonwebtoken');
+router.delete('/webauthn/delete', auth, async (req, res) => {
   const fallbackDb = require('../utils/fallbackDb');
 
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Access denied: No token provided' });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'nexovtech_secret_key');
-    const userId = decoded.id;
+    const userId = req.user.id;
 
     const credential = await fallbackDb.findOne('webauthn_credentials', { userId });
     if (!credential) {
@@ -1840,6 +1804,189 @@ router.delete('/webauthn/delete', async (req, res) => {
   } catch (err) {
     console.error('🔥 WEBAUTHN_DELETE_FAIL:', err.message);
     res.status(500).json({ message: 'Failed to delete system default biometric credential.' });
+  }
+});
+
+// ── API INTEGRATIONS CONFIGURATION & DIAGNOSTICS ──
+
+router.get('/integrations', auth, async (req, res) => {
+  if (req.user?.role !== 'Admin' && req.user?.role !== 'Super Admin' && req.user?.role !== 'Manager') {
+    return res.status(403).json({ message: 'Access denied: administrative role required.' });
+  }
+
+  try {
+    const stripeKey = process.env.STRIPE_SECRET_KEY || '';
+    const razorpayId = process.env.RAZORPAY_KEY_ID || '';
+    const razorpaySecret = process.env.RAZORPAY_KEY_SECRET || '';
+    const githubToken = process.env.GITHUB_TOKEN || '';
+    const jiraHost = process.env.JIRA_HOST || '';
+    const jiraEmail = process.env.JIRA_EMAIL || '';
+    const jiraToken = process.env.JIRA_API_TOKEN || '';
+
+    res.json({
+      success: true,
+      stripe_configured: stripeKey && stripeKey !== 'placeholder',
+      stripe_key_mask: stripeKey && stripeKey !== 'placeholder' ? `${stripeKey.slice(0, 7)}...${stripeKey.slice(-4)}` : '',
+      
+      razorpay_configured: razorpayId && razorpaySecret && razorpayId !== 'placeholder',
+      razorpay_key_id_mask: razorpayId && razorpayId !== 'placeholder' ? `${razorpayId.slice(0, 6)}...` : '',
+      
+      github_configured: githubToken && githubToken !== 'placeholder',
+      github_token_mask: githubToken && githubToken !== 'placeholder' ? `ghp_...${githubToken.slice(-4)}` : '',
+      
+      jira_configured: jiraHost && jiraEmail && jiraToken && jiraToken !== 'placeholder',
+      jira_host: jiraHost,
+      jira_email: jiraEmail,
+      
+      statuses: {
+        stripe: { configured: stripeKey && stripeKey !== 'placeholder', status: stripeKey && stripeKey !== 'placeholder' ? 'configured' : 'unknown', error: '' },
+        razorpay: { configured: razorpayId && razorpaySecret && razorpayId !== 'placeholder', status: razorpayId && razorpaySecret && razorpayId !== 'placeholder' ? 'configured' : 'unknown', error: '' },
+        github: { configured: githubToken && githubToken !== 'placeholder', status: githubToken && githubToken !== 'placeholder' ? 'configured' : 'unknown', error: '' },
+        jira: { configured: jiraHost && jiraEmail && jiraToken && jiraToken !== 'placeholder', status: jiraHost && jiraEmail && jiraToken && jiraToken !== 'placeholder' ? 'configured' : 'unknown', error: '' }
+      }
+    });
+  } catch (err) {
+    console.error('🔥 GET_INTEGRATIONS_FAILED:', err);
+    res.status(500).json({ message: 'Failed to retrieve integrations.' });
+  }
+});
+
+router.post('/integrations/test', auth, async (req, res) => {
+  if (req.user?.role !== 'Admin' && req.user?.role !== 'Super Admin' && req.user?.role !== 'Manager') {
+    return res.status(403).json({ message: 'Access denied: administrative role required.' });
+  }
+
+  const { service } = req.body;
+
+  try {
+    if (service === 'stripe') {
+      const stripeKey = process.env.STRIPE_SECRET_KEY;
+      if (!stripeKey || stripeKey === 'placeholder') {
+        return res.status(400).json({ success: false, message: 'Stripe credentials not configured.' });
+      }
+      const testRes = await axios.get('https://api.stripe.com/v1/balance', {
+        headers: { 'Authorization': `Bearer ${stripeKey}` },
+        timeout: 8000
+      });
+      return res.json({ success: true, message: `Stripe verified. Currency: ${testRes.data.available?.[0]?.currency?.toUpperCase() || 'INR'}` });
+    } 
+    
+    if (service === 'razorpay') {
+      const keyId = process.env.RAZORPAY_KEY_ID;
+      const keySecret = process.env.RAZORPAY_KEY_SECRET;
+      if (!keyId || !keySecret || keyId === 'placeholder') {
+        return res.status(400).json({ success: false, message: 'Razorpay credentials not configured.' });
+      }
+      const authHeader = `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString('base64')}`;
+      await axios.get('https://api.razorpay.com/v1/payments?count=1', {
+        headers: { 'Authorization': authHeader },
+        timeout: 8000
+      });
+      return res.json({ success: true, message: 'Razorpay connection validated successfully.' });
+    } 
+    
+    if (service === 'github') {
+      const token = process.env.GITHUB_TOKEN;
+      if (!token || token === 'placeholder') {
+        return res.status(400).json({ success: false, message: 'GitHub credentials not configured.' });
+      }
+      const testRes = await axios.get('https://api.github.com/user', {
+        headers: {
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'NEXA-AI-Agent'
+        },
+        timeout: 8000
+      });
+      return res.json({ success: true, message: `GitHub verified. Connected as profile: ${testRes.data.login}` });
+    } 
+    
+    if (service === 'jira') {
+      const host = process.env.JIRA_HOST;
+      const email = process.env.JIRA_EMAIL;
+      const token = process.env.JIRA_API_TOKEN;
+      if (!host || !email || !token || token === 'placeholder') {
+        return res.status(400).json({ success: false, message: 'Jira credentials not configured.' });
+      }
+      const authHeader = `Basic ${Buffer.from(`${email}:${token}`).toString('base64')}`;
+      const testRes = await axios.get(`https://${host}/rest/api/3/myself`, {
+        headers: {
+          'Authorization': authHeader,
+          'Accept': 'application/json'
+        },
+        timeout: 8000
+      });
+      return res.json({ success: true, message: `Jira verified. Authenticated as: ${testRes.data.displayName}` });
+    }
+
+    return res.status(400).json({ success: false, message: 'Unsupported diagnostic service.' });
+  } catch (err) {
+    console.error(`🔥 INTEGRATIONS_TEST_FAILED [${service}]:`, err.response?.data || err.message);
+    const apiError = err.response?.data?.error?.message || err.response?.data?.error?.description || err.response?.data?.message || err.message;
+    res.status(500).json({ success: false, message: `API Connection check failed: ${apiError}` });
+  }
+});
+
+router.post('/integrations/:service', auth, async (req, res) => {
+  if (req.user?.role !== 'Admin' && req.user?.role !== 'Super Admin' && req.user?.role !== 'Manager') {
+    return res.status(403).json({ message: 'Access denied: administrative role required.' });
+  }
+
+  const { service } = req.params;
+  const payload = req.body;
+
+  try {
+    // Fetch existing settings
+    let credentials = await fallbackDb.findOne('system_settings', { id: 'api_credentials' });
+    if (!credentials) {
+      credentials = { id: 'api_credentials', createdAt: new Date().toISOString() };
+    }
+
+    if (service === 'stripe') {
+      const { stripe_secret_key } = payload;
+      if (stripe_secret_key && stripe_secret_key !== '••••••••••••••••') {
+        credentials.stripe_secret_key = stripe_secret_key;
+        process.env.STRIPE_SECRET_KEY = stripe_secret_key;
+      }
+    } else if (service === 'razorpay') {
+      const { razorpay_key_id, razorpay_key_secret } = payload;
+      if (razorpay_key_id && razorpay_key_id !== '••••••••••••••••' && !razorpay_key_id.endsWith('...')) {
+        credentials.razorpay_key_id = razorpay_key_id;
+        process.env.RAZORPAY_KEY_ID = razorpay_key_id;
+      }
+      if (razorpay_key_secret && razorpay_key_secret !== '••••••••••••••••') {
+        credentials.razorpay_key_secret = razorpay_key_secret;
+        process.env.RAZORPAY_KEY_SECRET = razorpay_key_secret;
+      }
+    } else if (service === 'github') {
+      const { github_token } = payload;
+      if (github_token && github_token !== '••••••••••••••••') {
+        credentials.github_token = github_token;
+        process.env.GITHUB_TOKEN = github_token;
+      }
+    } else if (service === 'jira') {
+      const { jira_host, jira_email, jira_api_token } = payload;
+      if (jira_host) {
+        credentials.jira_host = jira_host;
+        process.env.JIRA_HOST = jira_host;
+      }
+      if (jira_email) {
+        credentials.jira_email = jira_email;
+        process.env.JIRA_EMAIL = jira_email;
+      }
+      if (jira_api_token && jira_api_token !== '••••••••••••••••') {
+        credentials.jira_api_token = jira_api_token;
+        process.env.JIRA_API_TOKEN = jira_api_token;
+      }
+    } else {
+      return res.status(400).json({ message: 'Invalid service integration requested.' });
+    }
+
+    await fallbackDb.save('system_settings', credentials);
+    res.json({ success: true, message: `Successfully updated ${service} credentials.` });
+  } catch (err) {
+    console.error('🔥 POST_INTEGRATIONS_FAILED:', err);
+    res.status(500).json({ message: 'Failed to update credentials.' });
   }
 });
 

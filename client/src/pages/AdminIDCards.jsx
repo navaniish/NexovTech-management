@@ -185,6 +185,19 @@ const AdminIDCards = () => {
     e.preventDefault();
     setSavingDetails(true);
     try {
+      let avatarUrl = editForm.avatar;
+      if (avatarUrl && avatarUrl.startsWith('data:')) {
+        const response = await fetch(avatarUrl);
+        const blob = await response.blob();
+        
+        const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+        const { storage } = await import('../firebase');
+        
+        const fileRef = ref(storage, `avatars/${selectedEmployee._id || selectedEmployee.id}_${Date.now()}`);
+        await uploadBytes(fileRef, blob);
+        avatarUrl = await getDownloadURL(fileRef);
+      }
+
       const profileRes = await fetch(`${API_URL}/auth/update-profile/${selectedEmployee._id || selectedEmployee.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -192,7 +205,7 @@ const AdminIDCards = () => {
           name: editForm.name, 
           role: editForm.role, 
           phone: editForm.phone, 
-          avatar: editForm.avatar,
+          avatar: avatarUrl,
           address: editForm.address,
           authorizedSign: editForm.authorizedSign,
           teamSign: editForm.teamSign
@@ -217,25 +230,24 @@ const AdminIDCards = () => {
       }
       setIsEditingDetails(false);
       
-      const updatedEmployee = { ...selectedEmployee, ...editForm, card: updatedCard };
+      const updatedEmployee = { ...selectedEmployee, ...editForm, avatar: avatarUrl, card: updatedCard };
       setSelectedEmployee(updatedEmployee);
       
       setEmployees(prev => prev.map(emp => 
         (emp._id || emp.id) === (selectedEmployee._id || selectedEmployee.id) 
-        ? { ...emp, ...editForm, card: updatedCard } 
+        ? { ...emp, ...editForm, avatar: avatarUrl, card: updatedCard } 
         : emp
       ));
 
-      if (editForm.avatar) {
+      if (avatarUrl) {
         try {
-          localStorage.setItem(`nexov_portrait_${selectedEmployee._id || selectedEmployee.id}`, editForm.avatar);
+          localStorage.setItem(`nexov_portrait_${selectedEmployee._id || selectedEmployee.id}`, avatarUrl);
         } catch (storageErr) {
           console.warn('⚠️ localStorage quota exceeded for portrait avatar:', storageErr.message);
         }
       }
       
-      await fetchData();
-    } catch (err) {
+      await fetchData();    } catch (err) {
       console.error(err);
     } finally {
       setSavingDetails(false);

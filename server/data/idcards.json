@@ -10,6 +10,17 @@
     "issueDate": "2026-05-15T00:00:00.000Z"
   },
   {
+    "id": "Ykdj0ytfNXgRJozFnn9N",
+    "createdAt": "2026-06-20T17:03:34.961Z",
+    "qrToken": "b9918d19116a674970812a1921a28329",
+    "employeeId": "NXG-JOZFNN9N",
+    "userId": "Ykdj0ytfNXgRJozFnn9N",
+    "email": "daggupatinavaneeswar.nexovtech@gmail.com",
+    "status": "Active",
+    "expiryDate": "2028-06-20T00:00:00.000Z",
+    "issueDate": "2026-06-20T00:00:00.000Z"
+  },
+  {
     "id": "rWHj3Vg3YQY7es1PyT3Q",
     "qrToken": "a9851df6c0548fa7c7e9bb2a24be72b8",
     "employeeId": "NXG-ES1PYT3Q",

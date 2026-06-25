@@ -3,13 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CheckCircle2, Clock, AlertCircle, Search, Filter, Upload, 
   MessageSquare, Send, X, Loader2, FileText, Download, 
-  AlertTriangle, Trash2, Target, Zap, ShieldCheck, Cpu
+  AlertTriangle, Trash2, Target, Zap, ShieldCheck, Cpu, ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useChat } from '../../context/ChatContext';
 import API_URL from '../../config';
 
 const MyTasks = () => {
   const { user } = useAuth();
+  const { socket } = useChat();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,6 +21,20 @@ const MyTasks = () => {
   const [updating, setUpdating] = useState(null);
   const [activeTab, setActiveTab] = useState('All');
   const [expandedTaskId, setExpandedTaskId] = useState(null);
+
+  // Prefer nexov_token; fall back to Firebase ID token (prevents 401 race on initial load)
+  const getBestToken = async () => {
+    const stored = localStorage.getItem('nexov_token') || localStorage.getItem('token');
+    if (stored && stored !== 'null' && stored !== 'undefined') return stored;
+    try {
+      const { auth: fbAuth } = await import('../../firebase');
+      if (fbAuth.currentUser) return await fbAuth.currentUser.getIdToken(false);
+    } catch {}
+    return null;
+  };
+
+  const activeTask = commentModal ? tasks.find(t => (t.id === commentModal || t._id === commentModal)) : null;
+  const isJiraComment = activeTask?.source === 'jira';
 
   const fetchTasks = async () => {
     // Priority: id (DocID) > _id > firebaseUid
@@ -33,16 +49,44 @@ const MyTasks = () => {
     setError(null);
     try {
       console.log(`📋 MISSION_SYNC: Requesting task registry for specialist [${userId}]...`);
-      const response = await fetch(`${API_URL}/tasks/my?userId=${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('nexov_token') || localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!response.ok) throw new Error('Mission Control Link Severed');
-      const data = await response.json();
-      console.log(`✅ MISSION_SYNC: ${data.length} assignments synchronized.`);
-      setTasks(data);
+      const token = await getBestToken();
+      
+      const [internalRes, jiraRes] = await Promise.all([
+        fetch(`${API_URL}/tasks/my?userId=${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch(`${API_URL}/tasks/jira`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ]);
+
+      let internalData = [];
+      if (internalRes.ok) {
+        internalData = await internalRes.json();
+      } else {
+        console.warn('⚠️ MISSION_SYNC: Internal tasks fetch failed');
+      }
+
+      let jiraData = [];
+      if (jiraRes.ok) {
+        jiraData = await jiraRes.json();
+      } else {
+        console.warn('⚠️ MISSION_SYNC: JIRA tasks fetch failed');
+      }
+
+      // Add source properties
+      const mappedInternal = internalData.map(t => ({ ...t, source: 'internal' }));
+      const mappedJira = jiraData.map(t => ({ ...t, source: 'jira' }));
+
+      const merged = [...mappedInternal, ...mappedJira];
+      console.log(`✅ MISSION_SYNC: ${merged.length} assignments synchronized (${mappedInternal.length} internal, ${mappedJira.length} JIRA).`);
+      setTasks(merged);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -54,13 +98,43 @@ const MyTasks = () => {
     fetchTasks();
   }, [user]);
 
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleJiraTaskUpdated = (updatedTask) => {
+      console.log('📡 SOCKET: Received JIRA task update:', updatedTask);
+      const userEmail = (user?.email || '').toLowerCase().trim();
+      const assigneeEmail = (updatedTask.assigneeEmail || '').toLowerCase().trim();
+      
+      if (assigneeEmail && userEmail === assigneeEmail) {
+        setTasks(prev => {
+          const index = prev.findIndex(t => t.id === updatedTask.id || t._id === updatedTask.id);
+          if (index > -1) {
+            const newTasks = [...prev];
+            newTasks[index] = { ...newTasks[index], ...updatedTask, source: 'jira' };
+            return newTasks;
+          } else {
+            return [{ ...updatedTask, source: 'jira' }, ...prev];
+          }
+        });
+      }
+    };
+
+    socket.on('jira_task_updated', handleJiraTaskUpdated);
+
+    return () => {
+      socket.off('jira_task_updated', handleJiraTaskUpdated);
+    };
+  }, [socket, user]);
+
   const handleStatusChange = async (taskId, newStatus) => {
     setUpdating(taskId);
     try { 
+      const token = await getBestToken();
       const response = await fetch(`${API_URL}/tasks/${taskId}/status`, { 
         method: 'PUT', 
         headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('nexov_token') || localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json' 
         }, 
         body: JSON.stringify({ status: newStatus }) 
@@ -78,10 +152,11 @@ const MyTasks = () => {
   const handleAddComment = async () => {
     if (!commentText.trim() || !commentModal) return;
     try { 
+      const token = await getBestToken();
       const response = await fetch(`${API_URL}/tasks/${commentModal}/comment`, { 
         method: 'POST', 
         headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('nexov_token') || localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json' 
         }, 
         body: JSON.stringify({ text: commentText, userId: user._id || user.id }) 
@@ -99,10 +174,11 @@ const MyTasks = () => {
   const handleDeleteTask = async (taskId) => {
     if (!window.confirm('Are you sure you want to terminate this mission?')) return;
     try {
+      const token = await getBestToken();
       const response = await fetch(`${API_URL}/tasks/${taskId}`, { 
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('nexov_token') || localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
       if (response.ok) {
@@ -231,6 +307,11 @@ const MyTasks = () => {
                               task.priority === 'High' ? 'bg-rose-50 text-rose-500 border border-rose-100' : 
                               task.priority === 'Medium' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-slate-50 text-slate-400 border border-slate-100'
                             }`}>{task.priority}</span>
+                            {task.source === 'jira' && (
+                              <span className="text-[9px] font-black px-2 py-0.5 rounded-lg uppercase shrink-0 bg-blue-50 text-blue-500 border border-blue-100 flex items-center gap-1">
+                                Jira
+                              </span>
+                            )}
                          </div>
                          {/* Mobile Expand Chevron Toggle */}
                          <button
@@ -288,16 +369,22 @@ const MyTasks = () => {
                       isExpanded ? 'flex mt-4' : 'max-md:hidden'
                     }`}
                   >
-                    <select 
-                      value={task.status} 
-                      onChange={e => handleStatusChange(task.id || task._id, e.target.value)}
-                      disabled={updating === (task.id || task._id)}
-                      className="flex-1 md:flex-none text-[10px] md:text-[11px] font-black px-4 py-3 rounded-xl md:rounded-2xl bg-slate-900 text-white outline-none cursor-pointer hover:bg-brand-600 transition-all disabled:opacity-50 appearance-none min-w-[120px] md:min-w-[140px] text-center"
-                    >
-                      <option>Pending</option>
-                      <option>In Progress</option>
-                      <option>Completed</option>
-                    </select>
+                    {task.source === 'jira' ? (
+                      <div className="flex-1 md:flex-none text-[9px] font-black px-4 py-3 rounded-xl md:rounded-2xl bg-slate-100 border border-slate-200 text-slate-400 min-w-[120px] md:min-w-[140px] text-center uppercase tracking-widest cursor-not-allowed">
+                        Manage in Jira
+                      </div>
+                    ) : (
+                      <select 
+                        value={task.status} 
+                        onChange={e => handleStatusChange(task.id || task._id, e.target.value)}
+                        disabled={updating === (task.id || task._id)}
+                        className="flex-1 md:flex-none text-[10px] md:text-[11px] font-black px-4 py-3 rounded-xl md:rounded-2xl bg-slate-900 text-white outline-none cursor-pointer hover:bg-brand-600 transition-all disabled:opacity-50 appearance-none min-w-[120px] md:min-w-[140px] text-center"
+                      >
+                        <option>Pending</option>
+                        <option>In Progress</option>
+                        <option>Completed</option>
+                      </select>
+                    )}
 
                     <div className="flex items-center gap-2">
                       <button 
@@ -310,12 +397,14 @@ const MyTasks = () => {
                         )}
                       </button>
 
-                      <button 
-                        onClick={() => handleDeleteTask(task.id || task._id)}
-                        className="w-12 h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-slate-300 hover:text-rose-500 hover:border-rose-100 hover:shadow-xl transition-all"
-                      >
-                        <Trash2 size={20} />
-                      </button>
+                      {task.source !== 'jira' && (
+                        <button 
+                          onClick={() => handleDeleteTask(task.id || task._id)}
+                          className="w-12 h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center text-slate-300 hover:text-rose-500 hover:border-rose-100 hover:shadow-xl transition-all"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -373,19 +462,25 @@ const MyTasks = () => {
                 )}
               </div>
 
-              <div className="flex gap-4 bg-slate-50 p-3 rounded-[28px] border border-slate-100">
-                <input 
-                  type="text" 
-                  value={commentText} 
-                  onChange={e => setCommentText(e.target.value)} 
-                  placeholder="Type transmission details..."
-                  onKeyDown={e => e.key === 'Enter' && handleAddComment()}
-                  className="flex-1 bg-transparent px-5 py-3 outline-none text-sm font-medium text-slate-900 placeholder:text-slate-400" 
-                />
-                <button onClick={handleAddComment} className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center hover:bg-brand-600 transition-all shadow-xl">
-                  <Send size={20} />
-                </button>
-              </div>
+              {isJiraComment ? (
+                <div className="w-full text-center py-4 bg-slate-100 rounded-2xl border border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Jira comments are read-only
+                </div>
+              ) : (
+                <div className="flex gap-4 bg-slate-50 p-3 rounded-[28px] border border-slate-100">
+                  <input 
+                    type="text" 
+                    value={commentText} 
+                    onChange={e => setCommentText(e.target.value)} 
+                    placeholder="Type transmission details..."
+                    onKeyDown={e => e.key === 'Enter' && handleAddComment()}
+                    className="flex-1 bg-transparent px-5 py-3 outline-none text-sm font-medium text-slate-900 placeholder:text-slate-400" 
+                  />
+                  <button onClick={handleAddComment} className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center hover:bg-brand-600 transition-all shadow-xl">
+                    <Send size={20} />
+                  </button>
+                </div>
+              )}
             </motion.div>
           </div>
         )}

@@ -36,16 +36,16 @@ const Settings = () => {
 
   // Profile State
   const [profileForm, setProfileForm] = useState({ name: user?.name || '', email: user?.companyEmail || user?.email || '' });
-  
+
   useEffect(() => {
     if (user) {
-      setProfileForm({ 
-        name: user.name || '', 
-        email: user.companyEmail || user.email || '' 
+      setProfileForm({
+        name: user.name || '',
+        email: user.companyEmail || user.email || ''
       });
     }
   }, [user]);
-  
+
   const [uploading, setUploading] = useState(false);
   const fileInputRef = React.useRef(null);
 
@@ -82,6 +82,29 @@ const Settings = () => {
   const [adminStats, setAdminStats] = useState({ totalUsers: 154, enrolledUsers: 0, failedAttempts: 3, activeDevices: 0 });
   const [loadingAdminStats, setLoadingAdminStats] = useState(false);
 
+  // API Integrations States
+  const [integrationsForm, setIntegrationsForm] = useState({
+    stripe_secret_key: '',
+    razorpay_key_id: '',
+    razorpay_key_secret: '',
+    github_token: '',
+    jira_host: '',
+    jira_email: '',
+    jira_api_token: ''
+  });
+  const [integrationStatuses, setIntegrationStatuses] = useState({
+    stripe: { configured: false, status: 'unknown', error: '' },
+    razorpay: { configured: false, status: 'unknown', error: '' },
+    github: { configured: false, status: 'unknown', error: '' },
+    jira: { configured: false, status: 'unknown', error: '' }
+  });
+  const [testingStatus, setTestingStatus] = useState({
+    stripe: false,
+    razorpay: false,
+    github: false,
+    jira: false
+  });
+
   // Test login simulation state
   const [isTestingLogin, setIsTestingLogin] = useState(false);
   const [testLoginStep, setTestLoginStep] = useState(0); // 0: idle, 1: center, 2: blink, 3: tilt, 4: verify
@@ -111,7 +134,7 @@ const Settings = () => {
 
   // Real-time eye tracking for each scanner
   const { eyeData: enrollEyeData, modelState: enrollModelState, blinkCount: enrollBlinkCount } = useFaceTracking(enrollVideoRef, enrollCanvasRef, isEnrolling && enrollStep >= 1);
-  const { eyeData: testEyeData,   modelState: testModelState,   blinkCount: testBlinkCount   } = useFaceTracking(testVideoRef,  testCanvasRef,  isTestingLogin && testLoginStep >= 1);
+  const { eyeData: testEyeData, modelState: testModelState, blinkCount: testBlinkCount } = useFaceTracking(testVideoRef, testCanvasRef, isTestingLogin && testLoginStep >= 1);
 
   // Eye Tracking Metrics — shared across enrollment and test scanners
   const [eyeMetrics, setEyeMetrics] = useState({ lEye: 14.2, rEye: 14.1, pd: 63.8 });
@@ -370,6 +393,101 @@ const Settings = () => {
     setAndroidPermissions(prev => prev.map(p => p.id === id ? { ...p, enabled: !p.enabled } : p));
   };
 
+  const fetchIntegrations = async () => {
+    try {
+      const token = localStorage.getItem('nexov_token') || localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/security/integrations`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIntegrationStatuses(data.statuses);
+        setIntegrationsForm({
+          stripe_secret_key: data.stripe_configured ? '••••••••••••••••' : '',
+          razorpay_key_id: data.razorpay_key_id_mask || '',
+          razorpay_key_secret: data.razorpay_configured ? '••••••••••••••••' : '',
+          github_token: data.github_configured ? '••••••••••••••••' : '',
+          jira_host: data.jira_host || '',
+          jira_email: data.jira_email || '',
+          jira_api_token: data.jira_configured ? '••••••••••••••••' : ''
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch integrations:', err);
+    }
+  };
+
+  const handleSaveIntegration = async (service) => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('nexov_token') || localStorage.getItem('token');
+      const payload = {};
+      const fields = service === 'stripe' ? ['stripe_secret_key'] :
+        service === 'razorpay' ? ['razorpay_key_id', 'razorpay_key_secret'] :
+          service === 'github' ? ['github_token'] :
+            ['jira_host', 'jira_email', 'jira_api_token'];
+
+      fields.forEach(key => {
+        if (integrationsForm[key] && integrationsForm[key] !== '••••••••••••••••' && !String(integrationsForm[key]).endsWith('...')) {
+          payload[key] = integrationsForm[key];
+        }
+      });
+
+      const res = await fetch(`${API_URL}/security/integrations/${service}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(`${service.toUpperCase()} credentials updated successfully!`, 'success');
+        fetchIntegrations();
+      } else {
+        showToast(data.message || 'Failed to save credentials', 'error');
+      }
+    } catch (err) {
+      showToast('Network error during save', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTestIntegration = async (service) => {
+    setTestingStatus(prev => ({ ...prev, [service]: true }));
+    try {
+      const token = localStorage.getItem('nexov_token') || localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/security/integrations/test`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ service })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(data.message || `${service.toUpperCase()} connection verified!`, 'success');
+        setIntegrationStatuses(prev => ({
+          ...prev,
+          [service]: { configured: true, status: 'connected', error: '' }
+        }));
+      } else {
+        showToast(data.message || 'Connection test failed', 'error');
+        setIntegrationStatuses(prev => ({
+          ...prev,
+          [service]: { configured: true, status: 'error', error: data.message || 'Failed' }
+        }));
+      }
+    } catch (err) {
+      showToast('Network error during test', 'error');
+    } finally {
+      setTestingStatus(prev => ({ ...prev, [service]: false }));
+    }
+  };
+
   const fetchTrustedDevices = async () => {
     setLoadingDevices(true);
     try {
@@ -502,6 +620,24 @@ const Settings = () => {
     }
   }, [user]);
 
+  // ── My CTC state ──
+  const [myCTC, setMyCTC] = useState(null);
+  const [loadingCTC, setLoadingCTC] = useState(false);
+
+  const fetchMyCTC = async () => {
+    const empId = user?.id || user?._id;
+    if (!empId) return;
+    setLoadingCTC(true);
+    try {
+      const res = await fetch(`${API_URL}/payroll/ctc/${empId}`);
+      if (res.ok) setMyCTC(await res.json());
+    } catch (err) {
+      console.error('Failed to fetch CTC:', err);
+    } finally {
+      setLoadingCTC(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'security_face') {
       fetchBiometricsStatus();
@@ -512,6 +648,10 @@ const Settings = () => {
       fetchTrustedDevices();
     } else if (activeTab === 'mobile_app') {
       fetchAndroidPermissions();
+    } else if (activeTab === 'integrations') {
+      fetchIntegrations();
+    } else if (activeTab === 'my_ctc') {
+      fetchMyCTC();
     }
   }, [activeTab, isAdmin]);
 
@@ -710,7 +850,10 @@ const Settings = () => {
     try {
       const res = await fetch(`${API_URL}/auth/grant-access`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('nexov_token') || localStorage.getItem('token') || ''}`
+        },
         body: JSON.stringify(accessForm),
       });
       const data = await res.json();
@@ -753,34 +896,37 @@ const Settings = () => {
       setLoading(false);
     }
   };
-
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setUploading(true);
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onloadend = async () => {
-      const base64Avatar = reader.result;
-      try {
-        const res = await fetch(`${API_URL}/auth/update-profile/${user?._id || user?.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ avatar: base64Avatar })
-        });
-        if (res.ok) {
-          updateUser({ avatar: base64Avatar });
-          showToast('Profile photo updated', 'success');
-        } else {
-          showToast('Upload failed', 'error');
-        }
-      } catch (err) {
-        showToast('Network error', 'error');
-      } finally {
-        setUploading(false);
+    try {
+      const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+      const { storage } = await import('../firebase');
+
+      const fileRef = ref(storage, `avatars/${user?._id || user?.id}_${Date.now()}`);
+      await uploadBytes(fileRef, file);
+      const downloadUrl = await getDownloadURL(fileRef);
+
+      const res = await fetch(`${API_URL}/auth/update-profile/${user?._id || user?.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatar: downloadUrl })
+      });
+      if (res.ok) {
+        updateUser({ avatar: downloadUrl });
+        showToast('Profile photo updated', 'success');
+      } else {
+        showToast('Upload failed', 'error');
       }
-    };
+    } catch (err) {
+      console.error(err);
+      showToast('Network error', 'error');
+    } finally {
+      setUploading(false);
+    }
   };
+
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
@@ -789,9 +935,9 @@ const Settings = () => {
       const res = await fetch(`${API_URL}/auth/update-profile/${user?._id || user?.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           name: profileForm.name,
-          email: profileForm.email 
+          email: profileForm.email
         }),
       });
 
@@ -824,10 +970,10 @@ const Settings = () => {
       const res = await fetch(`${API_URL}/security/change-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userId: user?._id || user?.id, 
-          currentPassword: passwordForm.current, 
-          newPassword: passwordForm.new 
+        body: JSON.stringify({
+          userId: user?._id || user?.id,
+          currentPassword: passwordForm.current,
+          newPassword: passwordForm.new
         }),
       });
       if (res.ok) {
@@ -887,10 +1033,10 @@ const Settings = () => {
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User, color: 'text-brand-500' },
-    { 
-      id: 'security', 
-      label: 'Security', 
-      icon: Shield, 
+    {
+      id: 'security',
+      label: 'Security',
+      icon: Shield,
       color: 'text-amber-500',
       subtabs: [
         { id: 'security_password', label: 'Change Password', icon: Key },
@@ -902,9 +1048,11 @@ const Settings = () => {
     { id: 'notifications', label: 'Notifications', icon: Mail, color: 'text-blue-500' },
     { id: 'preferences', label: 'Preferences', icon: Cog, color: 'text-emerald-500' },
     { id: 'security_log', label: 'Security Log', icon: Activity, color: 'text-rose-500' },
+    { id: 'my_ctc', label: 'My CTC', icon: CreditCard, color: 'text-indigo-500' },
     ...(isAdmin ? [
       { id: 'team', label: 'Team Access', icon: Crown, color: 'text-indigo-500' },
-      { id: 'mobile_app', label: 'Android Control', icon: Smartphone, color: 'text-cyan-500' }
+      { id: 'mobile_app', label: 'Android Control', icon: Smartphone, color: 'text-cyan-500' },
+      { id: 'integrations', label: 'API Integrations', icon: Zap, color: 'text-brand-500' }
     ] : []),
   ];
 
@@ -925,7 +1073,7 @@ const Settings = () => {
       <section className="relative w-full overflow-hidden rounded-[20px] md:rounded-[40px] bg-slate-900 shadow-xl border border-slate-800 flex flex-col min-h-[160px] md:min-h-[220px] group mb-4 md:mb-6">
         <div className="absolute inset-0 bg-gradient-to-tr from-brand-600/20 via-amber-500/10 to-indigo-600/20 opacity-40 mix-blend-color-dodge pointer-events-none" />
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] pointer-events-none" />
-        
+
         <div className="relative z-10 flex-1 p-6 md:p-12 flex flex-col justify-center">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-8">
             <div className="space-y-2">
@@ -933,7 +1081,7 @@ const Settings = () => {
               <p className="text-slate-400 text-xs md:text-[15px] font-medium">Manage your operational protocols and security nodes.</p>
             </div>
             <button onClick={() => window.confirm('Terminate secure session and return to gateway?') && logout()} className="w-full md:w-auto px-6 md:px-8 py-3.5 md:py-4 bg-white text-slate-950 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-rose-500 hover:text-white transition-all group/btn flex items-center justify-center gap-2">
-               <LogOut size={15} className="group-hover/btn:-translate-x-1 transition-transform" /> Terminate Session
+              <LogOut size={15} className="group-hover/btn:-translate-x-1 transition-transform" /> Terminate Session
             </button>
           </div>
         </div>
@@ -945,23 +1093,22 @@ const Settings = () => {
             {tabs.map(tab => {
               const hasSubtabs = !!tab.subtabs;
               const isSelected = activeTab === tab.id || (hasSubtabs && activeTab.startsWith('security_'));
-              
+
               return (
                 <div key={tab.id} className="w-full flex flex-col gap-1 shrink-0">
-                  <button 
-                    onClick={() => handleTabClick(tab)} 
-                    className={`flex items-center gap-3 md:gap-4 px-4 md:px-6 h-11 md:h-12 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] transition-all uppercase tracking-widest lg:w-full group shrink-0 ${
-                      isSelected 
-                        ? 'bg-slate-900 text-white shadow-md lg:translate-x-1' 
+                  <button
+                    onClick={() => handleTabClick(tab)}
+                    className={`flex items-center gap-3 md:gap-4 px-4 md:px-6 h-11 md:h-12 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] transition-all uppercase tracking-widest lg:w-full group shrink-0 ${isSelected
+                        ? 'bg-slate-900 text-white shadow-md lg:translate-x-1'
                         : 'text-slate-400 hover:text-slate-900 hover:bg-white'
-                    }`}
+                      }`}
                   >
                     <tab.icon size={15} className={isSelected ? 'text-brand-400' : `${tab.color} opacity-40 group-hover:opacity-100`} />
                     <span className="flex-1 text-left">{tab.label}</span>
                     {hasSubtabs && (
-                      <ChevronRight 
-                        size={12} 
-                        className={`transform transition-transform ${securityExpanded ? 'rotate-90' : ''}`} 
+                      <ChevronRight
+                        size={12}
+                        className={`transform transition-transform ${securityExpanded ? 'rotate-90' : ''}`}
                       />
                     )}
                   </button>
@@ -975,11 +1122,10 @@ const Settings = () => {
                           <button
                             key={subtab.id}
                             onClick={() => setActiveTab(subtab.id)}
-                            className={`flex items-center gap-3 px-3 py-2 rounded-lg lg:rounded-xl font-black text-[8px] md:text-[9px] uppercase tracking-widest transition-all shrink-0 ${
-                              isSubSelected 
-                                ? 'bg-slate-800 text-white shadow-sm' 
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg lg:rounded-xl font-black text-[8px] md:text-[9px] uppercase tracking-widest transition-all shrink-0 ${isSubSelected
+                                ? 'bg-slate-800 text-white shadow-sm'
                                 : 'text-slate-450 hover:text-slate-700 hover:bg-slate-100/50'
-                            }`}
+                              }`}
                           >
                             <subtab.icon size={11} className={isSubSelected ? 'text-amber-400' : 'text-slate-400'} />
                             {subtab.label}
@@ -1047,29 +1193,29 @@ const Settings = () => {
                         <div><h4 className="text-sm md:text-base font-black text-slate-900 uppercase tracking-tight">Key Rotation</h4><p className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase mt-0.5">Periodic credential synchronization</p></div>
                       </div>
                       <form onSubmit={handleChangePassword} className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <input 
+                        <input
                           type="password" required
                           value={passwordForm.current}
                           onChange={e => setPasswordForm({ ...passwordForm, current: e.target.value })}
-                          placeholder="Current Auth Key" 
-                          className="w-full h-11 md:h-12 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold outline-none focus:border-indigo-500 transition-all" 
+                          placeholder="Current Auth Key"
+                          className="w-full h-11 md:h-12 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold outline-none focus:border-indigo-500 transition-all"
                         />
-                        <input 
+                        <input
                           type="password" required
                           value={passwordForm.new}
                           onChange={e => setPasswordForm({ ...passwordForm, new: e.target.value })}
-                          placeholder="New Mission Key" 
-                          className="w-full h-11 md:h-12 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold outline-none focus:border-indigo-500 transition-all" 
+                          placeholder="New Mission Key"
+                          className="w-full h-11 md:h-12 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold outline-none focus:border-indigo-500 transition-all"
                         />
-                        <input 
+                        <input
                           type="password" required
                           value={passwordForm.confirm}
                           onChange={e => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
-                          placeholder="Confirm Mission Key" 
-                          className="w-full h-11 md:h-12 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold outline-none focus:border-indigo-500 transition-all" 
+                          placeholder="Confirm Mission Key"
+                          className="w-full h-11 md:h-12 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold outline-none focus:border-indigo-500 transition-all"
                         />
                         <button type="submit" disabled={loading} className="md:col-span-3 h-11 md:h-12 bg-slate-900 text-white rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-indigo-600 transition-all flex items-center justify-center gap-2">
-                           {loading ? <Loader2 className="animate-spin" size={14} /> : <Zap size={13} className="text-amber-400 fill-amber-400 shrink-0" />} Sync New Keys
+                          {loading ? <Loader2 className="animate-spin" size={14} /> : <Zap size={13} className="text-amber-400 fill-amber-400 shrink-0" />} Sync New Keys
                         </button>
                       </form>
                     </div>
@@ -1093,7 +1239,7 @@ const Settings = () => {
                       </div>
                     </div>
                     <button onClick={start2FASetup} className="relative z-10 w-full md:w-auto px-6 md:px-8 py-3 bg-white text-slate-950 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-md hover:bg-brand-400 hover:text-white transition-all shrink-0">
-                       {user?.twoFactorEnabled ? 'RECONFIGURE' : 'INITIALIZE'}
+                      {user?.twoFactorEnabled ? 'RECONFIGURE' : 'INITIALIZE'}
                     </button>
                   </div>
                 </div>
@@ -1167,7 +1313,7 @@ const Settings = () => {
                         </div>
 
                         <p className="text-[10px] md:text-xs font-medium text-slate-350 leading-relaxed max-w-sm">
-                          {biometricsStatus.enrolled 
+                          {biometricsStatus.enrolled
                             ? 'Protect your account using facial recognition. Your biometric signature is active in Sentinel Ledger.'
                             : 'Link your facial biometric signature to activate fast, secure passwordless login bypass entry.'
                           }
@@ -1293,7 +1439,7 @@ const Settings = () => {
                         </div>
 
                         <p className="text-[10px] md:text-xs font-medium text-slate-350 leading-relaxed max-w-sm">
-                          {biometricsStatus.webAuthnEnrolled 
+                          {biometricsStatus.webAuthnEnrolled
                             ? 'Windows Hello / Touch ID key is catalogued and active. You can bypass passwords on this device.'
                             : 'Link your native system biometric credential (Windows Hello or Touch ID / Face ID) for passwordless validation.'
                           }
@@ -1472,6 +1618,134 @@ const Settings = () => {
                 </div>
               )}
 
+              {activeTab === 'my_ctc' && (
+                <div className="space-y-8 md:space-y-10">
+                  <div className="pb-5 border-b border-slate-50">
+                    <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">My CTC</h3>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Your Cost to Company compensation structure</p>
+                  </div>
+
+                  {loadingCTC ? (
+                    <div className="flex items-center justify-center py-16 gap-3">
+                      <div className="w-8 h-8 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Loading compensation data...</p>
+                    </div>
+                  ) : !myCTC ? (
+                    <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
+                      <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+                        <CreditCard size={28} className="text-slate-200" />
+                      </div>
+                      <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">CTC not configured yet</p>
+                      <p className="text-[10px] text-slate-300 font-bold">Your administrator hasn't set up your compensation package. Contact HR.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {/* Hero CTC Cards */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {[
+                          { label: 'Annual CTC', value: `₹${Number(myCTC.totals?.annualCTC || 0).toLocaleString()}`, sub: 'Total package per year', accent: 'bg-slate-900 text-white', icon: Landmark },
+                          { label: 'Monthly CTC', value: `₹${Number(myCTC.totals?.monthlyCTC || 0).toLocaleString()}`, sub: 'Gross per month', accent: 'bg-indigo-600 text-white', icon: CreditCard },
+                          { label: 'Monthly In-Hand*', value: `₹${Number(myCTC.totals?.monthlyInHand || 0).toLocaleString()}`, sub: 'Estimated take-home', accent: 'bg-emerald-500 text-white', icon: Briefcase },
+                        ].map(({ label, value, sub, accent, icon: Icon }) => (
+                          <div key={label} className={`flex flex-col p-5 rounded-2xl ${accent} relative overflow-hidden`}>
+                            <Icon size={32} className="absolute right-4 top-4 opacity-10" />
+                            <span className="text-[8px] font-black uppercase tracking-widest opacity-60 mb-2">{label}</span>
+                            <span className="text-2xl font-black tracking-tighter leading-none">{value}</span>
+                            <span className="text-[9px] font-bold opacity-50 mt-1.5">{sub}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* EPF info strip */}
+                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-amber-50 border border-amber-100">
+                        <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                          <ShieldCheck size={18} className="text-amber-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest">EPF Contribution (Employee)</p>
+                          <p className="text-xs font-bold text-amber-600 mt-0.5">₹{Number(myCTC.totals?.epfEmployee || 0).toLocaleString()}/month deducted from gross salary and deposited in your PF account.</p>
+                        </div>
+                        <span className="text-sm font-black text-amber-700 shrink-0">₹{Number(myCTC.totals?.epfEmployee || 0).toLocaleString()}</span>
+                      </div>
+
+                      {/* Earnings Table */}
+                      <div className="rounded-2xl border border-slate-100 overflow-hidden">
+                        <div className="px-5 py-4 bg-slate-50 border-b border-slate-100">
+                          <h4 className="text-[10px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
+                            <Briefcase size={12} className="text-indigo-500" /> Earnings Breakdown (Annual)
+                          </h4>
+                        </div>
+                        <div className="divide-y divide-slate-50">
+                          {myCTC.components && Object.entries(myCTC.components).map(([key, val]) => {
+                            if (!Number(val)) return null;
+                            const LABELS = {
+                              basicSalary: 'Basic Salary', hra: 'HRA', specialAllowance: 'Special Allowance',
+                              performanceBonus: 'Performance Bonus', lta: 'LTA',
+                              medicalAllowance: 'Medical Allowance', telephoneAllowance: 'Telephone Allowance',
+                              conveyanceAllowance: 'Conveyance Allowance'
+                            };
+                            return (
+                              <div key={key} className="flex items-center justify-between px-5 py-3 hover:bg-slate-50/50 transition-colors">
+                                <span className="text-[11px] font-bold text-slate-700">{LABELS[key] || key}</span>
+                                <div className="text-right">
+                                  <span className="text-[12px] font-black text-slate-900">₹{Number(val).toLocaleString()}</span>
+                                  <span className="text-[9px] text-slate-400 font-bold ml-1">/yr</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          <div className="flex items-center justify-between px-5 py-3.5 bg-indigo-50">
+                            <span className="text-[11px] font-black text-indigo-700 uppercase tracking-widest">Total Earnings</span>
+                            <span className="text-[13px] font-black text-indigo-700">₹{Number(myCTC.totals?.totalAnnualEarnings || 0).toLocaleString()} /yr</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Employer Contributions Table */}
+                      <div className="rounded-2xl border border-slate-100 overflow-hidden">
+                        <div className="px-5 py-4 bg-slate-50 border-b border-slate-100">
+                          <h4 className="text-[10px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-2">
+                            <Landmark size={12} className="text-rose-500" /> Employer's Statutory Contributions
+                          </h4>
+                        </div>
+                        <div className="divide-y divide-slate-50">
+                          {myCTC.employerContributions && Object.entries(myCTC.employerContributions).map(([key, val]) => {
+                            if (!Number(val)) return null;
+                            const LABELS = {
+                              epfEmployer: "EPF – Employer (12%)", esicEmployer: 'ESIC Employer',
+                              gratuity: 'Gratuity (4.81%)', healthInsurance: 'Health Insurance',
+                              lifeInsurance: 'Life Insurance', professionalTax: 'Professional Tax'
+                            };
+                            return (
+                              <div key={key} className="flex items-center justify-between px-5 py-3 hover:bg-slate-50/50 transition-colors">
+                                <span className="text-[11px] font-bold text-slate-700">{LABELS[key] || key}</span>
+                                <span className="text-[12px] font-black text-slate-900">₹{Number(val).toLocaleString()} /yr</span>
+                              </div>
+                            );
+                          })}
+                          <div className="flex items-center justify-between px-5 py-3.5 bg-rose-50">
+                            <span className="text-[11px] font-black text-rose-700 uppercase tracking-widest">Total Contributions</span>
+                            <span className="text-[13px] font-black text-rose-700">₹{Number(myCTC.totals?.totalAnnualEmployerContrib || 0).toLocaleString()} /yr</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Effective date + note */}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                        <p className="text-[9px] text-slate-400 font-bold leading-relaxed">
+                          * In-hand estimate excludes income tax (TDS). Actual take-home depends on your tax regime and declarations.
+                        </p>
+                        {myCTC.effectiveDate && (
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                            Effective: {myCTC.effectiveDate}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {activeTab === 'team' && (
                 <div className="space-y-10 md:space-y-12">
                   <div className="relative group overflow-hidden rounded-[24px] md:rounded-[40px] border border-slate-100 bg-white shadow-xl p-4 md:p-10">
@@ -1479,83 +1753,83 @@ const Settings = () => {
                     <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-start">
                       <div className="space-y-4 pt-2">
                         <div className="flex items-center gap-3">
-                           <div className="w-8.5 h-8.5 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-600/20 shrink-0"><UserPlus size={16} /></div>
-                           <h3 className="text-[8px] md:text-[9px] font-black text-indigo-600 uppercase tracking-[0.3em]">Deployment Hub</h3>
+                          <div className="w-8.5 h-8.5 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-600/20 shrink-0"><UserPlus size={16} /></div>
+                          <h3 className="text-[8px] md:text-[9px] font-black text-indigo-600 uppercase tracking-[0.3em]">Deployment Hub</h3>
                         </div>
                         <h2 className="text-xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase leading-tight italic">Onboard Employee</h2>
                         <p className="text-slate-500 text-xs md:text-[13px] font-medium leading-relaxed max-w-md">Initialize a new secure node for incoming enterprise talent.</p>
                         <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5 pt-2">
-                           <div className="flex items-center gap-2 text-slate-400"><ShieldCheck size={13} className="text-emerald-500 shrink-0" /><span className="text-[8px] font-black uppercase tracking-widest truncate">Phone & Identity Sync</span></div>
-                           <div className="flex items-center gap-2 text-slate-400"><ShieldCheck size={13} className="text-emerald-500 shrink-0" /><span className="text-[8px] font-black uppercase tracking-widest truncate">Bank Node Integration</span></div>
+                          <div className="flex items-center gap-2 text-slate-400"><ShieldCheck size={13} className="text-emerald-500 shrink-0" /><span className="text-[8px] font-black uppercase tracking-widest truncate">Phone & Identity Sync</span></div>
+                          <div className="flex items-center gap-2 text-slate-400"><ShieldCheck size={13} className="text-emerald-500 shrink-0" /><span className="text-[8px] font-black uppercase tracking-widest truncate">Bank Node Integration</span></div>
                         </div>
                       </div>
-                      
+
                       <form className="space-y-4 pt-2 lg:pt-0" onSubmit={handleRegisterSpecialist}>
-                         <div className="space-y-3">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                               <div className="space-y-1"><label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Official Name</label><input type="text" required placeholder="FULL NAME" value={accessForm.name} onChange={e => setAccessForm({ ...accessForm, name: e.target.value })} className="w-full h-11 px-4 bg-slate-50 lg:bg-white/10 border border-slate-100 lg:border-white/20 rounded-xl text-xs font-bold text-slate-900 lg:text-white placeholder:text-slate-300 lg:placeholder:text-white/30 focus:bg-white lg:focus:bg-white/20 transition-all outline-none" /></div>
-                               <div className="space-y-1"><label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Contact Node</label><input type="text" required placeholder="PHONE NUMBER" value={accessForm.phoneNo} onChange={e => setAccessForm({ ...accessForm, phoneNo: e.target.value })} className="w-full h-11 px-4 bg-slate-50 lg:bg-white/10 border border-slate-100 lg:border-white/20 rounded-xl text-xs font-bold text-slate-900 lg:text-white placeholder:text-slate-300 lg:placeholder:text-white/30 focus:bg-white lg:focus:bg-white/20 transition-all outline-none" /></div>
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-1"><label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Official Name</label><input type="text" required placeholder="FULL NAME" value={accessForm.name} onChange={e => setAccessForm({ ...accessForm, name: e.target.value })} className="w-full h-11 px-4 bg-slate-50 lg:bg-white/10 border border-slate-100 lg:border-white/20 rounded-xl text-xs font-bold text-slate-900 lg:text-white placeholder:text-slate-300 lg:placeholder:text-white/30 focus:bg-white lg:focus:bg-white/20 transition-all outline-none" /></div>
+                            <div className="space-y-1"><label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Contact Node</label><input type="text" required placeholder="PHONE NUMBER" value={accessForm.phoneNo} onChange={e => setAccessForm({ ...accessForm, phoneNo: e.target.value })} className="w-full h-11 px-4 bg-slate-50 lg:bg-white/10 border border-slate-100 lg:border-white/20 rounded-xl text-xs font-bold text-slate-900 lg:text-white placeholder:text-slate-300 lg:placeholder:text-white/30 focus:bg-white lg:focus:bg-white/20 transition-all outline-none" /></div>
+                          </div>
+                          <div className="space-y-1"><label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Registry Email</label><input type="email" required placeholder="OFFICIAL EMAIL" value={accessForm.email} onChange={e => setAccessForm({ ...accessForm, email: e.target.value })} className="w-full h-11 px-4 bg-slate-50 lg:bg-white/10 border border-slate-100 lg:border-white/20 rounded-xl text-xs font-bold text-slate-900 lg:text-white placeholder:text-slate-300 lg:placeholder:text-white/30 focus:bg-white lg:focus:bg-white/20 transition-all outline-none" /></div>
+                          <div className="space-y-1"><label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Operational Role</label>
+                            <select value={accessForm.role} onChange={e => setAccessForm({ ...accessForm, role: e.target.value })} className="w-full h-11 px-4 bg-slate-50 lg:bg-white/10 border border-slate-100 lg:border-white/20 rounded-xl text-[9px] font-black text-slate-900 lg:text-white focus:bg-white lg:focus:bg-white/20 outline-none cursor-pointer uppercase tracking-widest">
+                              {ROLES.map(role => <option key={role.value} value={role.value} className="bg-white lg:bg-slate-800 text-slate-900 lg:text-white">{role.label}</option>)}
+                            </select>
+                          </div>
+                          <div className="p-4 bg-slate-50 lg:bg-white/5 rounded-2xl border border-slate-200 lg:border-white/5 space-y-3">
+                            <p className="text-[8px] font-black text-indigo-500 lg:text-indigo-400 uppercase tracking-widest mb-1.5">Financial Node Details</p>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1 col-span-1"><label className="text-[7px] font-black text-slate-400 uppercase tracking-widest ml-1">Institution</label><input type="text" placeholder="BANK NAME" value={accessForm.bankName} onChange={e => setAccessForm({ ...accessForm, bankName: e.target.value })} className="w-full h-9 px-3 bg-white lg:bg-white/5 border border-slate-200 lg:border-white/10 rounded-lg text-[9px] font-bold text-slate-900 lg:text-white placeholder:text-slate-300 lg:placeholder:text-white/30 focus:border-indigo-400 transition-all outline-none" /></div>
+                              <div className="space-y-1 col-span-1"><label className="text-[7px] font-black text-slate-400 uppercase tracking-widest ml-1">Protocol (IFSC)</label><input type="text" placeholder="IFSC CODE" value={accessForm.ifscCode} onChange={e => setAccessForm({ ...accessForm, ifscCode: e.target.value })} className="w-full h-9 px-3 bg-white lg:bg-white/5 border border-slate-200 lg:border-white/10 rounded-lg text-[9px] font-bold text-slate-900 lg:text-white placeholder:text-slate-300 lg:placeholder:text-white/30 focus:border-indigo-400 transition-all outline-none" /></div>
+                              <div className="space-y-1 col-span-2"><label className="text-[7px] font-black text-slate-400 uppercase tracking-widest ml-1">Identifier (A/C No)</label><input type="text" placeholder="ACCOUNT NUMBER" value={accessForm.accountNumber} onChange={e => setAccessForm({ ...accessForm, accountNumber: e.target.value })} className="w-full h-9 px-3 bg-white lg:bg-white/5 border border-slate-200 lg:border-white/10 rounded-lg text-[9px] font-bold text-slate-900 lg:text-white placeholder:text-slate-300 lg:placeholder:text-white/30 focus:border-indigo-400 transition-all outline-none" /></div>
                             </div>
-                            <div className="space-y-1"><label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Registry Email</label><input type="email" required placeholder="OFFICIAL EMAIL" value={accessForm.email} onChange={e => setAccessForm({ ...accessForm, email: e.target.value })} className="w-full h-11 px-4 bg-slate-50 lg:bg-white/10 border border-slate-100 lg:border-white/20 rounded-xl text-xs font-bold text-slate-900 lg:text-white placeholder:text-slate-300 lg:placeholder:text-white/30 focus:bg-white lg:focus:bg-white/20 transition-all outline-none" /></div>
-                            <div className="space-y-1"><label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Operational Role</label>
-                               <select value={accessForm.role} onChange={e => setAccessForm({ ...accessForm, role: e.target.value })} className="w-full h-11 px-4 bg-slate-50 lg:bg-white/10 border border-slate-100 lg:border-white/20 rounded-xl text-[9px] font-black text-slate-900 lg:text-white focus:bg-white lg:focus:bg-white/20 outline-none cursor-pointer uppercase tracking-widest">
-                                  {ROLES.map(role => <option key={role.value} value={role.value} className="bg-white lg:bg-slate-800 text-slate-900 lg:text-white">{role.label}</option>)}
-                               </select>
-                            </div>
-                            <div className="p-4 bg-slate-50 lg:bg-white/5 rounded-2xl border border-slate-200 lg:border-white/5 space-y-3">
-                               <p className="text-[8px] font-black text-indigo-500 lg:text-indigo-400 uppercase tracking-widest mb-1.5">Financial Node Details</p>
-                               <div className="grid grid-cols-2 gap-3">
-                                  <div className="space-y-1 col-span-1"><label className="text-[7px] font-black text-slate-400 uppercase tracking-widest ml-1">Institution</label><input type="text" placeholder="BANK NAME" value={accessForm.bankName} onChange={e => setAccessForm({ ...accessForm, bankName: e.target.value })} className="w-full h-9 px-3 bg-white lg:bg-white/5 border border-slate-200 lg:border-white/10 rounded-lg text-[9px] font-bold text-slate-900 lg:text-white placeholder:text-slate-300 lg:placeholder:text-white/30 focus:border-indigo-400 transition-all outline-none" /></div>
-                                  <div className="space-y-1 col-span-1"><label className="text-[7px] font-black text-slate-400 uppercase tracking-widest ml-1">Protocol (IFSC)</label><input type="text" placeholder="IFSC CODE" value={accessForm.ifscCode} onChange={e => setAccessForm({ ...accessForm, ifscCode: e.target.value })} className="w-full h-9 px-3 bg-white lg:bg-white/5 border border-slate-200 lg:border-white/10 rounded-lg text-[9px] font-bold text-slate-900 lg:text-white placeholder:text-slate-300 lg:placeholder:text-white/30 focus:border-indigo-400 transition-all outline-none" /></div>
-                                  <div className="space-y-1 col-span-2"><label className="text-[7px] font-black text-slate-400 uppercase tracking-widest ml-1">Identifier (A/C No)</label><input type="text" placeholder="ACCOUNT NUMBER" value={accessForm.accountNumber} onChange={e => setAccessForm({ ...accessForm, accountNumber: e.target.value })} className="w-full h-9 px-3 bg-white lg:bg-white/5 border border-slate-200 lg:border-white/10 rounded-lg text-[9px] font-bold text-slate-900 lg:text-white placeholder:text-slate-300 lg:placeholder:text-white/30 focus:border-indigo-400 transition-all outline-none" /></div>
-                               </div>
-                            </div>
-                         </div>
-                         <button type="submit" disabled={loading} className="w-full h-12 bg-slate-900 lg:bg-white text-white lg:text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-[0.3em] shadow-md hover:bg-indigo-600 lg:hover:bg-indigo-400 transition-all flex items-center justify-center gap-2">{loading ? <Loader2 className="animate-spin" size={16} /> : <Rocket size={15} />} Grant Access</button>
+                          </div>
+                        </div>
+                        <button type="submit" disabled={loading} className="w-full h-12 bg-slate-900 lg:bg-white text-white lg:text-slate-900 rounded-xl font-black text-[10px] uppercase tracking-[0.3em] shadow-md hover:bg-indigo-600 lg:hover:bg-indigo-400 transition-all flex items-center justify-center gap-2">{loading ? <Loader2 className="animate-spin" size={16} /> : <Rocket size={15} />} Grant Access</button>
                       </form>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-6">
                     <div className="flex items-center justify-between px-2"><div className="flex items-center gap-2"><Contact size={16} className="text-slate-400" /><h4 className="text-[9px] md:text-[10px] font-black text-slate-900 uppercase tracking-widest">Active Employee Grid</h4></div><span className="px-2 py-0.5 bg-slate-50 text-slate-400 rounded-full text-[8px] font-black uppercase tracking-widest border border-slate-100">{teamMembers.length} UNITS</span></div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative min-h-[100px]">
                       {loadingTeam ? (
-                         <div className="col-span-full flex flex-col items-center justify-center py-10 gap-3"><Loader2 size={28} className="text-indigo-600 animate-spin" /><p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Syncing Personnel Registry...</p></div>
+                        <div className="col-span-full flex flex-col items-center justify-center py-10 gap-3"><Loader2 size={28} className="text-indigo-600 animate-spin" /><p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Syncing Personnel Registry...</p></div>
                       ) : teamMembers.length === 0 ? (
-                         <div className="col-span-full py-10 text-center glass rounded-2xl border border-dashed border-slate-200"><Users size={28} className="mx-auto text-slate-200 mb-1" /><p className="text-[9px] font-black uppercase tracking-widest text-slate-400">No active specialists found</p></div>
+                        <div className="col-span-full py-10 text-center glass rounded-2xl border border-dashed border-slate-200"><Users size={28} className="mx-auto text-slate-200 mb-1" /><p className="text-[9px] font-black uppercase tracking-widest text-slate-400">No active specialists found</p></div>
                       ) : (
-                         teamMembers.map((member, i) => (
-                           <motion.div key={member.id || member._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} onClick={() => setSelectedMember(member)} className="p-3 bg-white rounded-[20px] md:rounded-[28px] border border-slate-100 flex items-center justify-between gap-3 hover:shadow-md hover:border-brand-500/20 transition-all group cursor-pointer shadow-sm">
-                              <div className="flex items-center gap-3 min-w-0">
-                                 <div className="w-11 h-11 rounded-xl bg-slate-900 p-0.5 shadow-sm shrink-0">
-                                    <div className="w-full h-full rounded-[10px] overflow-hidden bg-slate-800">
-                                       <img
-                                          src={(() => {
-                                            const avatar = member.avatar;
-                                            if (!avatar) return `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`;
-                                            if (avatar.startsWith('http') || avatar.startsWith('data:')) return avatar;
-                                            if (/^[A-Za-z0-9+/=]+$/.test(avatar.trim()) && avatar.length > 100) {
-                                              return `data:image/jpeg;base64,${avatar.trim()}`;
-                                            }
-                                            return `${API_URL.replace('/api', '')}${avatar}`;
-                                          })()}
-                                          alt=""
-                                          className="w-full h-full object-cover"
-                                       />
-                                    </div>
-                                 </div>
-                                 <div className="min-w-0">
-                                    <h5 className="text-[13px] md:text-[14px] font-black text-slate-900 tracking-tighter uppercase leading-none mb-1 truncate">{member.name}</h5>
-                                    <span className="px-1.5 py-0.5 bg-brand-50 text-brand-600 rounded-md text-[7px] font-black uppercase tracking-widest border border-brand-100">{member.role}</span>
-                                 </div>
+                        teamMembers.map((member, i) => (
+                          <motion.div key={member.id || member._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} onClick={() => setSelectedMember(member)} className="p-3 bg-white rounded-[20px] md:rounded-[28px] border border-slate-100 flex items-center justify-between gap-3 hover:shadow-md hover:border-brand-500/20 transition-all group cursor-pointer shadow-sm">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-11 h-11 rounded-xl bg-slate-900 p-0.5 shadow-sm shrink-0">
+                                <div className="w-full h-full rounded-[10px] overflow-hidden bg-slate-800">
+                                  <img
+                                    src={(() => {
+                                      const avatar = member.avatar;
+                                      if (!avatar) return `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`;
+                                      if (avatar.startsWith('http') || avatar.startsWith('data:')) return avatar;
+                                      if (/^[A-Za-z0-9+/=]+$/.test(avatar.trim()) && avatar.length > 100) {
+                                        return `data:image/jpeg;base64,${avatar.trim()}`;
+                                      }
+                                      return `${API_URL.replace('/api', '')}${avatar}`;
+                                    })()}
+                                    alt=""
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                 <button onClick={(e) => { e.stopPropagation(); handleRevokeAccess(member.id || member._id, member.name, member.email); }} className="w-9 h-9 bg-slate-50 rounded-xl flex items-center justify-center text-rose-300 hover:text-white hover:bg-rose-500 transition-all border border-slate-100 shadow-sm shrink-0">
-                                    <UserX size={16} />
-                                 </button>
+                              <div className="min-w-0">
+                                <h5 className="text-[13px] md:text-[14px] font-black text-slate-900 tracking-tighter uppercase leading-none mb-1 truncate">{member.name}</h5>
+                                <span className="px-1.5 py-0.5 bg-brand-50 text-brand-600 rounded-md text-[7px] font-black uppercase tracking-widest border border-brand-100">{member.role}</span>
                               </div>
-                           </motion.div>
-                         ))
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button onClick={(e) => { e.stopPropagation(); handleRevokeAccess(member.id || member._id, member.name, member.email); }} className="w-9 h-9 bg-slate-50 rounded-xl flex items-center justify-center text-rose-300 hover:text-white hover:bg-rose-500 transition-all border border-slate-100 shadow-sm shrink-0">
+                                <UserX size={16} />
+                              </button>
+                            </div>
+                          </motion.div>
+                        ))
                       )}
                     </div>
                   </div>
@@ -1563,31 +1837,35 @@ const Settings = () => {
               )}
 
               {activeTab === 'mobile_app' && (
-                <div className="space-y-8 md:space-y-10">
+                <div className="space-y-6 md:space-y-8">
+                  {/* Header */}
                   <div className="pb-5 border-b border-slate-50">
-                    <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tighter uppercase italic leading-none text-left">Android Compiler & Command</h3>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1 text-left">Capacitor compilation and native permissions center</p>
+                    <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tighter uppercase italic leading-none text-left flex items-center gap-3">
+                      <Smartphone size={22} className="text-cyan-500" /> Android Build Controls
+                    </h3>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1 text-left">
+                      Full-stack Capacitor compilation, configuration &amp; native controls center
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                     {/* Status & Compile Panel */}
                     <div className="md:col-span-7 p-6 md:p-8 rounded-[24px] md:rounded-[32px] bg-slate-900 text-white shadow-xl border border-slate-800 relative overflow-hidden group flex flex-col justify-between min-h-[350px]">
                       <div className="absolute inset-0 bg-gradient-to-tr from-cyan-600/10 via-slate-950/20 to-transparent pointer-events-none" />
-                      
+
                       <div className="relative z-10 space-y-6 text-left">
                         <div className="flex justify-between items-start">
                           <div className="space-y-2">
                             <h4 className="text-base md:text-lg font-black text-white uppercase tracking-tight">Android Compilation Node</h4>
                             <div className="flex items-center gap-2">
-                              <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest inline-block ${
-                                androidStatus.buildStatus === 'building' 
-                                  ? 'bg-amber-500 text-white animate-pulse' 
-                                  : androidStatus.buildStatus === 'success' 
-                                    ? 'bg-emerald-500 text-white shadow-md' 
+                              <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest inline-block ${androidStatus.buildStatus === 'building'
+                                  ? 'bg-amber-500 text-white animate-pulse'
+                                  : androidStatus.buildStatus === 'success'
+                                    ? 'bg-emerald-500 text-white shadow-md'
                                     : androidStatus.buildStatus === 'failed'
                                       ? 'bg-rose-500 text-white shadow-md'
                                       : 'bg-slate-700 text-white'
-                              }`}>
+                                }`}>
                                 {androidStatus.buildStatus.toUpperCase()}
                               </span>
                               {androidStatus.apkExists && (
@@ -1703,6 +1981,264 @@ const Settings = () => {
                   </div>
                 </div>
               )}
+
+              {activeTab === 'integrations' && (
+                <div className="space-y-8 md:space-y-10">
+                  {/* Header */}
+                  <div className="pb-5 border-b border-slate-50">
+                    <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tighter uppercase italic leading-none text-left flex items-center gap-3">
+                      <Zap size={22} className="text-brand-500" /> API Integration Nodes
+                    </h3>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1 text-left">
+                      Secure system credentials management and active gateway diagnostics
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Stripe Integration */}
+                    <div className="p-6 md:p-8 rounded-[24px] md:rounded-[32px] bg-slate-50 border border-slate-100 flex flex-col justify-between gap-6 shadow-sm text-left">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-indigo-50 text-indigo-650 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm">S</div>
+                            <div>
+                              <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Stripe Gateway</h4>
+                              <p className="text-[8px] font-bold text-slate-400 uppercase">Payment Processing</p>
+                            </div>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${integrationStatuses.stripe?.status === 'connected'
+                              ? 'bg-emerald-150 text-emerald-600 border border-emerald-200'
+                              : integrationStatuses.stripe?.configured
+                                ? 'bg-indigo-50 text-indigo-600 border border-indigo-100'
+                                : 'bg-slate-200 text-slate-500'
+                            }`}>
+                            {integrationStatuses.stripe?.status === 'connected' ? 'CONNECTED' : integrationStatuses.stripe?.configured ? 'CONFIGURED' : 'DISCONNECTED'}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="space-y-1">
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Stripe Secret Key</label>
+                            <input
+                              type="password"
+                              value={integrationsForm.stripe_secret_key}
+                              onChange={e => setIntegrationsForm({ ...integrationsForm, stripe_secret_key: e.target.value })}
+                              placeholder="sk_test_..."
+                              className="w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:border-brand-500 outline-none transition-all"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={() => handleTestIntegration('stripe')}
+                          disabled={testingStatus.stripe || (!integrationsForm.stripe_secret_key && !integrationStatuses.stripe?.configured)}
+                          className="flex-1 h-11 bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+                        >
+                          {testingStatus.stripe ? <Loader2 size={12} className="animate-spin" /> : 'Test'}
+                        </button>
+                        <button
+                          onClick={() => handleSaveIntegration('stripe')}
+                          disabled={loading}
+                          className="flex-1 h-11 bg-slate-900 text-white hover:bg-brand-600 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50"
+                        >
+                          {loading ? <Loader2 size={12} className="animate-spin" /> : 'Save'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Razorpay Integration */}
+                    <div className="p-6 md:p-8 rounded-[24px] md:rounded-[32px] bg-slate-50 border border-slate-100 flex flex-col justify-between gap-6 shadow-sm text-left">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-cyan-50 text-cyan-600 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm">R</div>
+                            <div>
+                              <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Razorpay Gateway</h4>
+                              <p className="text-[8px] font-bold text-slate-400 uppercase">Billing Operations</p>
+                            </div>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${integrationStatuses.razorpay?.status === 'connected'
+                              ? 'bg-emerald-150 text-emerald-600 border border-emerald-200'
+                              : integrationStatuses.razorpay?.configured
+                                ? 'bg-cyan-50 text-cyan-600 border border-cyan-100'
+                                : 'bg-slate-200 text-slate-500'
+                            }`}>
+                            {integrationStatuses.razorpay?.status === 'connected' ? 'CONNECTED' : integrationStatuses.razorpay?.configured ? 'CONFIGURED' : 'DISCONNECTED'}
+                          </span>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Key ID</label>
+                            <input
+                              type="text"
+                              value={integrationsForm.razorpay_key_id}
+                              onChange={e => setIntegrationsForm({ ...integrationsForm, razorpay_key_id: e.target.value })}
+                              placeholder="rzp_test_..."
+                              className="w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:border-brand-500 outline-none transition-all"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Razorpay Key Secret</label>
+                            <input
+                              type="password"
+                              value={integrationsForm.razorpay_key_secret}
+                              onChange={e => setIntegrationsForm({ ...integrationsForm, razorpay_key_secret: e.target.value })}
+                              placeholder="Secret key"
+                              className="w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:border-brand-500 outline-none transition-all"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={() => handleTestIntegration('razorpay')}
+                          disabled={testingStatus.razorpay || ((!integrationsForm.razorpay_key_id || !integrationsForm.razorpay_key_secret) && !integrationStatuses.razorpay?.configured)}
+                          className="flex-1 h-11 bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+                        >
+                          {testingStatus.razorpay ? <Loader2 size={12} className="animate-spin" /> : 'Test'}
+                        </button>
+                        <button
+                          onClick={() => handleSaveIntegration('razorpay')}
+                          disabled={loading}
+                          className="flex-1 h-11 bg-slate-900 text-white hover:bg-brand-600 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50"
+                        >
+                          {loading ? <Loader2 size={12} className="animate-spin" /> : 'Save'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* GitHub Integration */}
+                    <div className="p-6 md:p-8 rounded-[24px] md:rounded-[32px] bg-slate-50 border border-slate-100 flex flex-col justify-between gap-6 shadow-sm text-left">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-sm">G</div>
+                            <div>
+                              <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">GitHub Node</h4>
+                              <p className="text-[8px] font-bold text-slate-400 uppercase">Repository Deployments</p>
+                            </div>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${integrationStatuses.github?.status === 'connected'
+                              ? 'bg-emerald-150 text-emerald-600 border border-emerald-200'
+                              : integrationStatuses.github?.configured
+                                ? 'bg-slate-800 text-white'
+                                : 'bg-slate-200 text-slate-500'
+                            }`}>
+                            {integrationStatuses.github?.status === 'connected' ? 'CONNECTED' : integrationStatuses.github?.configured ? 'CONFIGURED' : 'DISCONNECTED'}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="space-y-1">
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Personal Access Token</label>
+                            <input
+                              type="password"
+                              value={integrationsForm.github_token}
+                              onChange={e => setIntegrationsForm({ ...integrationsForm, github_token: e.target.value })}
+                              placeholder="ghp_..."
+                              className="w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:border-brand-500 outline-none transition-all"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={() => handleTestIntegration('github')}
+                          disabled={testingStatus.github || (!integrationsForm.github_token && !integrationStatuses.github?.configured)}
+                          className="flex-1 h-11 bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+                        >
+                          {testingStatus.github ? <Loader2 size={12} className="animate-spin" /> : 'Test'}
+                        </button>
+                        <button
+                          onClick={() => handleSaveIntegration('github')}
+                          disabled={loading}
+                          className="flex-1 h-11 bg-slate-900 text-white hover:bg-brand-600 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50"
+                        >
+                          {loading ? <Loader2 size={12} className="animate-spin" /> : 'Save'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Jira Integration */}
+                    <div className="p-6 md:p-8 rounded-[24px] md:rounded-[32px] bg-slate-50 border border-slate-100 flex flex-col justify-between gap-6 shadow-sm text-left">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-bold text-lg shadow-sm">J</div>
+                            <div>
+                              <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Jira Platform</h4>
+                              <p className="text-[8px] font-bold text-slate-400 uppercase">Project Management</p>
+                            </div>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${integrationStatuses.jira?.status === 'connected'
+                              ? 'bg-emerald-150 text-emerald-600 border border-emerald-200'
+                              : integrationStatuses.jira?.configured
+                                ? 'bg-blue-50 text-blue-600 border border-blue-100'
+                                : 'bg-slate-200 text-slate-500'
+                            }`}>
+                            {integrationStatuses.jira?.status === 'connected' ? 'CONNECTED' : integrationStatuses.jira?.configured ? 'CONFIGURED' : 'DISCONNECTED'}
+                          </span>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Jira Host</label>
+                            <input
+                              type="text"
+                              value={integrationsForm.jira_host}
+                              onChange={e => setIntegrationsForm({ ...integrationsForm, jira_host: e.target.value })}
+                              placeholder="your-domain.atlassian.net"
+                              className="w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:border-brand-500 outline-none transition-all"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Jira User Email</label>
+                            <input
+                              type="email"
+                              value={integrationsForm.jira_email}
+                              onChange={e => setIntegrationsForm({ ...integrationsForm, jira_email: e.target.value })}
+                              placeholder="user@example.com"
+                              className="w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:border-brand-500 outline-none transition-all"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">API Token</label>
+                            <input
+                              type="password"
+                              value={integrationsForm.jira_api_token}
+                              onChange={e => setIntegrationsForm({ ...integrationsForm, jira_api_token: e.target.value })}
+                              placeholder="Jira API Token"
+                              className="w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:border-brand-500 outline-none transition-all"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={() => handleTestIntegration('jira')}
+                          disabled={testingStatus.jira || ((!integrationsForm.jira_host || !integrationsForm.jira_email || !integrationsForm.jira_api_token) && !integrationStatuses.jira?.configured)}
+                          className="flex-1 h-11 bg-white hover:bg-slate-100 border border-slate-200 text-slate-800 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+                        >
+                          {testingStatus.jira ? <Loader2 size={12} className="animate-spin" /> : 'Test'}
+                        </button>
+                        <button
+                          onClick={() => handleSaveIntegration('jira')}
+                          disabled={loading}
+                          className="flex-1 h-11 bg-slate-900 text-white hover:bg-brand-600 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50"
+                        >
+                          {loading ? <Loader2 size={12} className="animate-spin" /> : 'Save'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -1714,66 +2250,66 @@ const Settings = () => {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedMember(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-lg bg-white shadow-2xl overflow-hidden rounded-[24px] md:rounded-[40px] border-none z-10 flex flex-col max-h-[92vh]">
               <div className="p-6 md:p-8 bg-slate-900 text-white relative overflow-hidden shrink-0">
-                 <div className="relative z-10 flex items-center gap-4">
-                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl md:rounded-[20px] bg-white p-1 shadow-xl shrink-0">
-                       <div className="w-full h-full rounded-[8px] md:rounded-[16px] overflow-hidden bg-slate-100">
-                          <img
-                             src={(() => {
-                               const avatar = selectedMember.avatar;
-                               if (!avatar) return `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedMember.name}`;
-                               if (avatar.startsWith('http') || avatar.startsWith('data:')) return avatar;
-                               if (/^[A-Za-z0-9+/=]+$/.test(avatar.trim()) && avatar.length > 100) {
-                                 return `data:image/jpeg;base64,${avatar.trim()}`;
-                               }
-                               return `${API_URL.replace('/api', '')}${avatar}`;
-                             })()}
-                             className="w-full h-full object-cover"
-                          />
-                       </div>
+                <div className="relative z-10 flex items-center gap-4">
+                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl md:rounded-[20px] bg-white p-1 shadow-xl shrink-0">
+                    <div className="w-full h-full rounded-[8px] md:rounded-[16px] overflow-hidden bg-slate-100">
+                      <img
+                        src={(() => {
+                          const avatar = selectedMember.avatar;
+                          if (!avatar) return `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedMember.name}`;
+                          if (avatar.startsWith('http') || avatar.startsWith('data:')) return avatar;
+                          if (/^[A-Za-z0-9+/=]+$/.test(avatar.trim()) && avatar.length > 100) {
+                            return `data:image/jpeg;base64,${avatar.trim()}`;
+                          }
+                          return `${API_URL.replace('/api', '')}${avatar}`;
+                        })()}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    <div className="min-w-0">
-                       <h3 className="text-lg md:text-xl font-black tracking-tighter uppercase leading-none mb-1 truncate italic">{selectedMember.name}</h3>
-                       <span className="px-2 py-0.5 bg-brand-600 rounded-md text-[7px] md:text-[8px] font-black uppercase tracking-widest">{selectedMember.role}</span>
-                    </div>
-                    <button onClick={() => setSelectedMember(null)} className="ml-auto w-9 h-9 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition-all shrink-0"><X size={18} /></button>
-                 </div>
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-lg md:text-xl font-black tracking-tighter uppercase leading-none mb-1 truncate italic">{selectedMember.name}</h3>
+                    <span className="px-2 py-0.5 bg-brand-600 rounded-md text-[7px] md:text-[8px] font-black uppercase tracking-widest">{selectedMember.role}</span>
+                  </div>
+                  <button onClick={() => setSelectedMember(null)} className="ml-auto w-9 h-9 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition-all shrink-0"><X size={18} /></button>
+                </div>
               </div>
               <div className="p-6 md:p-8 bg-white space-y-6 overflow-y-auto custom-scrollbar flex-1 min-h-0">
                 <div className="grid grid-cols-2 gap-4"><div className="space-y-1"><p className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest">Gateway Email</p><p className="text-xs font-black text-slate-900 truncate">{selectedMember.email}</p></div><div className="space-y-1"><p className="text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-widest">Secure Phone</p><p className="text-xs font-black text-slate-900">{selectedMember.phoneNo || 'NOT LINKED'}</p></div></div>
                 <div className="p-5 md:p-6 bg-slate-50 rounded-2xl md:rounded-[28px] border border-slate-100 space-y-4">
-                   <div className="flex items-center gap-2.5"><Landmark size={16} className="text-brand-600 shrink-0" /><h4 className="text-[9px] md:text-[10px] font-black text-slate-900 uppercase tracking-widest">Financial Node Details</h4></div>
-                   <div className="grid grid-cols-2 gap-y-4 gap-x-4">
-                      <div className="space-y-1"><p className="text-[6px] md:text-[7px] font-black text-slate-400 uppercase tracking-widest">Institution</p><p className="text-[10px] font-black text-slate-900 uppercase truncate">{selectedMember.bankName || '---'}</p></div>
-                      <div className="space-y-1"><p className="text-[6px] md:text-[7px] font-black text-slate-400 uppercase tracking-widest">Protocol (IFSC)</p><p className="text-[10px] font-black text-slate-900 uppercase">{selectedMember.ifscCode || '---'}</p></div>
-                      <div className="space-y-1 col-span-2"><p className="text-[6px] md:text-[7px] font-black text-slate-400 uppercase tracking-widest">Identifier (A/C No)</p><p className="text-[10px] font-black text-slate-900">{selectedMember.accountNumber || '---'}</p></div>
-                   </div>
+                  <div className="flex items-center gap-2.5"><Landmark size={16} className="text-brand-600 shrink-0" /><h4 className="text-[9px] md:text-[10px] font-black text-slate-900 uppercase tracking-widest">Financial Node Details</h4></div>
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-4">
+                    <div className="space-y-1"><p className="text-[6px] md:text-[7px] font-black text-slate-400 uppercase tracking-widest">Institution</p><p className="text-[10px] font-black text-slate-900 uppercase truncate">{selectedMember.bankName || '---'}</p></div>
+                    <div className="space-y-1"><p className="text-[6px] md:text-[7px] font-black text-slate-400 uppercase tracking-widest">Protocol (IFSC)</p><p className="text-[10px] font-black text-slate-900 uppercase">{selectedMember.ifscCode || '---'}</p></div>
+                    <div className="space-y-1 col-span-2"><p className="text-[6px] md:text-[7px] font-black text-slate-400 uppercase tracking-widest">Identifier (A/C No)</p><p className="text-[10px] font-black text-slate-900">{selectedMember.accountNumber || '---'}</p></div>
+                  </div>
                 </div>
 
                 <div className="p-5 md:p-6 bg-slate-50 rounded-2xl md:rounded-[28px] border border-slate-100 space-y-4">
-                   <div className="flex items-center gap-2.5"><Globe size={16} className="text-indigo-600 shrink-0" /><h4 className="text-[9px] md:text-[10px] font-black text-slate-900 uppercase tracking-widest">Login History & Location Trace</h4></div>
-                   {loadingMemberHistory ? (
-                     <div className="flex items-center gap-2 py-4 justify-center">
-                       <Loader2 size={16} className="animate-spin text-indigo-600" />
-                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Tracing nodes...</span>
-                     </div>
-                   ) : selectedMemberHistory.length === 0 ? (
-                     <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center py-4">No login tracing detected</p>
-                   ) : (
-                     <div className="space-y-3 max-h-[180px] overflow-y-auto custom-scrollbar pr-1">
-                       {selectedMemberHistory.map((log, i) => (
-                         <div key={log.id || log._id || i} className="p-3 bg-white rounded-xl border border-slate-100 flex flex-col gap-1.5 shadow-sm">
-                           <div className="flex justify-between items-center gap-2">
-                             <span className="text-[9px] font-black text-slate-900 uppercase truncate max-w-[120px]">{log.os} / {log.browser}</span>
-                             <span className="text-[8px] font-bold text-slate-400 uppercase">IP: {log.ipAddress}</span>
-                           </div>
-                           <div className="flex justify-between items-center gap-2 text-[8px] font-black text-slate-400 uppercase tracking-tight">
-                             <span className="flex items-center gap-1"><Globe size={10} className="text-indigo-500" /> {log.location || 'Unknown'}</span>
-                             <span>{new Date(log.createdAt).toLocaleString()}</span>
-                           </div>
-                         </div>
-                       ))}
-                     </div>
-                   )}
+                  <div className="flex items-center gap-2.5"><Globe size={16} className="text-indigo-600 shrink-0" /><h4 className="text-[9px] md:text-[10px] font-black text-slate-900 uppercase tracking-widest">Login History & Location Trace</h4></div>
+                  {loadingMemberHistory ? (
+                    <div className="flex items-center gap-2 py-4 justify-center">
+                      <Loader2 size={16} className="animate-spin text-indigo-600" />
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Tracing nodes...</span>
+                    </div>
+                  ) : selectedMemberHistory.length === 0 ? (
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-center py-4">No login tracing detected</p>
+                  ) : (
+                    <div className="space-y-3 max-h-[180px] overflow-y-auto custom-scrollbar pr-1">
+                      {selectedMemberHistory.map((log, i) => (
+                        <div key={log.id || log._id || i} className="p-3 bg-white rounded-xl border border-slate-100 flex flex-col gap-1.5 shadow-sm">
+                          <div className="flex justify-between items-center gap-2">
+                            <span className="text-[9px] font-black text-slate-900 uppercase truncate max-w-[120px]">{log.os} / {log.browser}</span>
+                            <span className="text-[8px] font-bold text-slate-400 uppercase">IP: {log.ipAddress}</span>
+                          </div>
+                          <div className="flex justify-between items-center gap-2 text-[8px] font-black text-slate-400 uppercase tracking-tight">
+                            <span className="flex items-center gap-1"><Globe size={10} className="text-indigo-500" /> {log.location || 'Unknown'}</span>
+                            <span>{new Date(log.createdAt).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <button className="w-full h-12 bg-slate-900 text-white rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] shadow-md hover:bg-brand-600 transition-all flex items-center justify-center gap-2.5 shrink-0">Open Mission Registry <ArrowRight size={16} /></button>
@@ -1804,13 +2340,13 @@ const Settings = () => {
               <p className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-6">Scan with Google Authenticator</p>
               <div className="bg-white p-3 rounded-2xl w-48 h-48 mx-auto mb-6 shadow-md border border-slate-100 flex items-center justify-center">{twoFactorData.qrCode ? <img src={twoFactorData.qrCode} alt="QR" className="w-full h-full" /> : <Loader2 size={24} className="animate-spin text-slate-300" />}</div>
               <div className="space-y-3">
-                 <input 
-                   value={twoFactorData.token} 
-                   onChange={e => setTwoFactorData({ ...twoFactorData, token: e.target.value })} 
-                   placeholder="ENTER 6-DIGIT CODE" 
-                   className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl text-center text-xl font-black tracking-[0.2em] text-slate-900 focus:bg-white transition-all outline-none" 
-                 />
-                 <button onClick={verify2FA} disabled={loading || twoFactorData.token.length < 6} className="w-full h-12 bg-slate-900 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-md hover:bg-brand-600 transition-all">Deploy Protocol</button>
+                <input
+                  value={twoFactorData.token}
+                  onChange={e => setTwoFactorData({ ...twoFactorData, token: e.target.value })}
+                  placeholder="ENTER 6-DIGIT CODE"
+                  className="w-full h-12 bg-slate-50 border border-slate-100 rounded-xl text-center text-xl font-black tracking-[0.2em] text-slate-900 focus:bg-white transition-all outline-none"
+                />
+                <button onClick={verify2FA} disabled={loading || twoFactorData.token.length < 6} className="w-full h-12 bg-slate-900 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-md hover:bg-brand-600 transition-all">Deploy Protocol</button>
               </div>
               <button onClick={() => setTwoFactorModal(null)} className="absolute top-4 right-4 text-slate-300 hover:text-slate-900 transition-all"><X size={20} /></button>
             </motion.div>
@@ -1836,7 +2372,7 @@ const Settings = () => {
           <div className="fixed inset-0 z-[300] flex items-center justify-center p-0 md:p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { stopEnrollCamera(); setIsEnrolling(false); setEnrollStep(0); }} className="absolute inset-0 bg-slate-950/85 backdrop-blur-md" />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full h-[100dvh] md:h-auto md:max-w-md bg-white md:rounded-[28px] rounded-none p-6 md:p-8 shadow-2xl z-10 flex flex-col items-center justify-start md:justify-center overflow-y-auto py-8 md:py-8">
-              
+
               {enrollStep < 6 ? (
                 <>
                   <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight italic mb-1.5 flex items-center gap-1.5">
@@ -1939,7 +2475,7 @@ const Settings = () => {
                   )}
 
                   {/* Done buttons for user confirmation */}
-                  {enrollStream && enrollStep >= 2 && enrollStep <= 5 && (
+                  {enrollStream && enrollStep >= 2 && enrollStep <= 4 && (
                     <button
                       onClick={() => setEnrollStep(prev => prev + 1)}
                       className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-xl font-black text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 cursor-pointer mb-2"
@@ -1984,7 +2520,7 @@ const Settings = () => {
                   <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500 mb-4 shadow-md shrink-0"><ShieldCheck size={28} /></div>
                   <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tighter uppercase italic mb-1.5 leading-none">Enrollment Fortified</h3>
                   <p className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-6">Biometric signature active in Sentinel Ledger</p>
-                  
+
                   <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-left space-y-2.5 font-mono text-[9px] text-slate-500 w-full mb-6">
                     <div className="flex justify-between">
                       <span className="uppercase font-bold">Enrollment Date:</span>
@@ -2030,7 +2566,7 @@ const Settings = () => {
           <div className="fixed inset-0 z-[300] flex items-center justify-center p-0 md:p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={stopTestCamera} className="absolute inset-0 bg-slate-950/85 backdrop-blur-md" />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full h-[100dvh] md:h-auto md:max-w-md bg-white md:rounded-[28px] rounded-none p-6 md:p-8 shadow-2xl z-10 flex flex-col items-center justify-start md:justify-center overflow-y-auto py-8 md:py-8">
-              
+
               <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight italic mb-1.5 flex items-center gap-1.5">
                 Biometric Login Test
               </h3>

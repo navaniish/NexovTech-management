@@ -4,6 +4,7 @@ const { compileExecutiveBriefingData } = require('../controllers/executiveContro
 const { sendEmail } = require('../utils/mailer');
 const { runMultiAgentOrchestration } = require('../controllers/agentNetworkController');
 const { pollIncomingEmails } = require('./mailPollingService');
+const { processPendingOutreach } = require('./outreachWorker');
 
 let lastTriggeredDate = null;
 
@@ -79,7 +80,7 @@ async function generateAttendanceReport() {
     const localTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
 
     const textReport = `📅 *NexovTech Daily Attendance Alert* 📊\n` +
-           `*Time:* 10:00 AM Daily Briefing (Generated at ${localTime})\n\n` +
+           `*Time:* 9:30 AM Daily Briefing (Generated at ${localTime})\n\n` +
            `👥 *Registry Statistics:*\n` +
            `• Total Personnel: ${totalEmployees}\n` +
            `• Present: ${presentCount} ✅\n` +
@@ -150,7 +151,7 @@ async function generateAttendanceReport() {
  */
 async function sendDailyAttendanceAlert() {
   try {
-    console.log("⏰ SCHEDULER: Initiating daily 10:00 AM attendance alert sequence...");
+    console.log("⏰ SCHEDULER: Initiating daily 9:30 AM attendance alert sequence...");
     
     const { sendNotification } = require('../bot/telegramBot');
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
@@ -159,6 +160,10 @@ async function sendDailyAttendanceAlert() {
     
     // Find all linked Telegram accounts
     const linkedUsers = await fallbackDb.find('telegram_users', {}) || [];
+
+    // Fetch all active employees
+    const allEmployees = await fallbackDb.find('employees', {}) || [];
+    const employees = allEmployees.filter(emp => emp.role !== 'Admin' && emp.role !== 'Super Admin' && emp.role !== 'Manager');
 
     const adminReportObj = await generateAttendanceReport();
     const adminReportText = typeof adminReportObj === 'object' ? adminReportObj.text : adminReportObj;
@@ -331,31 +336,22 @@ async function sendDailyAttendanceAlert() {
     // -------------------------------------------------------------
     // PART B: INDIVIDUAL EMPLOYEE CHECK-IN REMINDERS
     // -------------------------------------------------------------
-    const employees = linkedUsers.filter(u => 
-      u.role !== 'Admin' && 
-      u.role !== 'Super Admin' && 
-      u.role !== 'Manager'
-    );
-
     let employeeReminderCount = 0;
     for (const emp of employees) {
-      // Find employee details in the registry
-      const regEmp = await fallbackDb.findOne('employees', { email: emp.companyEmail }) ||
-                     await fallbackDb.findOne('employees', { companyEmail: emp.companyEmail }) ||
-                     await fallbackDb.findOne('users', { email: emp.companyEmail });
-      
-      const empId = regEmp?.id || regEmp?._id || emp.firebaseUid;
-      const empEmailClean = emp.companyEmail?.toLowerCase().trim();
+      const empId = emp.id || emp._id;
+      const empEmailClean = emp.email?.toLowerCase().trim();
+      const empCoEmailClean = emp.companyEmail?.toLowerCase().trim();
 
       // Check if this specific employee has clocked in today
       const hasCheckedIn = todayRecords.some(r => 
         r.employeeId === empId || 
-        (empEmailClean && r.employeeId?.toLowerCase().trim() === empEmailClean)
+        (empEmailClean && r.employeeId?.toLowerCase().trim() === empEmailClean) ||
+        (empCoEmailClean && r.employeeId?.toLowerCase().trim() === empCoEmailClean)
       );
 
       if (!hasCheckedIn) {
-        const name = regEmp?.name || emp.companyEmail.split('@')[0];
-        const emailAddress = regEmp?.companyEmail || regEmp?.email || emp.companyEmail;
+        const name = emp.name || empEmailClean?.split('@')[0] || empCoEmailClean?.split('@')[0] || 'Employee';
+        const emailAddress = emp.companyEmail || emp.email;
 
         const reminderMsg = `🔔 *NexovTech Attendance Reminder* ⏰\n\n` +
                             `Hello *${name}*!\n` +
@@ -396,9 +392,15 @@ async function sendDailyAttendanceAlert() {
   </div>
 </div>`;
         
-        // Dispatch Telegram
-        if (emp.telegramId) {
-          await sendNotification(emp.telegramId, reminderMsg);
+        // Find if this employee has linked a Telegram account to send Telegram notification
+        const linkedTelegramUser = linkedUsers.find(u => 
+          (empEmailClean && u.companyEmail?.toLowerCase().trim() === empEmailClean) ||
+          (empCoEmailClean && u.companyEmail?.toLowerCase().trim() === empCoEmailClean)
+        );
+
+        // Dispatch Telegram if linked
+        if (linkedTelegramUser && linkedTelegramUser.telegramId) {
+          await sendNotification(linkedTelegramUser.telegramId, reminderMsg);
         }
 
         // Dispatch Email
@@ -406,6 +408,8 @@ async function sendDailyAttendanceAlert() {
           try {
             await sendEmail(emailAddress, `[Action Required] NexovTech Daily Attendance Reminder`, reminderMsg, reminderHtml);
             employeeReminderCount++;
+            // Space out dispatches slightly to respect Yahoo anti-abuse limits
+            await new Promise(resolve => setTimeout(resolve, 1500));
           } catch (mailErr) {
             console.error(`⏰ SCHEDULER: Failed to email attendance reminder to ${emailAddress}:`, mailErr.message);
           }
@@ -428,11 +432,13 @@ async function sendDailyAttendanceAlert() {
   }
 }
 
+let autopilotTicks = 0;
+
 /**
- * Starts the interval ticker loop (checks every 30 seconds).
+ * Starts the interval ticker loop (checks every 10 seconds).
  */
 function startScheduler() {
-  console.log("⏰ SCHEDULER: Operational. Monitoring ticks for daily 10:00 AM IST execution...");
+  console.log("⏰ SCHEDULER: Operational. Monitoring ticks for daily 9:30 AM IST execution & NEXA 24/7 Autopilot (10-second sync loop)...");
   
   setInterval(async () => {
     const now = new Date();
@@ -446,20 +452,57 @@ function startScheduler() {
     // Get date in Asia/Kolkata timezone
     const dateStr = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 
-    // Trigger exactly at 10:00 AM IST
-    if (hours === 10 && minutes === 0 && lastTriggeredDate !== dateStr) {
-      lastTriggeredDate = dateStr;
-      await sendDailyAttendanceAlert();
+    // Trigger daily attendance alerts at or after 9:30 AM IST if not already triggered today
+    const isAfter930 = (hours > 9 || (hours === 9 && minutes >= 30));
+    if (isAfter930 && lastTriggeredDate !== dateStr) {
+      try {
+        let autopilotSettings = await fallbackDb.findOne('system_settings', { id: 'autopilot_settings' });
+        const lastAlertDate = autopilotSettings ? autopilotSettings.attendance_alert_tracker : null;
+        
+        if (lastAlertDate !== dateStr) {
+          lastTriggeredDate = dateStr;
+          console.log(`⏰ SCHEDULER: Daily alert sequence starting (Current: ${kolkataTime}, Target: >= 09:30 IST)`);
+          
+          if (!autopilotSettings) {
+            autopilotSettings = { id: 'autopilot_settings' };
+          }
+          autopilotSettings.attendance_alert_tracker = dateStr;
+          await fallbackDb.save('system_settings', autopilotSettings);
+          
+          await sendDailyAttendanceAlert();
+        }
+      } catch (dbErr) {
+        console.error("⏰ SCHEDULER: DB error loading daily alert tracker state:", dbErr.message);
+      }
     }
     
-    // Simpler: always call pollLinkedInComments and pollIncomingEmails
+    // Run 24/7 NEXA Autopilot cycle every 3 minutes (18 ticks)
+    autopilotTicks++;
+    if (autopilotTicks >= 18) {
+      autopilotTicks = 0;
+      try {
+        const { runAutopilotCycle } = require('./nexaAutopilotService');
+        await runAutopilotCycle();
+      } catch (autoErr) {
+        console.error('⏰ SCHEDULER: NEXA Autopilot background execution failed:', autoErr.message);
+      }
+    }
+    
+    // Run real-time outreach worker to process pending dispatches
+    try {
+      await processPendingOutreach();
+    } catch (workerErr) {
+      console.error('⏰ SCHEDULER: Outreach worker execution failed:', workerErr.message);
+    }
+
+    // Call LinkedIn comments and incoming emails polling
     await pollLinkedInComments();
     try {
       await pollIncomingEmails();
     } catch (pollErr) {
       console.error('⏰ SCHEDULER: Incoming emails polling failed:', pollErr.message);
     }
-  }, 30000);
+  }, 10000); // 10-second high-speed syncing interval
 }
 
 module.exports = {
@@ -467,3 +510,4 @@ module.exports = {
   generateAttendanceReport,
   sendDailyAttendanceAlert
 };
+

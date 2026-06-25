@@ -1,13 +1,19 @@
 {
   "version": 2,
   "framework": "vite",
-  "buildCommand": "cd client && npm install --include=dev && npm run build",
+  "buildCommand": "cd server && npx prisma generate && cd .. && cd client && npm install --include=dev && npm run build",
   "outputDirectory": "client/dist",
   "functions": {
     "api/index.js": {
       "excludeFiles": "{client/**,docs/**,netlify/**,.netlify/**,nexovtech.apk,brain/**,node_modules/prisma/**,node_modules/@prisma/engines/**}"
     }
   },
+  "crons": [
+    {
+      "path": "/api/attendance/cron-trigger",
+      "schedule": "0 4 * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",

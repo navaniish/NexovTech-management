@@ -19,6 +19,11 @@ router.post('/outreach/send', auth, nexaController.sendOutreach);
 router.post('/outreach/draft', auth, nexaController.generateOutreachDraft);
 router.get('/outreach/logs', auth, nexaController.getOutreachLogs);
 router.post('/voice/simulate', auth, voiceController.simulateVoiceCall);
+router.post('/voice/zego-token', auth, voiceController.getZegoToken);
+router.post('/voice/zego-token-public', voiceController.getPublicZegoToken);
+router.post('/voice/respond', voiceController.respondVoiceCall);
+
+
 
 // Business Intelligence Analytics
 router.get('/bi/analytics', auth, nexaController.getBIData);
@@ -27,6 +32,8 @@ router.get('/bi/analytics', auth, nexaController.getBIData);
 router.get('/vector/documents', auth, nexaController.listVectorDocs);
 router.post('/vector/documents', auth, nexaController.addCustomVectorDoc);
 router.delete('/vector/documents/:id', auth, nexaController.deleteVectorDoc);
+router.post('/vector/sync-proposals', auth, nexaController.syncVectorProposals);
+router.post('/vector/sync-outreach', auth, nexaController.syncVectorOutreach);
 
 // Client Retention Alerts
 router.get('/retention/alerts', auth, nexaController.getRetentionAlerts);
@@ -43,10 +50,13 @@ router.post('/deals/:id/reject', auth, nexaController.rejectPendingDeal);
 const nexaAutomationController = require('../controllers/nexaAutomationController');
 router.post('/projects/launch', auth, nexaAutomationController.autoLaunchProject);
 router.get('/automation/status', auth, nexaAutomationController.getAutomationData);
+router.post('/automation/autopilot/toggle', auth, nexaAutomationController.toggleAutopilot);
+router.get('/automation/autopilot/status', auth, nexaAutomationController.getAutopilotStatus);
 
 // Autonomous Multi-Agent Network
 const agentNetworkController = require('../controllers/agentNetworkController');
 router.post('/agent/chat', auth, agentNetworkController.handleAgentChat);
+router.get('/agent/chats', auth, agentNetworkController.getAgentChats);
 router.get('/agent/runs', auth, agentNetworkController.getAgentRuns);
 router.post('/agent/run/:runId/approve', auth, agentNetworkController.approveAgentRun);
 router.post('/agent/run/:runId/reject', auth, agentNetworkController.rejectAgentRun);

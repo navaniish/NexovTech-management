@@ -10,6 +10,9 @@ const rateLimit = require('express-rate-limit');
 const IS_SERVERLESS = !!(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 
 try { dotenv.config({ path: path.join(__dirname, '.env') }); } catch (e) { /* no .env in serverless */ }
+const { loadIntegrationCredentials } = require('./utils/credentialLoader');
+loadIntegrationCredentials();
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'nexovtech_secret_key_prime_2026';
 
 // Initialize Telegram Bot
 const { initBot } = require('./bot/telegramBot');
@@ -175,6 +178,34 @@ app.get('/api/send-test-msg', async (req, res) => {
   }
 });
 
+// Secure Cron endpoint for triggering daily alerts
+app.get('/api/cron/daily-alerts', async (req, res) => {
+  const key = req.query.key || req.headers['x-cron-key'];
+  const expectedKey = process.env.ADMIN_OVERRIDE_KEY || 'NEXOV-PRIME-2026';
+  
+  if (!key || key !== expectedKey) {
+    return res.status(401).json({ success: false, message: 'Unauthorized: Invalid override key.' });
+  }
+
+  console.log(`⏰ CRON_ENDPOINT: Secure trigger received for daily alerts.`);
+  try {
+    const { sendDailyAttendanceAlert } = require('./services/schedulerService');
+    const result = await sendDailyAttendanceAlert();
+    res.json({
+      success: true,
+      message: 'Daily attendance alerts successfully triggered and sent.',
+      result
+    });
+  } catch (err) {
+    console.error(`⏰ CRON_ENDPOINT_ERROR: Daily alert execution failed:`, err.message);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process daily attendance alerts.',
+      error: err.message
+    });
+  }
+});
+
 // Root Route
 app.get('/', (req, res) => {
   res.json({
@@ -199,6 +230,10 @@ if (!IS_SERVERLESS) {
       methods: ["GET", "POST"]
     }
   });
+
+  // Register with socketHub for background worker emissions
+  const { setIo } = require('./utils/socketHub');
+  setIo(io);
 
   // Socket.io for Real-time Team Activity
   io.on('connection', (socket) => {

@@ -293,6 +293,7 @@ export function useFaceTracking(videoRef, canvasRef, active) {
   const maxEyeHRef = useRef(0);
   const eyeStateRef = useRef('open'); // 'open' | 'closed'
   const closedStateTimeRef = useRef(0);
+  const lastDetectionTimeRef = useRef(0);
 
   const rafRef = useRef(null);
   const runningRef = useRef(false);
@@ -319,11 +320,19 @@ export function useFaceTracking(videoRef, canvasRef, active) {
       return;
     }
 
+    // Throttle inference to max ~12 FPS to prevent UI thread lag on low-end/mobile devices
+    const now = Date.now();
+    if (now - lastDetectionTimeRef.current < 80) {
+      rafRef.current = requestAnimationFrame(runDetection);
+      return;
+    }
+    lastDetectionTimeRef.current = now;
+
     try {
       const result = await faceapi
         .detectSingleFace(
           video,
-          new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 })
+          new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.4 })
         )
         .withFaceLandmarks(true);
 

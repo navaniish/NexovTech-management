@@ -1,10 +1,56 @@
 [
   {
+    "id": "1pQ5mbDCXG99nV1JXLt3",
+    "createdAt": "2026-06-24T17:19:44.839Z",
+    "tenantId": "org_test",
+    "userId": "user_biotester_1782321579646",
+    "email": "biotester@nexovtech.com",
+    "encryptedTemplate": "simulated_face_vector_hash_12345"
+  },
+  {
+    "id": "4ClHPxmUma4JaBQhfDQI",
+    "createdAt": "2026-06-20T17:58:26.652Z",
+    "tenantId": "org_admin_override",
+    "userId": "Ykdj0ytfNXgRJozFnn9N",
+    "email": "daggupatinavaneeswar.nexovtech@gmail.com",
+    "encryptedTemplate": "template_hash_daggupatinavaneeswar.nexovtech@gmail.com"
+  },
+  {
+    "id": "7Q0Z9cwF9L5HguJZleV2",
+    "createdAt": "2026-06-24T17:17:53.117Z",
+    "tenantId": "org_test",
+    "userId": "user_biotester_1782321466983",
+    "email": "biotester@nexovtech.com",
+    "encryptedTemplate": "simulated_face_vector_hash_12345"
+  },
+  {
     "id": "ONJTB7rk5VnE35ofIlKA",
     "createdAt": "2026-06-16T13:45:59.221Z",
     "tenantId": "org_admin_override",
     "userId": "W82hAWDuXQUEmtlErLdwMlRQ6yH2",
     "email": "nexovtech@myyahoo.com",
-    "encryptedTemplate": "template_hash_nexovtech@myyahoo.com"
+    "encryptedTemplate": "template_hash_nexovtech@myyahoo.com",
+    "settings": {
+      "trustedDeviceMode": true,
+      "requireOtp": false,
+      "loginNotifications": true,
+      "enableFaceLogin": true
+    }
+  },
+  {
+    "id": "SLrZfZ2P4eTigHVa0XxS",
+    "createdAt": "2026-06-24T17:21:14.735Z",
+    "tenantId": "org_test",
+    "userId": "user_biotester_1782321669956",
+    "email": "biotester@nexovtech.com",
+    "encryptedTemplate": "simulated_face_vector_hash_12345"
+  },
+  {
+    "id": "ezYPUTzJlutm02sBbhsb",
+    "createdAt": "2026-06-24T17:18:47.239Z",
+    "tenantId": "org_test",
+    "userId": "user_biotester_1782321521536",
+    "email": "biotester@nexovtech.com",
+    "encryptedTemplate": "simulated_face_vector_hash_12345"
   }
 ]

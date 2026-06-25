@@ -51,6 +51,7 @@ import VerifyID from './pages/VerifyID';
 import EmployeeSecurity from './pages/employee/Security';
 import Learning from './pages/Learning';
 import AIAssistant from './components/AI/AIAssistant';
+import MyAgentChat from './pages/employee/MyAgentChat';
 
 import { Loader2 } from 'lucide-react';
 
@@ -64,7 +65,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     </div>
   );
   if (!user) return <Navigate to="/login" />;
-  
+
   const userRole = user.role?.toLowerCase() || '';
   if (allowedRoles && !allowedRoles.some(r => r.toLowerCase() === userRole)) {
     return <Navigate to="/unauthorized" />;
@@ -100,11 +101,13 @@ function AppRoutes() {
         <Route path="/hr" element={<AdminHR />} />
         <Route path="/tasks" element={<AdminTasks />} />
         <Route path="/attendance" element={<AdminAttendance />} />
-        
+
         {/* EXCLUSIVE: SUPER ADMIN INFRASTRUCTURE */}
-        <Route element={<ProtectedRoute allowedRoles={['Admin', 'Super Admin']} />}>
-          <Route path="/security-shield" element={<SecurityShield />} />
-        </Route>
+        <Route path="/security-shield" element={
+          <ProtectedRoute allowedRoles={['Admin', 'Super Admin']}>
+            <SecurityShield />
+          </ProtectedRoute>
+        } />
         <Route path="/timesheets" element={<AdminTimesheets />} />
         <Route path="/leaves" element={<AdminLeaves />} />
         <Route path="/audit" element={<AIAuditEngine />} />
@@ -133,6 +136,7 @@ function AppRoutes() {
         <Route path="/employee/security" element={<EmployeeSecurity />} />
         <Route path="/employee/learning" element={<Learning />} />
         <Route path="/employee/settings" element={<Settings />} />
+        <Route path="/employee/ai-chat" element={<MyAgentChat />} />
       </Route>
 
       <Route path="/verify/:qrToken" element={<VerifyID />} />
@@ -147,8 +151,8 @@ function AppRoutes() {
 
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <ThemeProvider>
         <Router>
           <Toaster />
           <ChatProvider>
@@ -157,8 +161,8 @@ function App() {
             <AppRoutes />
           </ChatProvider>
         </Router>
-      </AuthProvider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 

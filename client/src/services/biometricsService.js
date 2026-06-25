@@ -1,6 +1,27 @@
 import API_URL from '../config';
+import { Capacitor } from '@capacitor/core';
+import { NativeBiometric } from '@capgo/capacitor-native-biometric';
+import { auth as firebaseAuth } from '../firebase';
 
 class BiometricsService {
+  /**
+   * Returns the best available auth token.
+   * Prefers the backend JWT; falls back to a fresh Firebase ID token.
+   * Accepts an explicitly-passed token to allow callers to override.
+   */
+  async getBestToken(explicitToken = null) {
+    if (explicitToken && explicitToken !== 'null' && explicitToken !== 'undefined') return explicitToken;
+    const stored = localStorage.getItem('nexov_token');
+    if (stored && stored !== 'null' && stored !== 'undefined') return stored;
+    try {
+      const fbUser = firebaseAuth.currentUser;
+      if (fbUser) return await fbUser.getIdToken();
+    } catch (e) {
+      console.warn('[BIOMETRICS] Firebase token fallback failed:', e.message);
+    }
+    return null;
+  }
+
   getBrowserFingerprint() {
     try {
       const canvas = document.createElement('canvas');
@@ -91,7 +112,7 @@ class BiometricsService {
   }
 
   async enroll(userId, email, biometricTemplate, consent) {
-    const token = localStorage.getItem('nexov_token') || localStorage.getItem('token');
+    const token = await this.getBestToken();
     const res = await fetch(`${API_URL}/security/biometrics/enroll`, {
       method: 'POST',
       headers: {
@@ -158,6 +179,47 @@ class BiometricsService {
 
   async registerWebAuthnPublic(email) {
     try {
+      if (Capacitor.isNativePlatform()) {
+        const available = await NativeBiometric.isAvailable();
+        if (!available.isAvailable) {
+          throw new Error('Biometric hardware is not configured or not available on this device.');
+        }
+
+        await NativeBiometric.verifyIdentity({
+          reason: 'Authorize access to register physical fingerprint bypass key',
+          title: 'Enroll Biometric Key',
+          subtitle: 'Touch fingerprint sensor',
+          description: 'Confirm identity to securely save biometric login credentials'
+        });
+
+        // On native, save credential to Keystore
+        const token = localStorage.getItem('nexov_token') || localStorage.getItem('token') || '';
+        if (!token) {
+          throw new Error('Please log in with email/password once first to authorize native biometrics registration.');
+        }
+
+        await NativeBiometric.setCredentials({
+          username: email.toLowerCase(),
+          password: token,
+          server: 'nexovtech.auth'
+        });
+
+        // Register on backend to mark user as enrolled
+        const res = await fetch(`${API_URL}/security/webauthn/register-public`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email.toLowerCase(),
+            credentialId: 'native_android_' + email.toLowerCase().replace(/[^a-zA-Z0-9]/g, '_'),
+            publicKey: 'native_android_key'
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to save fingerprint enrollment state on server.');
+        return { success: true, credentialId: 'native_android_' + email.toLowerCase().replace(/[^a-zA-Z0-9]/g, '_') };
+      }
+
       const challenge = new Uint8Array(32);
       window.crypto.getRandomValues(challenge);
       const userIdBuffer = new Uint8Array(16);
@@ -228,6 +290,35 @@ class BiometricsService {
    * This is the main method called from the Login page for physical fingerprint.
    */
   async loginWithPhysicalFingerprint(email) {
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const available = await NativeBiometric.isAvailable();
+        if (!available.isAvailable) {
+          throw new Error('Biometric hardware is not available on this device.');
+        }
+
+        // Try to check local credentials
+        let hasLocalCredentials = false;
+        try {
+          const credentials = await NativeBiometric.getCredentials({ server: 'nexovtech.auth' });
+          if (credentials && credentials.username === email.toLowerCase() && credentials.password) {
+            hasLocalCredentials = true;
+          }
+        } catch (e) {
+          // not found
+        }
+
+        if (!hasLocalCredentials) {
+          throw new Error('No physical biometric key found for this email on this device. Please log in with password/Google first and enroll biometrics in Settings.');
+        }
+
+        return await this.authenticateWebAuthn(email);
+      }
+    } catch (e) {
+      console.error('Native biometrics check failed:', e);
+      throw e;
+    }
+
     // Step 1: Check if credential already registered
     const status = await this.checkWebAuthnStatus(email);
 
@@ -242,6 +333,49 @@ class BiometricsService {
 
   async registerWebAuthn(email) {
     try {
+      if (Capacitor.isNativePlatform()) {
+        const available = await NativeBiometric.isAvailable();
+        if (!available.isAvailable) {
+          throw new Error('Biometric hardware is not configured or not available on this device.');
+        }
+
+        await NativeBiometric.verifyIdentity({
+          reason: 'Authorize access to register physical fingerprint bypass key',
+          title: 'Enroll Biometric Key',
+          subtitle: 'Touch fingerprint sensor',
+          description: 'Confirm identity to securely save biometric login credentials'
+        });
+
+        // On native, save credential to Keystore
+        const token = localStorage.getItem('nexov_token') || localStorage.getItem('token') || '';
+        if (!token) {
+          throw new Error('Authentication token missing. Please log in again.');
+        }
+
+        await NativeBiometric.setCredentials({
+          username: email.toLowerCase(),
+          password: token,
+          server: 'nexovtech.auth'
+        });
+
+        // Register on backend to mark user as enrolled
+        const res = await fetch(`${API_URL}/security/webauthn/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            email: email.toLowerCase(),
+            credentialId: 'native_android_' + email.toLowerCase().replace(/[^a-zA-Z0-9]/g, '_'),
+            publicKey: 'native_android_key'
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to save fingerprint enrollment state on server.');
+        return data;
+      }
 
       const challenge = new Uint8Array(32);
       window.crypto.getRandomValues(challenge);
@@ -320,6 +454,48 @@ class BiometricsService {
 
   async authenticateWebAuthn(email) {
     try {
+      if (Capacitor.isNativePlatform()) {
+        const available = await NativeBiometric.isAvailable();
+        if (!available.isAvailable) {
+          throw new Error('Biometrics not available on this device.');
+        }
+
+        await NativeBiometric.verifyIdentity({
+          reason: 'Authenticate to access your NexovTech secure workspace',
+          title: 'Biometric Verification',
+          subtitle: 'Touch fingerprint sensor',
+          description: 'Confirm identity to continue.'
+        });
+
+        // Retrieve stored credentials
+        const credentials = await NativeBiometric.getCredentials({
+          server: 'nexovtech.auth'
+        });
+
+        if (!credentials || credentials.username !== email.toLowerCase() || !credentials.password) {
+          throw new Error('No local biometric credentials found for this account on this device. Please log in with password/Google once first.');
+        }
+
+        const token = credentials.password;
+
+        // Verify token with backend
+        const verifyRes = await fetch(`${API_URL}/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!verifyRes.ok) {
+          throw new Error('Stored biometric session has expired. Please log in with credentials once to refresh.');
+        }
+
+        const userData = await verifyRes.json();
+        return {
+          token,
+          user: userData
+        };
+      }
+
       const challengeRes = await fetch(`${API_URL}/security/webauthn/challenge`, {
         method: 'POST',
         headers: {
@@ -376,17 +552,18 @@ class BiometricsService {
   }
 
   async getStatus(userId) {
-    const res = await fetch(`${API_URL}/security/biometrics/status/${userId}`);
+    const res = await fetch(`${API_URL}/security/biometrics/status/${userId}?t=${Date.now()}`);
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to retrieve biometrics status');
     return data;
   }
 
   async delete(token) {
+    const resolvedToken = await this.getBestToken(token);
     const res = await fetch(`${API_URL}/security/biometrics/delete`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${resolvedToken}`
       }
     });
     const data = await res.json();
@@ -395,10 +572,11 @@ class BiometricsService {
   }
 
   async deleteWebAuthn(token) {
+    const resolvedToken = await this.getBestToken(token);
     const res = await fetch(`${API_URL}/security/webauthn/delete`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${resolvedToken}`
       }
     });
     const data = await res.json();
@@ -407,9 +585,10 @@ class BiometricsService {
   }
 
   async getAdminLogs(token) {
+    const resolvedToken = await this.getBestToken(token);
     const res = await fetch(`${API_URL}/security/biometrics/admin/logs`, {
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${resolvedToken}`
       }
     });
     const data = await res.json();
@@ -418,10 +597,11 @@ class BiometricsService {
   }
 
   async revoke(userId, token) {
+    const resolvedToken = await this.getBestToken(token);
     const res = await fetch(`${API_URL}/security/biometrics/admin/revoke/${userId}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${resolvedToken}`
       }
     });
     const data = await res.json();
@@ -430,11 +610,12 @@ class BiometricsService {
   }
 
   async updateSettings(settings, token) {
+    const resolvedToken = await this.getBestToken(token);
     const res = await fetch(`${API_URL}/security/biometrics/settings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${resolvedToken}`
       },
       body: JSON.stringify({ settings })
     });

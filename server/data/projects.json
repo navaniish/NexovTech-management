@@ -1,31 +1,5 @@
 [
   {
-    "id": "5IuYXrVMAcXHsToB86z7",
-    "createdAt": "2026-06-15T07:19:46.991Z",
-    "githubRepoUrl": "https://github.com/nexovtech-simulation/acme-test-corp---a-i-solutions",
-    "client": "Acme Test Corp",
-    "description": "Project Brief: Acme Test Corp's AISolutions project aims to develop a scalable, Node.js-based platform integrating React for front-end and MongoDB for database management, within the specified budget of $120,000. The project will prioritize seamless integration, user-friendly interface, and robust data storage. The team will design a modular, secure architecture to meet the evolving needs of Acme Test Corp's business operations.",
-    "progress": 0,
-    "team": [
-      {
-        "id": "wezrxkT3lmKjO5yZLtx6",
-        "name": "Traced Analyst",
-        "email": "test_traced_user@nexovtech.com",
-        "role": "Security Analyst"
-      },
-      {
-        "id": "L2CAoeF1K5TuHB71HVzb4oNvzwy2",
-        "name": "Saranya Gunda",
-        "email": "gundasaranya.nexovtech@gmail.com",
-        "role": "DEVELOPER"
-      }
-    ],
-    "projectName": "Acme Test Corp - A I Solutions",
-    "budget": 120000,
-    "status": "In Progress",
-    "invoiceUrl": "/uploads/invoices/invoice-5IuYXrVMAcXHsToB86z7.pdf"
-  },
-  {
     "id": "HqUlSnIReYXBWrmN2JwK",
     "createdAt": {
       "_seconds": 1778953703,
@@ -54,18 +28,18 @@
     "status": "Planning"
   },
   {
-    "id": "Irw5q7C6IfTSnFXey4rY",
-    "createdAt": "2026-06-15T07:22:26.785Z",
-    "githubRepoUrl": "https://github.com/nexovtech-simulation/acme-test-corp---a-i-solutions",
-    "client": "Acme Test Corp",
-    "description": "The NEXA Agentic AI Project Brief is as follows:\n\nFor Acme Test Corp, we propose the development of an AI-driven solution leveraging Node.js, React, and MongoDB to create a scalable and user-friendly interface for their AISolutions, with a budget of $120,000 to ensure seamless integration and high-quality delivery. The project aims to capitalize on the chosen tech stack to create a cutting-edge platform that effectively addresses the client's business needs and requirements. By deploying a robust and dynamic solution, we can optimize operational efficiency and enhance user experience, setting a strong foundation for Acme Test Corp's future growth and innovation.",
+    "id": "TOmFVH9FadwWXqEWkLd1",
+    "createdAt": "2026-06-24T04:40:24.371Z",
+    "githubRepoUrl": "https://github.com/nexovtech-simulation/paytm---a-i-solutions",
+    "client": "Paytm",
+    "description": "Develop a cutting-edge AISolutions platform for Paytm, leveraging React and Angular for scalable front-end frameworks, and integrating with a robust MySQL database to ensure seamless data management and real-time analytics. This project will focus on delivering a user-centric experience, implementing advanced security measures, and meeting the evolving digital demands of the market within a budget of $1,000,000. The outcome will be a modern, high-performance AISolutions platform that accelerates Paytm's growth and solidifies its position in the digital payments industry.",
     "progress": 0,
     "team": [
       {
-        "id": "wezrxkT3lmKjO5yZLtx6",
-        "name": "Traced Analyst",
-        "email": "test_traced_user@nexovtech.com",
-        "role": "Security Analyst"
+        "id": "Ykdj0ytfNXgRJozFnn9N",
+        "name": "DAGGUPATI NAVANEESWAR",
+        "email": "daggupatinavaneeswar.nexovtech@gmail.com",
+        "role": "AI Specialist"
       },
       {
         "id": "rWHj3Vg3YQY7es1PyT3Q",
@@ -74,36 +48,9 @@
         "role": "Editor"
       }
     ],
-    "projectName": "Acme Test Corp - A I Solutions",
-    "budget": 120000,
-    "status": "In Progress",
-    "invoiceUrl": "/uploads/invoices/invoice-Irw5q7C6IfTSnFXey4rY.pdf"
-  },
-  {
-    "id": "VV7zopyxTpFRpbD4pKrU",
-    "createdAt": "2026-06-17T04:16:58.341Z",
-    "githubRepoUrl": "https://github.com/nexovtech-simulation/spring-health---a-i-solutions",
-    "client": "Spring Health",
-    "description": "Develop a scalable and secure enterprise-level portal utilizing Ruby on Rails, integrating with a PostgreSQL database and hosted on the Amazon Web Services (AWS) cloud infrastructure, to provide Spring Health with a comprehensive AISolutions platform for streamlined customer onboarding and service delivery. The project should leverage AWS services to ensure high availability, auto-scaling, and cost-effectiveness within the allocated budget of $975,000. Key features include robust authentication, role-based access control, and seamless data synchronization across various interfaces.",
-    "progress": 0,
-    "team": [
-      {
-        "id": "wezrxkT3lmKjO5yZLtx6",
-        "name": "Traced Analyst",
-        "email": "tracedanalyst.nexovtech@gmail.com",
-        "role": "Security Analyst"
-      },
-      {
-        "id": "tPjcv5Z4RbfkshESoh4B",
-        "name": "REKHA SIDHARDHA",
-        "email": "sidhardharekha.nexovtech@gmail.com",
-        "role": "Editor"
-      }
-    ],
-    "projectName": "Spring Health - A I Solutions",
-    "budget": 975000,
-    "status": "In Progress",
-    "invoiceUrl": "/uploads/invoices/invoice-VV7zopyxTpFRpbD4pKrU.pdf"
+    "projectName": "Paytm - A I Solutions",
+    "budget": 1000000,
+    "status": "In Progress"
   },
   {
     "id": "cDI09YBIITCHkwUTyvJO",
@@ -123,44 +70,44 @@
     "status": "Planning"
   },
   {
-    "id": "kRYj8maRSqnxW4Emvtbg",
-    "createdAt": "2026-06-17T18:36:35.864Z",
-    "githubRepoUrl": "https://github.com/nexovtech-simulation/naraway---a-i-solutions",
-    "client": "Naraway",
-    "description": "We will design and develop a comprehensive NEXA platform for Naraway, integrating cutting-edge AI technologies with a robust e-commerce solution, leveraging a tech stack that combines IT development, web development, and digital marketing expertise to drive business growth within the allocated $875,000 budget. The platform will feature intelligent product recommendations, automated order management, and real-time analytics to enhance the user experience and streamline business operations. Our goal is to deliver a scalable, secure, and user-centric platform that meets Naraway's evolving business needs and sets a new standard for e-commerce excellence.",
+    "id": "r8ZkuTHv0uBBMAD7cABv",
+    "createdAt": "2026-06-23T16:37:28.553Z",
+    "githubRepoUrl": "https://github.com/nexovtech-simulation/shopify---a-i-solutions",
+    "client": "Shopify",
+    "description": "Project Brief:\n\nAs the NEXA Project Architect, we will design and develop a cutting-edge AI-powered commerce solution for Shopify, leveraging the tech stack of Ruby on Rails, JavaScript, and Node.js to enhance the user experience and drive business growth. This AISolutions project aims to develop a customized AI-driven platform that integrates seamlessly with Shopify, utilizing machine learning algorithms to provide personalized product recommendations, predictive analytics, and automated customer support. With a budget of $1,000,000, our team will deliver a scalable, secure, and innovative solution that meets Shopify's unique business needs and remains within budget constraints.",
     "progress": 0,
     "team": [
       {
-        "id": "wezrxkT3lmKjO5yZLtx6",
-        "name": "Traced Analyst",
-        "email": "tracedanalyst.nexovtech@gmail.com",
-        "role": "Security Analyst"
+        "id": "Ykdj0ytfNXgRJozFnn9N",
+        "name": "DAGGUPATI NAVANEESWAR",
+        "email": "daggupatinavaneeswar8980@gmail.com",
+        "role": "AI Specialist"
       },
       {
-        "id": "rWHj3Vg3YQY7es1PyT3Q",
-        "name": "MANI CHARAN TEJA ",
-        "email": "manicharanteja.nexovtech@gmail.com",
-        "role": "Editor"
+        "id": "L2CAoeF1K5TuHB71HVzb4oNvzwy2",
+        "name": "Saranya Gunda",
+        "email": "gundasaranya.nexovtech@gmail.com",
+        "role": "DEVELOPER"
       }
     ],
-    "projectName": "Naraway - A I Solutions",
-    "budget": 875000,
+    "projectName": "Shopify - A I Solutions",
+    "budget": 1000000,
     "status": "In Progress",
-    "invoiceUrl": "/uploads/invoices/invoice-kRYj8maRSqnxW4Emvtbg.pdf"
+    "invoiceUrl": "/uploads/invoices/invoice-r8ZkuTHv0uBBMAD7cABv.pdf"
   },
   {
-    "id": "l3YuK54NavN32rcLr0B5",
-    "createdAt": "2026-06-17T18:40:58.348Z",
-    "githubRepoUrl": "https://github.com/nexovtech-simulation/superb-companies---a-i-solutions",
-    "client": "Superb Companies",
-    "description": "Here's a concise 3-sentence technical project brief based on the client's requirements:\n\nFor the AI Solutions project with Superb Companies, we will design and develop a cutting-edge AI-powered digital marketing platform utilizing our tech stack, comprising marketing automation, SEO optimization, and e-commerce solutions, to drive efficient and targeted campaign execution. The platform will be built with scalability and maintainability in mind, leveraging web development best practices and utilizing cloud-based infrastructure to ensure seamless deployment and minimal downtime. Our team will deliver a customized solution within the allotted budget of $400,000, providing enhanced customer engagement and business growth opportunities for Superb Companies.",
+    "projectName": "Block - A I Solutions",
+    "client": "Block",
+    "budget": 1000000,
+    "status": "In Progress",
     "progress": 0,
+    "description": "Project Title: Block AISolutions\n\nDevelop a cutting-edge, user-centric mobile application utilizing Swift for the frontend, interfacing with a highly scalable DynamoDB database to store and manage user information, and leveraging Amazon S3 for secure and reliable cloud-based data storage. The application will provide a seamless user experience, harnessing the power of AWS services to deliver exceptional performance, scalability, and reliability within the allocated budget of $1,000,000. Key features will include robust authentication, dynamic content management, and real-time analytics to cater to the evolving needs of Block's target audience.",
     "team": [
       {
-        "id": "wezrxkT3lmKjO5yZLtx6",
-        "name": "Traced Analyst",
-        "email": "tracedanalyst.nexovtech@gmail.com",
-        "role": "Security Analyst"
+        "id": "Ykdj0ytfNXgRJozFnn9N",
+        "name": "DAGGUPATI NAVANEESWAR",
+        "email": "daggupatinavaneeswar.nexovtech@gmail.com",
+        "role": "AI Specialist"
       },
       {
         "id": "tPjcv5Z4RbfkshESoh4B",
@@ -169,9 +116,87 @@
         "role": "Editor"
       }
     ],
-    "projectName": "Superb Companies - A I  Solutions",
-    "budget": 400000,
+    "githubRepoUrl": "https://github.com/nexovtech-simulation/block---a-i-solutions",
+    "createdAt": "2026-06-25T08:23:14.650Z",
+    "id": "VOj7YpCAArOnzVOsX0qH",
+    "invoiceUrl": "/uploads/invoices/invoice-VOj7YpCAArOnzVOsX0qH.pdf"
+  },
+  {
+    "projectName": "MoonPay - A I Solutions",
+    "client": "MoonPay",
+    "budget": 1000000,
     "status": "In Progress",
-    "invoiceUrl": "/uploads/invoices/invoice-l3YuK54NavN32rcLr0B5.pdf"
+    "progress": 0,
+    "description": "The project aims to develop an AI-powered payment processing system for MoonPay using Python as the primary programming language, with integrated PostgreSQL for database management and Redis for real-time caching, to enhance scalability and speed. This system will facilitate seamless payment transactions while providing robust security features to protect sensitive user information. The total project cost is allocated within the $1000000 budget to ensure effective development, testing, and deployment of the AI-powered payment processing solution.",
+    "team": [
+      {
+        "id": "Ykdj0ytfNXgRJozFnn9N",
+        "name": "DAGGUPATI NAVANEESWAR",
+        "email": "daggupatinavaneeswar.nexovtech@gmail.com",
+        "role": "AI Specialist"
+      },
+      {
+        "id": "L2CAoeF1K5TuHB71HVzb4oNvzwy2",
+        "name": "Saranya Gunda",
+        "email": "gundasaranya.nexovtech@gmail.com",
+        "role": "DEVELOPER"
+      }
+    ],
+    "githubRepoUrl": "https://github.com/nexovtech-simulation/moonpay---a-i-solutions",
+    "createdAt": "2026-06-25T08:24:07.506Z",
+    "id": "0d8lCRKZ7ATvQXqSomtN",
+    "invoiceUrl": "/uploads/invoices/invoice-0d8lCRKZ7ATvQXqSomtN.pdf"
+  },
+  {
+    "projectName": "Stripe - A I Solutions",
+    "client": "Stripe",
+    "budget": 1062500,
+    "status": "In Progress",
+    "progress": 0,
+    "description": "As the NEXA Agentic AI Project Architect, I will design a cutting-edge, cloud-agnostic AISolution utilizing Python as the primary language to power the Stripe AISolution's core functionality, integrating it with Stripe's existing infrastructure via API connectors, ensuring seamless interaction with Ruby and Golang-based services where required, to deliver enhanced AI-driven capabilities while aligning with the allocated budget of $1,062,500.",
+    "team": [
+      {
+        "id": "Ykdj0ytfNXgRJozFnn9N",
+        "name": "DAGGUPATI NAVANEESWAR",
+        "email": "daggupatinavaneeswar.nexovtech@gmail.com",
+        "role": "AI Specialist"
+      },
+      {
+        "id": "rWHj3Vg3YQY7es1PyT3Q",
+        "name": "MANI CHARAN TEJA ",
+        "email": "manicharanteja.nexovtech@gmail.com",
+        "role": "Editor"
+      }
+    ],
+    "githubRepoUrl": "https://github.com/nexovtech-simulation/stripe---a-i-solutions",
+    "createdAt": "2026-06-25T08:24:58.308Z",
+    "id": "pTbI1ksLwWnbmLZpuT28",
+    "invoiceUrl": "/uploads/invoices/invoice-pTbI1ksLwWnbmLZpuT28.pdf"
+  },
+  {
+    "projectName": "Phia - A I Solutions",
+    "client": "Phia",
+    "budget": 1062500,
+    "status": "In Progress",
+    "progress": 0,
+    "description": "Develop an AI-driven platform utilizing Python and Django, integrated with AWS services to meet Phia's high-capacity AISolutions demands, allocated within a $1,062,500 budget to ensure optimal cost-effectiveness and scalable architecture. \n\nThis project will leverage Django's robust framework to build a secure, maintainable, and efficient web application, while Python's extensive libraries will facilitate seamless AI model integration and data processing. \n\nThe platform will be hosted on AWS, leveraging scalable compute resources and AI services such as Amazon SageMaker, to ensure flexibility, reliability, and real-time data processing capabilities.",
+    "team": [
+      {
+        "id": "Ykdj0ytfNXgRJozFnn9N",
+        "name": "DAGGUPATI NAVANEESWAR",
+        "email": "daggupatinavaneeswar.nexovtech@gmail.com",
+        "role": "AI Specialist"
+      },
+      {
+        "id": "tPjcv5Z4RbfkshESoh4B",
+        "name": "REKHA SIDHARDHA",
+        "email": "sidhardharekha.nexovtech@gmail.com",
+        "role": "Editor"
+      }
+    ],
+    "githubRepoUrl": "https://github.com/nexovtech-simulation/phia---a-i-solutions",
+    "createdAt": "2026-06-25T08:26:22.090Z",
+    "id": "GMwMyrAPnTQLnWZCrgdW",
+    "invoiceUrl": "/uploads/invoices/invoice-GMwMyrAPnTQLnWZCrgdW.pdf"
   }
 ]

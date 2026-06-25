@@ -16,9 +16,24 @@ const Timesheet = () => {
   const [form, setForm] = useState({ 
     date: new Date().toISOString().split('T')[0], 
     hoursWorked: '', 
-    description: '' 
+    description: '',
+    taskId: '',
+    taskTitle: ''
   });
   const [submitting, setSubmitting] = useState(false);
+  const [tasks, setTasks] = useState([]);
+  const [loadingTasks, setLoadingTasks] = useState(false);
+
+  // Prefer nexov_token; fall back to Firebase ID token (prevents 401 race on initial load)
+  const getBestToken = async () => {
+    const stored = localStorage.getItem('nexov_token') || localStorage.getItem('token');
+    if (stored && stored !== 'null' && stored !== 'undefined') return stored;
+    try {
+      const { auth: fbAuth } = await import('../../firebase');
+      if (fbAuth.currentUser) return await fbAuth.currentUser.getIdToken(false);
+    } catch {}
+    return null;
+  };
 
   const fetchTimesheets = async () => {
     const userId = user?.id || user?._id || user?.firebaseUid;
@@ -37,8 +52,52 @@ const Timesheet = () => {
     }
   };
 
+  const fetchTasks = async () => {
+    const userId = user?.id || user?._id || user?.firebaseUid;
+    if (!userId) return;
+    setLoadingTasks(true);
+    try {
+      const token = await getBestToken();
+      const [internalRes, jiraRes] = await Promise.all([
+        fetch(`${API_URL}/tasks/my?userId=${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch(`${API_URL}/tasks/jira`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ]);
+
+      let internalData = [];
+      if (internalRes.ok) {
+        internalData = await internalRes.json();
+      }
+
+      let jiraData = [];
+      if (jiraRes.ok) {
+        jiraData = await jiraRes.json();
+      }
+
+      const merged = [
+        ...internalData.map(t => ({ ...t, source: 'internal' })),
+        ...jiraData.map(t => ({ ...t, source: 'jira' }))
+      ];
+      setTasks(merged);
+    } catch (err) {
+      console.error('Failed to load tasks for timesheet mapping', err);
+    } finally {
+      setLoadingTasks(false);
+    }
+  };
+
   useEffect(() => {
     fetchTimesheets();
+    fetchTasks();
   }, [user]);
 
   const handleSubmit = async (e) => {
@@ -48,7 +107,10 @@ const Timesheet = () => {
     try {
       const response = await fetch(`${API_URL}/timesheet`, {
         method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Authorization': `Bearer ${await getBestToken()}`,
+          'Content-Type': 'application/json' 
+        },
         body: JSON.stringify({ 
           userId: user._id || user.id, 
           ...form, 
@@ -58,7 +120,13 @@ const Timesheet = () => {
       if (response.ok) {
         const saved = await response.json();
         setEntries(prev => [saved, ...prev]);
-        setForm({ date: new Date().toISOString().split('T')[0], hoursWorked: '', description: '' });
+        setForm({ 
+          date: new Date().toISOString().split('T')[0], 
+          hoursWorked: '', 
+          description: '',
+          taskId: '',
+          taskTitle: ''
+        });
       }
     } catch (err) {
       console.error('Temporal submission failed');
@@ -220,6 +288,33 @@ const Timesheet = () => {
             </div>
 
             <div className="space-y-2">
+              <label className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Associate to Task / Mission</label>
+              <div className="relative">
+                <Target className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <select
+                  value={form.taskId}
+                  onChange={e => {
+                    const selectedTask = tasks.find(t => (t.id === e.target.value || t._id === e.target.value));
+                    setForm({ 
+                      ...form, 
+                      taskId: e.target.value,
+                      taskTitle: selectedTask ? selectedTask.title : ''
+                    });
+                  }}
+                  className="w-full h-12 md:h-14 pl-10 md:pl-12 pr-4 bg-slate-50 border border-slate-100 rounded-xl md:rounded-2xl text-sm font-bold focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all appearance-none cursor-pointer"
+                >
+                  <option value="">-- General / Non-Project Duty Control --</option>
+                  {tasks.map(t => (
+                    <option key={t.id || t._id} value={t.id || t._id}>
+                      {t.source === 'jira' ? '[Jira] ' : '[Internal] '}
+                      {t.title} ({t.projectName || t.projectId?.title || 'Standalone'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <label className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Temporal Duration (Hours)</label>
               <div className="relative">
                 <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -304,9 +399,14 @@ const Timesheet = () => {
                            {entry.status === 'Approved' ? <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6" /> : <Clock className="w-5 h-5 md:w-6 md:h-6" />}
                         </div>
                         
-                        <div className="space-y-1.5 min-w-0">
-                           <div className="flex items-center gap-3">
+                        <div className="space-y-1.5 min-w-0 flex-1">
+                           <div className="flex flex-wrap items-center gap-2 md:gap-3">
                               <p className="text-sm md:text-base font-black text-slate-900 truncate uppercase tracking-tight">{entry.description || 'Tactical Development Operation'}</p>
+                              {entry.aiCategory && (
+                                <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 text-[8px] font-black uppercase tracking-widest shrink-0">
+                                  {entry.aiCategory}
+                                </span>
+                              )}
                            </div>
                            <div className="flex flex-wrap items-center gap-2 md:gap-3">
                               <span className="flex items-center gap-1 text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">
@@ -314,9 +414,21 @@ const Timesheet = () => {
                               </span>
                               <span className="w-1 h-1 rounded-full bg-slate-200 hidden sm:inline" />
                               <span className="flex items-center gap-1 text-[8px] md:text-[10px] font-black text-indigo-500 uppercase tracking-widest truncate max-w-[120px] md:max-w-none">
-                                 <Target size={10} /> {entry.project?.title || 'Nexus Command'}
+                                 <Target size={10} /> {entry.taskTitle || entry.project?.title || 'Nexus Command'}
                               </span>
                            </div>
+                           {entry.aiClientSummary && entry.aiClientSummary !== entry.description && (
+                             <div className="mt-2.5 p-3 bg-indigo-500/5 border border-indigo-500/10 rounded-xl relative overflow-hidden">
+                               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-2xl rounded-full" />
+                               <div className="flex items-center gap-1.5 mb-1 relative z-10">
+                                 <Zap size={11} className="text-indigo-600 animate-pulse" />
+                                 <span className="text-[8px] font-black text-indigo-600 uppercase tracking-widest">NEXA Client Audit Summary</span>
+                               </div>
+                               <p className="text-[11px] text-slate-500 font-medium leading-relaxed relative z-10 italic">
+                                 "{entry.aiClientSummary}"
+                               </p>
+                             </div>
+                           )}
                         </div>
                       </div>
 

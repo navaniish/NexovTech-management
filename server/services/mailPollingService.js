@@ -267,9 +267,123 @@ async function processIncomingMail(mail) {
   // Generate reply subject
   const replySubject = mail.subject.toLowerCase().startsWith('re:') ? mail.subject : `Re: ${mail.subject}`;
 
+  // 4. Verify contract/proposal approval if there is an active pending deal
+  let pendingDeal = null;
+  let clientApproved = false;
+  let aiEvaluationLog = '';
+
+  if (lead && !isEmployeeOrUser) {
+    try {
+      const leadIdClean = lead.id || lead._id;
+      const deals = await fallbackDb.find('pending_deals', { leadId: leadIdClean, status: 'Pending' }) || [];
+      pendingDeal = deals[0];
+    } catch (err) {
+      console.warn('⚠️ Failed to load pending deals for incoming mail:', err.message);
+    }
+  }
+
+  if (pendingDeal && aiClient) {
+    try {
+      console.log(`🤖 [DEAL GATEKEEPER]: Active pending deal found for ${lead.companyName}. Evaluating incoming mail body for contract approval...`);
+      const evaluationSystemPrompt = `You are the NEXA Strategic Deal Gatekeeper AI. 
+Analyze the client's incoming email response to determine if they are giving explicit permission, approval, or agreement to proceed with the proposed project/work, sign the contract, or accept the budget.
+Respond ONLY in this strict JSON format:
+{
+  "approved": true | false,
+  "reasoning": "<short sentence explaining why>"
+}`;
+
+      const evaluationUserPrompt = `
+Proposed Service: ${pendingDeal.serviceType}
+Proposed Quotation: ₹${Number(pendingDeal.quotationAmount).toLocaleString()}
+Client Incoming Email:
+"${mail.body.substring(0, 1500)}"
+`;
+
+      const evalCompletion = await aiClient.chat.completions.create({
+        model: process.env.AI_MODEL || "meta/llama-3.1-8b-instruct",
+        messages: [
+          { role: "system", content: evaluationSystemPrompt },
+          { role: "user", content: evaluationUserPrompt }
+        ],
+        temperature: 0.1,
+        max_tokens: 256
+      });
+
+      const evalText = evalCompletion.choices[0].message?.content?.trim() || '';
+      const parsedEval = JSON.parse(evalText.trim().substring(evalText.indexOf('{'), evalText.lastIndexOf('}') + 1));
+      clientApproved = parsedEval.approved === true;
+      aiEvaluationLog = parsedEval.reasoning || '';
+      console.log(`🤖 [DEAL GATEKEEPER]: Client Approval classification: ${clientApproved}. Reason: ${aiEvaluationLog}`);
+    } catch (evalErr) {
+      console.error('⚠️ [DEAL GATEKEEPER ERROR] AI deal evaluation failed:', evalErr.message);
+    }
+  }
+
   // Draft contextual auto-reply message using the AI model
   let replyContent = '';
-  if (aiClient) {
+
+  if (clientApproved && pendingDeal) {
+    try {
+      console.log(`🤖 [DEAL GATEKEEPER]: Approval verified! Triggering autonomous project launch for [${lead.companyName}]...`);
+      
+      // Update pending deal status
+      pendingDeal.status = 'Approved';
+      await fallbackDb.save('pending_deals', pendingDeal);
+
+      // Create proposal as Accepted
+      const proposal = await fallbackDb.save('proposals', {
+        leadId: pendingDeal.leadId,
+        serviceType: pendingDeal.serviceType || 'AISolutions',
+        proposalText: pendingDeal.proposalText,
+        quotationAmount: Number(pendingDeal.quotationAmount),
+        status: 'Accepted',
+        tenantId: 'org_default'
+      });
+
+      // Update lead status to Converted
+      await fallbackDb.update('leads', pendingDeal.leadId, { status: 'Converted' });
+
+      // Run autoLaunchProject
+      const nexaAutomationController = require('../controllers/nexaAutomationController');
+      const mockReq = {
+        body: { leadId: pendingDeal.leadId, proposalId: proposal.id || proposal._id }
+      };
+      let launchedProjectData = null;
+      const mockRes = {
+        status: (code) => ({ json: (data) => { launchedProjectData = data; } }),
+        json: (data) => { launchedProjectData = data; }
+      };
+      await nexaAutomationController.autoLaunchProject(mockReq, mockRes);
+
+      // Notify via Telegram
+      try {
+        const { sendNotification } = require('../bot/telegramBot');
+        const linkedUsers = await fallbackDb.find('telegram_users', {}) || [];
+        const admins = linkedUsers.filter(u => u.role === 'Admin' || u.role === 'Super Admin' || u.role === 'Manager');
+
+        const notificationText = `🤝 *B2B Deal Converted via Email Verification!* 📩\n\n` +
+          `Client *${lead.companyName}* approved the proposal via email!\n` +
+          `Score: *${pendingDeal.opportunityScore}%* | Value: *₹${Number(pendingDeal.quotationAmount).toLocaleString()}*\n\n` +
+          `NEXA has autonomously verified their confirmation, approved the deal, launched the project, generated the invoice, and allocated specialists!`;
+
+        for (const admin of admins) {
+          if (admin.telegramId) {
+            await sendNotification(admin.telegramId, notificationText);
+          }
+        }
+      } catch (tgErr) {
+        console.warn('⚠️ Could not notify admin via Telegram:', tgErr.message);
+      }
+
+      // Draft positive confirmation email reply
+      replyContent = `Dear ${lead.contactName || 'Client Partner'},\n\nThank you for your confirmation! We have successfully verified your approval to proceed.\n\nOur autonomous system has launched the project, generated your initial setup invoice, and allocated our top engineering specialists to start development immediately.\n\nYou can track the live progress via your portal. An authorized representative will also get in touch shortly.\n\nBest regards,\nNEXA Autonomous Operations\nNexovTech Corp.`;
+    } catch (launchErr) {
+      console.error('❌ [DEAL GATEKEEPER] Failed to autonomously launch project on email approval:', launchErr.message);
+    }
+  }
+
+  if (!replyContent && aiClient) {
     try {
       let systemPrompt = '';
       let userPrompt = '';

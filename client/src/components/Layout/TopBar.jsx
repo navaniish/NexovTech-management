@@ -6,7 +6,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const TopBar = ({ onMenuToggle }) => {
+const TopBar = () => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -60,22 +60,15 @@ const TopBar = ({ onMenuToggle }) => {
   };
 
   return (
-    <header className="h-[64px] md:h-[80px] sticky top-0 w-full glass-panel border-b border-white/20 px-4 md:px-8 flex items-center justify-between z-[60] shrink-0 backdrop-blur-xl">
-      
+    <header className="h-[64px] sticky top-0 w-full glass-panel border-b border-white/20 px-4 flex items-center justify-between z-[60] shrink-0 backdrop-blur-xl">
+
       {/* LEFT AREA - BRAND LOGO */}
-      <div className="flex items-center gap-3 md:w-[260px]">
-        <button 
-          onClick={onMenuToggle}
-          className="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-colors"
-        >
-          <Menu size={22} />
-        </button>
-        
+      <div className="flex items-center gap-3">
         <div className="flex items-center group cursor-pointer" onClick={() => navigate('/')}>
-           <div className="h-[36px] md:h-[50px] bg-white rounded-lg p-1 px-2 flex items-center justify-center transition-all duration-300 group-hover:scale-105 shadow-sm">
-              <img src="/assets/company-logo.jpeg" alt="Logo" className="h-full w-auto object-contain" />
-           </div>
-           <span className="md:hidden ml-2 text-[15px] font-black tracking-tighter text-slate-900">NEXOVTECH</span>
+          <div className="h-[36px] bg-white rounded-lg p-1 px-2 flex items-center justify-center transition-all duration-300 group-hover:scale-105 shadow-sm">
+            <img src="/assets/company-logo.jpeg" alt="Logo" className="h-full w-auto object-contain" />
+          </div>
+          <span className="ml-2 text-[15px] font-black tracking-tighter text-slate-900">NEXOVTECH</span>
         </div>
       </div>
 
@@ -85,9 +78,9 @@ const TopBar = ({ onMenuToggle }) => {
           <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
             <Search size={18} />
           </div>
-          <input 
-            type="text" 
-            placeholder="Search for employees, projects, tasks..." 
+          <input
+            type="text"
+            placeholder="Search for employees, projects, tasks..."
             className="w-full h-12 pl-12 pr-16 bg-white/40 border border-white/60 rounded-2xl text-[14px] font-bold focus:outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all"
           />
           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-white border border-slate-200 rounded-lg shadow-sm">
@@ -99,11 +92,11 @@ const TopBar = ({ onMenuToggle }) => {
 
       {/* RIGHT UTILITIES */}
       <div className="flex items-center gap-2 md:gap-3">
-        <button onClick={toggleTheme} className="hidden sm:flex w-10 h-10 items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-xl transition-all">
-          <Sun size={18} />
+        <button onClick={toggleTheme} className="hidden sm:flex w-10 h-10 items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-xl transition-all" title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
         <div className="relative">
-          <button 
+          <button
             onClick={() => setShowNotifications(!showNotifications)}
             className="relative w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-xl transition-all"
           >
@@ -145,8 +138,8 @@ const TopBar = ({ onMenuToggle }) => {
                       </div>
                     ) : (
                       notifications.map(n => (
-                        <div 
-                          key={n.id} 
+                        <div
+                          key={n.id}
                           className={`p-4 border-b border-slate-50 flex gap-3 hover:bg-slate-50 transition-colors group cursor-pointer ${!n.read ? 'bg-indigo-50/30' : ''}`}
                           onClick={() => {
                             if (!n.read) markAsRead(n.id);
@@ -156,16 +149,15 @@ const TopBar = ({ onMenuToggle }) => {
                             }
                           }}
                         >
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${
-                            n.type === 'error' ? 'bg-rose-100 text-rose-500' :
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${n.type === 'error' ? 'bg-rose-100 text-rose-500' :
                             n.type === 'warning' ? 'bg-amber-100 text-amber-500' :
-                            n.type === 'success' ? 'bg-emerald-100 text-emerald-500' :
-                            'bg-indigo-100 text-indigo-600'
-                          }`}>
+                              n.type === 'success' ? 'bg-emerald-100 text-emerald-500' :
+                                'bg-indigo-100 text-indigo-600'
+                            }`}>
                             {n.type === 'error' ? <AlertTriangle size={14} /> :
-                             n.type === 'warning' ? <AlertTriangle size={14} /> :
-                             n.type === 'success' ? <CheckCircle2 size={14} /> :
-                             <Info size={14} />}
+                              n.type === 'warning' ? <AlertTriangle size={14} /> :
+                                n.type === 'success' ? <CheckCircle2 size={14} /> :
+                                  <Info size={14} />}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-0.5">
@@ -188,90 +180,96 @@ const TopBar = ({ onMenuToggle }) => {
             )}
           </AnimatePresence>
         </div>
-        <button className="hidden sm:flex w-10 h-10 items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-xl transition-all">
+        <button 
+          onClick={() => {
+            const isAdmin = user?.role === 'Admin' || user?.role === 'Super Admin' || user?.role === 'Manager';
+            navigate(isAdmin ? '/ai' : '/employee/ai-chat');
+          }}
+          className="hidden sm:flex w-10 h-10 items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-xl transition-all"
+          title="Open NEXA AI Hub"
+        >
           <MessageSquare size={18} />
         </button>
-        
+
         <div className="hidden sm:block w-px h-6 bg-white/40 mx-1" />
 
         <div className="relative">
-           <div 
-             onClick={() => setShowUserMenu(!showUserMenu)}
-             className="flex items-center gap-3 pl-2 group cursor-pointer"
-           >
-              <div className="text-right hidden lg:block">
-                <p className="text-[9px] font-black text-slate-900 leading-tight uppercase tracking-tighter opacity-90">
-                  {user?.name || 'Admin User'}
-                </p>
-                <p className={`text-[9px] font-black uppercase tracking-[0.1em] ${
-                  user?.role === 'Admin' ? 'text-indigo-600' : 
-                  user?.role === 'Editor' ? 'text-purple-500' : 
-                  user?.role === 'Manager' ? 'text-emerald-600' : 
-                  'text-slate-400'
+          <div
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="flex items-center gap-3 pl-2 group cursor-pointer"
+          >
+            <div className="text-right hidden lg:block">
+              <p className="text-[9px] font-black text-slate-900 leading-tight uppercase tracking-tighter opacity-90">
+                {user?.name || 'Admin User'}
+              </p>
+              <p className={`text-[9px] font-black uppercase tracking-[0.1em] ${user?.role === 'Admin' ? 'text-indigo-600' :
+                user?.role === 'Editor' ? 'text-purple-500' :
+                  user?.role === 'Manager' ? 'text-emerald-600' :
+                    'text-slate-400'
                 }`}>
-                  {user?.role || 'Authorized'}
-                </p>
-              </div>
-               <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl md:rounded-2xl overflow-hidden border-2 border-white shadow-lg group-hover:scale-105 transition-all duration-300">
-                 <img 
-                   src={user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL.replace('/api', '')}${user.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'Admin'}`} 
-                   alt="" 
-                   className="w-full h-full object-cover" 
-                 />
-              </div>
-              <ChevronDown size={12} className={`text-slate-400 transition-transform duration-300 ${showUserMenu ? 'rotate-180' : ''}`} />
-           </div>
+                {user?.role || 'Authorized'}
+              </p>
+            </div>
+            <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl md:rounded-2xl overflow-hidden border-2 border-white shadow-lg group-hover:scale-105 transition-all duration-300">
+              <img
+                src={user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL.replace('/api', '')}${user.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'Admin'}`}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <ChevronDown size={12} className={`text-slate-400 transition-transform duration-300 ${showUserMenu ? 'rotate-180' : ''}`} />
+          </div>
 
-           <AnimatePresence>
-             {showUserMenu && (
-               <>
-                 <div className="fixed inset-0 z-10" onClick={() => setShowUserMenu(false)} />
-                 <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-3 w-52 bg-white rounded-[24px] shadow-2xl border border-slate-100 p-1.5 z-20 backdrop-blur-xl"
+          <AnimatePresence>
+            {showUserMenu && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowUserMenu(false)} />
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute right-0 mt-3 w-52 bg-white rounded-[24px] shadow-2xl border border-slate-100 p-1.5 z-20 backdrop-blur-xl"
+                >
+                  <div className="px-3 py-2 border-b border-slate-50 mb-1">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Authenticated Unit</p>
+                    <p className="text-[11px] font-black text-slate-900 truncate">{user?.companyEmail || user?.email || 'admin@nexovtech.com'}</p>
+                  </div>
+
+                  <button
+                    onClick={() => { navigate('/settings'); setShowUserMenu(false); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-all group"
                   >
-                     <div className="px-3 py-2 border-b border-slate-50 mb-1">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Authenticated Unit</p>
-                        <p className="text-[11px] font-black text-slate-900 truncate">{user?.companyEmail || user?.email || 'admin@nexovtech.com'}</p>
-                     </div>
+                    <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
+                      <User size={14} />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Command Profile</span>
+                  </button>
 
-                     <button 
-                       onClick={() => { navigate('/settings'); setShowUserMenu(false); }}
-                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-all group"
-                     >
-                        <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
-                           <User size={14} />
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest">Command Profile</span>
-                     </button>
+                  <button
+                    onClick={() => { navigate('/settings'); setShowUserMenu(false); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-all group"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
+                      <SettingsIcon size={14} />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest">System Settings</span>
+                  </button>
 
-                     <button 
-                       onClick={() => { navigate('/settings'); setShowUserMenu(false); }}
-                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-all group"
-                     >
-                        <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
-                           <SettingsIcon size={14} />
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest">System Settings</span>
-                     </button>
+                  <div className="my-1 border-t border-slate-50" />
 
-                     <div className="my-1 border-t border-slate-50" />
-
-                     <button 
-                       onClick={handleLogout}
-                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-500 hover:bg-rose-50 transition-all group"
-                     >
-                        <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center group-hover:bg-rose-100 transition-colors">
-                           <LogOut size={14} />
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest">Terminate Session</span>
-                     </button>
-                  </motion.div>
-               </>
-             )}
-           </AnimatePresence>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-500 hover:bg-rose-50 transition-all group"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center group-hover:bg-rose-100 transition-colors">
+                      <LogOut size={14} />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest">Terminate Session</span>
+                  </button>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </header>

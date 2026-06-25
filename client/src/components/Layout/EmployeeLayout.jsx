@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import EmployeeSidebar from './EmployeeSidebar';
 import TopBar from './TopBar';
 
 const EmployeeLayout = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   useEffect(() => {
     // Lock body scrolling while dashboard is active to prevent scroll gaps
     document.body.style.overflow = 'hidden';
@@ -22,32 +20,32 @@ const EmployeeLayout = () => {
   }, []);
 
   return (
-    <div className="flex flex-col h-[100dvh] w-full overflow-hidden relative">
+    <div className="w-full h-screen bg-slate-950 flex flex-col overflow-hidden relative z-10">
       {/* 1. FIXED OFFICE BACKGROUND LAYER */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-white/20 z-10" />
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-slate-900/60 z-10" />
         <img
           src="/assets/office-bg.png"
           alt="Office Theme"
-          className="w-full h-full object-cover opacity-80"
+          className="w-full h-full object-cover opacity-30"
         />
       </div>
 
       {/* 2. TOPBAR - IN FLOW */}
-      <div className="relative z-[60]">
-        <TopBar onMenuToggle={() => setMobileMenuOpen(true)} />
+      <div className="relative z-[60] shrink-0">
+        <TopBar />
       </div>
 
-      <div className="flex flex-1 overflow-hidden relative z-50">
+      <div className="flex flex-1 overflow-hidden relative z-50 w-full">
         {/* 3. SIDEBAR */}
-        <EmployeeSidebar mobileOpen={mobileMenuOpen} setMobileOpen={setMobileMenuOpen} />
+        <EmployeeSidebar />
 
         {/* 4. SCROLLABLE CONTENT AREA */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-transparent scroll-smooth">
-          <main className="min-h-full flex flex-col px-3 py-6 sm:px-6 md:p-10">
+          <main className="min-h-full flex flex-col px-6 py-6 md:px-8">
 
-            {/* CONTENT WRAPPER - 1440px MAX */}
-            <div className="w-full max-w-[1440px] mx-auto animate-in fade-in slide-in-from-bottom-2 duration-700">
+            {/* CONTENT WRAPPER */}
+            <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-700">
               <Outlet />
             </div>
 

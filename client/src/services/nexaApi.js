@@ -141,6 +141,16 @@ export const nexaApi = {
     return response.data;
   },
 
+  getAutopilotStatus: async () => {
+    const response = await nexaClient.get('/automation/autopilot/status');
+    return response.data;
+  },
+
+  toggleAutopilot: async (enabled) => {
+    const response = await nexaClient.post('/automation/autopilot/toggle', { enabled });
+    return response.data;
+  },
+
   getExecutiveBriefing: async () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const headers = {};
@@ -156,10 +166,36 @@ export const nexaApi = {
     return response.data;
   },
 
+  getAgentRuns: async () => {
+    const response = await nexaClient.get('/agent/runs');
+    return response.data;
+  },
+
+  approveAgentRun: async (runId) => {
+    const response = await nexaClient.post(`/agent/run/${runId}/approve`);
+    return response.data;
+  },
+
+  rejectAgentRun: async (runId) => {
+    const response = await nexaClient.post(`/agent/run/${runId}/reject`);
+    return response.data;
+  },
+
   sendWhatsappSimulatorMessage: async (message) => {
     const response = await nexaClient.post('/whatsapp/simulate', { message });
     return response.data;
   },
+
+  simulateVoiceCall: async (leadId, customPhoneNumber = '', language = 'en', customMessage = '') => {
+    const response = await nexaClient.post('/voice/simulate', { leadId, customPhoneNumber, language, customMessage });
+    return response.data;
+  },
+
+  getZegoToken: async (roomID, userID = '') => {
+    const response = await nexaClient.post('/voice/zego-token', { roomID, userID });
+    return response.data;
+  },
+
 
   // 9. Semantic Vector Memory Suite
   listVectorDocs: async (collectionName) => {
@@ -174,6 +210,16 @@ export const nexaApi = {
 
   deleteVectorDoc: async (id) => {
     const response = await nexaClient.delete(`/vector/documents/${id}`);
+    return response.data;
+  },
+
+  syncVectorProposals: async () => {
+    const response = await nexaClient.post('/vector/sync-proposals');
+    return response.data;
+  },
+
+  syncVectorOutreach: async () => {
+    const response = await nexaClient.post('/vector/sync-outreach');
     return response.data;
   }
 };

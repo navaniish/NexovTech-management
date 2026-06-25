@@ -1,441 +1,5 @@
 [
   {
-    "id": "5DrvTyFyxqmPMtXdxByj",
-    "createdAt": "2026-06-17T04:06:05.136Z",
-    "website": "https://global.rakuten.com/corp/",
-    "techStack": [
-      "Java",
-      "Apache Cassandra",
-      "Spring Framework"
-    ],
-    "contactInfo": {
-      "emails": [
-        "ir@rakuten.com"
-      ],
-      "primaryContactName": "Makoto Hasebe",
-      "linkedInUrls": [
-        "https://www.linkedin.com/company/rakuten/"
-      ],
-      "phones": [
-        "+81 3-6839-2000"
-      ]
-    },
-    "companyName": "Rakuten",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "20,000-50,000 | Japan",
-    "status": "Pending_Approval"
-  },
-  {
-    "id": "5cHIAx2w28OcHuqBQFaZ",
-    "createdAt": "2026-06-13T17:07:46.314Z",
-    "website": "luxehome.com",
-    "techStack": [
-      "Magento",
-      "Adobe Analytics",
-      "Vite"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@luxehome.com",
-        "contact@luxehome.com"
-      ],
-      "primaryContactName": "John Doe",
-      "linkedInUrls": [
-        "https://linkedin.com/company/luxehome-decor"
-      ],
-      "phones": [
-        "+1 (555) 019-2834"
-      ]
-    },
-    "companyName": "LuxeHome Decor",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "51-200",
-    "status": "Scored"
-  },
-  {
-    "id": "60D2HB1qkNTwaPa09E85",
-    "createdAt": "2026-06-14T16:54:11.593Z",
-    "website": "k-h-koeln.de",
-    "techStack": [
-      "DNN",
-      "Google Cloud",
-      "Oracle"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@k-h-koeln.de"
-      ],
-      "primaryContactName": "Frau Birgit Schneider",
-      "linkedInUrls": [
-        "https://linkedin.com/company/krankenhaus-k%C3%B6ln"
-      ],
-      "phones": [
-        "+49 (221) 202086-0"
-      ]
-    },
-    "companyName": "Krankenhaus Köln",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "201-500 | Germany",
-    "status": "Archived"
-  },
-  {
-    "id": "74E4jSskMRBxoB5bQZ3Q",
-    "createdAt": "2026-06-17T04:02:20.127Z",
-    "website": "oura.com",
-    "techStack": [
-      "JavaScript",
-      "React",
-      "Node.js"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@oura.com"
-      ],
-      "primaryContactName": "Peter Szulczewski",
-      "linkedInUrls": [
-        "https://www.linkedin.com/company/oura-ring"
-      ],
-      "phones": [
-        "+1 (855) 464-8776"
-      ]
-    },
-    "companyName": "Oura",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "100-250 | United States",
-    "status": "Pending_Approval"
-  },
-  {
-    "id": "9mpDxe7Pv0p6tRTOJo5c",
-    "createdAt": "2026-06-17T18:38:26.653Z",
-    "website": "meesho.com",
-    "techStack": [
-      "React",
-      "Node.js",
-      "MySQL"
-    ],
-    "contactInfo": {
-      "emails": [
-        "support@meesho.com"
-      ],
-      "primaryContactName": "Sanjay Gupta",
-      "linkedInUrls": [
-        "https://linkedin.com/company/meesho"
-      ],
-      "phones": [
-        "+91 022 55678000"
-      ]
-    },
-    "companyName": " Meesho",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "100-500 | India",
-    "status": "Archived"
-  },
-  {
-    "id": "AdPXmwK8Jo7RLncfpXkt",
-    "createdAt": "2026-06-17T04:00:53.908Z",
-    "website": "revolutionapparel.com",
-    "techStack": [
-      "Shopify",
-      "Adobe Creative Cloud",
-      "Amazon Web Services"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@revolutionapparel.com"
-      ],
-      "primaryContactName": "Emily Tran",
-      "linkedInUrls": [
-        "https://linkedin.com/company/revolution-apparel-inc/"
-      ],
-      "phones": [
-        "+1 (647) 893-4567"
-      ]
-    },
-    "companyName": "Revolution Apparel",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "11-50 | Canada",
-    "status": "Archived"
-  },
-  {
-    "id": "C2vrfGxKbCxLm8PqfU3k",
-    "createdAt": "2026-06-14T16:37:43.025Z",
-    "website": "terrastore.com",
-    "techStack": [
-      "Vue.js",
-      "Shopify",
-      "Redis"
-    ],
-    "contactInfo": {
-      "emails": [
-        "contact@terrastore.com"
-      ],
-      "primaryContactName": "Emily Chen",
-      "linkedInUrls": [
-        "https://linkedin.com/company/terrastore"
-      ],
-      "phones": [
-        "+1 (510) 901-2345"
-      ]
-    },
-    "companyName": "Terra Store",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "11-50 | United States",
-    "status": "Archived"
-  },
-  {
-    "id": "D21BOWU2uFc7XDIghOZv",
-    "website": "yahoo.com",
-    "contactName": "Yahoo Onboarding Team",
-    "companyName": "Yahoo Communications",
-    "phones": [
-      "+1 (555) 019-2834"
-    ],
-    "industry": "Technology",
-    "source": "WebScrape",
-    "companySize": "10,000+ | United States",
-    "emails": [
-      "mail@mail.comms.yahoo.net"
-    ],
-    "createdAt": "2026-06-17T17:50:26.433Z",
-    "linkedinUrls": [
-      "https://linkedin.com/company/yahoo"
-    ],
-    "techStack": [
-      "Hadoop",
-      "Apache Traffic Server",
-      "Node.js"
-    ],
-    "status": "Discovered"
-  },
-  {
-    "id": "G4Z9gxsMoC5FRKoG00sJ",
-    "createdAt": "2026-06-17T04:24:10.227Z",
-    "website": "https://noirandblanco.com/",
-    "techStack": [
-      "Digital marketing",
-      "SEO",
-      "Content marketing",
-      "Social media marketing",
-      "Influencer marketing"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@noirandblanco.com"
-      ],
-      "primaryContactName": "Noir & Blanco Team",
-      "linkedInUrls": [
-        "https://linkedin.com/company/noir-and-blanco"
-      ],
-      "phones": [
-        "+91 (500) 000-0002"
-      ]
-    },
-    "companyName": "Noir & Blanco",
-    "industry": "agency",
-    "source": "WebScrape",
-    "companySize": "50-200 | India",
-    "status": "Archived"
-  },
-  {
-    "id": "H4vY61p2Qtl5yrE2YdyC",
-    "createdAt": "2026-06-10T17:47:32.437Z",
-    "website": "apexdentalcare.com",
-    "techStack": [
-      "React",
-      "WordPress",
-      "Google Analytics"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@apexdentalcare.com",
-        "contact@apexdentalcare.com"
-      ],
-      "primaryContactName": "John Doe",
-      "linkedInUrls": [
-        "https://linkedin.com/company/apex-dental-care"
-      ],
-      "phones": [
-        "+1 (555) 019-2834"
-      ]
-    },
-    "companyName": "Apex Dental Care",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "11-50",
-    "projectId": "CvRT1cdPWkjHPke4wHU2",
-    "status": "Outreach_Sent"
-  },
-  {
-    "id": "HgrdI4kWOgBffTYSUjot",
-    "createdAt": "2026-06-17T04:17:21.334Z",
-    "website": "https://storebase.io/",
-    "techStack": [
-      "eCommerce Platform",
-      "Vue.js",
-      "Guzzle"
-    ],
-    "contactInfo": {
-      "emails": [
-        "support@storebase.io"
-      ],
-      "primaryContactName": "Johannes Müller",
-      "linkedInUrls": [
-        "https://linkedin.com/company/storebase"
-      ],
-      "phones": [
-        "+49 89 7654 3210"
-      ]
-    },
-    "companyName": "Storebase",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "6-10 | Germany",
-    "status": "Pending_Approval"
-  },
-  {
-    "id": "IVPtcJQkwlUrkTBKkPRF",
-    "createdAt": "2026-06-14T16:48:46.063Z",
-    "website": "eporch.com",
-    "techStack": [
-      "Shopify Plus",
-      "Azure Functions",
-      "C#"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@eporch.com"
-      ],
-      "primaryContactName": "Eliza Reed",
-      "linkedInUrls": [
-        "https://www.linkedin.com/company/eporch/"
-      ],
-      "phones": [
-        "+1 (416) 999-0223"
-      ]
-    },
-    "companyName": "ePorch",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "21-100 | Canada",
-    "projectId": "phgL2JiHIglKiZUujXRH",
-    "status": "Converted"
-  },
-  {
-    "id": "IheevD6ELFyL6r3gx9re",
-    "website": "yahoo.com",
-    "contactName": "Yahoo Onboarding Team",
-    "companyName": "Yahoo Communications",
-    "phones": [
-      "+1 (555) 019-2834"
-    ],
-    "industry": "Technology",
-    "source": "WebScrape",
-    "companySize": "10,000+ | United States",
-    "emails": [
-      "mail@mail.comms.yahoo.net"
-    ],
-    "createdAt": "2026-06-17T18:01:11.083Z",
-    "linkedinUrls": [
-      "https://linkedin.com/company/yahoo"
-    ],
-    "techStack": [
-      "Hadoop",
-      "Apache Traffic Server",
-      "Node.js"
-    ],
-    "status": "Discovered"
-  },
-  {
-    "id": "Kp4PPyHl7XNyqmZSdf4l",
-    "createdAt": "2026-06-14T16:48:40.238Z",
-    "website": "zealcommerce.io",
-    "techStack": [
-      "Headless WordPress",
-      "PostgreSQL",
-      "GraphQL API"
-    ],
-    "contactInfo": {
-      "emails": [
-        "hello@zealcommerce.io"
-      ],
-      "primaryContactName": "Ava Lee",
-      "linkedInUrls": [
-        "https://www.linkedin.com/company/zeal-commerce/"
-      ],
-      "phones": [
-        "+1 (858) 277-3330"
-      ]
-    },
-    "companyName": "Zeal Commerce",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "11-50 | United States",
-    "projectId": "Q7exqutp02xr2aK3optC",
-    "status": "Converted"
-  },
-  {
-    "id": "L0ujGQOIuSFag8EQdLnu",
-    "createdAt": "2026-06-17T04:02:43.115Z",
-    "website": "biofourmis.com",
-    "techStack": [
-      "Java",
-      "Spring",
-      "MySQL"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@biofourmis.com"
-      ],
-      "primaryContactName": "Karthik Rao",
-      "linkedInUrls": [
-        "https://www.linkedin.com/company/biofourmis/"
-      ],
-      "phones": [
-        "+65 3159 2700"
-      ]
-    },
-    "companyName": "Biofourmis",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "100-250 | Singapore",
-    "status": "Archived"
-  },
-  {
-    "id": "Luy9L44vHz1F7IXTuKVH",
-    "createdAt": "2026-06-14T16:37:48.546Z",
-    "website": "epicwarehouse.net",
-    "techStack": [
-      "Angular",
-      "BigCommerce",
-      "AWS Lambda"
-    ],
-    "contactInfo": {
-      "emails": [
-        "sales@epicwarehouse.net"
-      ],
-      "primaryContactName": "Kevin Wong",
-      "linkedInUrls": [
-        "https://linkedin.com/company/epicwarehouse"
-      ],
-      "phones": [
-        "+65 (65) 1234-5679"
-      ]
-    },
-    "companyName": "Epic Warehouse",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "51-100 | Singapore",
-    "projectId": "S3UMSfojTW4C1GHLSvVQ",
-    "status": "Converted"
-  },
-  {
     "id": "NN3MW1sTyf1xNE37II1U",
     "createdAt": "2026-06-17T04:02:32.108Z",
     "website": "ada.com",
@@ -463,1067 +27,165 @@
     "status": "Archived"
   },
   {
-    "id": "QLELEr44KXGEwGLk4I9J",
-    "createdAt": "2026-06-10T17:47:36.124Z",
-    "website": "medvantagelabs.com",
-    "techStack": [
-      "Next.js",
-      "PostgreSQL",
-      "Tailwind"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@medvantagelabs.com",
-        "contact@medvantagelabs.com"
-      ],
-      "primaryContactName": "John Doe",
-      "linkedInUrls": [
-        "https://linkedin.com/company/medvantage-labs"
-      ],
-      "phones": [
-        "+1 (555) 019-2834"
-      ]
-    },
-    "companyName": "MedVantage Labs",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "1-10",
-    "status": "Scored"
-  },
-  {
-    "id": "QPT4tV9ZujEfRIyeJ2P3",
-    "createdAt": "2026-06-13T17:07:40.480Z",
-    "website": "urbanfitthreads.com",
-    "techStack": [
-      "WooCommerce",
-      "MySQL",
-      "Elementor"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@urbanfitthreads.com",
-        "contact@urbanfitthreads.com"
-      ],
-      "primaryContactName": "John Doe",
-      "linkedInUrls": [
-        "https://linkedin.com/company/urbanfit-threads"
-      ],
-      "phones": [
-        "+1 (555) 019-2834"
-      ]
-    },
-    "companyName": "UrbanFit Threads",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "1-10",
-    "status": "Scored"
-  },
-  {
-    "id": "QzGzI6iloV8rdCinPC0Q",
-    "createdAt": "2026-06-17T04:02:45.257Z",
-    "website": "etsy.com",
-    "techStack": [
-      "React",
-      "PostgreSQL",
-      "Apache Cassandra",
-      "Golang"
-    ],
-    "contactInfo": {
-      "emails": [
-        "contact@etsy.com"
-      ],
-      "primaryContactName": "Josh Silverman",
-      "linkedInUrls": [
-        "https://linkedin.com/company/etsy"
-      ],
-      "phones": [
-        "+1 (718) 474 0839"
-      ]
-    },
-    "companyName": "Etsy",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "200-500 | United States",
-    "status": "Pending_Approval"
-  },
-  {
-    "id": "RXEDE3frYsn6oJwiK2NM",
-    "createdAt": "2026-06-14T16:57:06.740Z",
-    "website": "ablebowell.ca",
-    "techStack": [
-      "Salesforce",
-      "Heroku",
-      "Netlify"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@ablebowell.ca"
-      ],
-      "primaryContactName": "Jason Smith",
-      "linkedInUrls": [
-        "https://linkedin.com/company/ablebowell-canada"
-      ],
-      "phones": [
-        "+1 (604) 982-1999"
-      ]
-    },
-    "companyName": "Ablebowell Canada",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "11-50 | Canada",
-    "status": "Archived"
-  },
-  {
-    "id": "SKx8qaDBoMeqs9XHRVnS",
-    "createdAt": "2026-06-17T04:00:58.939Z",
-    "website": "trendzone.co",
-    "techStack": [
-      "Magento",
-      "MySQL",
-      "Selenium WebDriver"
-    ],
-    "contactInfo": {
-      "emails": [
-        "hello@trendzone.co"
-      ],
-      "primaryContactName": "Rachel Russell",
-      "linkedInUrls": [
-        "https://linkedin.com/company/trendzone-uk-limited/"
-      ],
-      "phones": [
-        "+44 (20) 8816-6678"
-      ]
-    },
-    "companyName": "TrendZone",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "21-50 | United Kingdom",
-    "status": "Archived"
-  },
-  {
-    "id": "StMJ5SrIJ55mZ686IJTn",
-    "createdAt": "2026-06-17T18:38:21.892Z",
-    "website": "flipkart.com",
-    "techStack": [
-      "React",
-      "Java",
-      "Apache Kafka"
-    ],
-    "contactInfo": {
-      "emails": [
-        "customer@flipkart.com"
-      ],
-      "primaryContactName": "Adarsh Menon",
-      "linkedInUrls": [
-        "https://linkedin.com/company/flipkart"
-      ],
-      "phones": [
-        "+91 022 49700000"
-      ]
-    },
-    "companyName": " Flipkart",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "1000-5000 | India",
-    "status": "Pending_Approval"
-  },
-  {
-    "id": "WKJLlgMKVOyfyBHai1IL",
-    "createdAt": "2026-06-14T16:54:21.304Z",
-    "website": "uhh.de",
-    "techStack": [
-      "Crownpeak",
-      "Splunk",
-      "Salesforce"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@uhh.de"
-      ],
-      "primaryContactName": "Prof. Dr. rer. nat. Dr. h. c. Volker Schneider",
-      "linkedInUrls": [
-        "https://linkedin.com/company/university-hospital-hamburg"
-      ],
-      "phones": [
-        "+49 (40) 772334-0"
-      ]
-    },
-    "companyName": "University Hospital Hamburg",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "500-1000 | Germany",
-    "projectId": "5lZ2hicH82yeqIZRpDLQ",
-    "status": "Converted"
-  },
-  {
-    "id": "WwvMbSnFGBzsnEweu7ZP",
-    "createdAt": "2026-06-10T17:47:34.180Z",
-    "website": "carefirstclinics.org",
-    "techStack": [
-      "Angular",
-      "PHP",
-      "Salesforce"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@carefirstclinics.org",
-        "contact@carefirstclinics.org"
-      ],
-      "primaryContactName": "John Doe",
-      "linkedInUrls": [
-        "https://linkedin.com/company/carefirst-clinics"
-      ],
-      "phones": [
-        "+1 (555) 019-2834"
-      ]
-    },
-    "companyName": "CareFirst Clinics",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "51-200",
-    "status": "Scored"
-  },
-  {
-    "id": "XDD4YhYRvZ6jgdu5wEbA",
-    "createdAt": "2026-06-17T04:02:25.758Z",
-    "website": "springhealth.com",
+    "companyName": "TradeGecko",
+    "website": "tradegecko.com",
+    "industry": "Retail",
+    "companySize": "11-50 | Singapore",
     "techStack": [
       "Ruby on Rails",
       "PostgreSQL",
-      "AWS"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@springhealth.com"
-      ],
-      "primaryContactName": "Mike Murchison",
-      "linkedInUrls": [
-        "https://www.linkedin.com/company/spring-health-llc/"
-      ],
-      "phones": [
-        "+1 (646) 687-5353"
-      ]
-    },
-    "companyName": "Spring Health",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "51-100 | United States",
-    "projectId": "VV7zopyxTpFRpbD4pKrU",
-    "status": "Converted"
-  },
-  {
-    "id": "cMzjmfqxmSOtybMtoYDU",
-    "createdAt": "2026-06-14T16:48:51.665Z",
-    "website": "spreme.io",
-    "techStack": [
-      "Spree Commerce",
-      "Docker",
-      "Kubernetes"
-    ],
-    "contactInfo": {
-      "emails": [
-        "support@spreme.io"
-      ],
-      "primaryContactName": "Hugo Gill",
-      "linkedInUrls": [
-        "https://www.linkedin.com/company/spreme/"
-      ],
-      "phones": [
-        "+44 (20) 3007-0273"
-      ]
-    },
-    "companyName": "SpreeMarket",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "11-50 | United Kingdom",
-    "status": "Archived"
-  },
-  {
-    "id": "f2wHEv5ixd3x0bPO7j7v",
-    "createdAt": "2026-06-17T04:17:09.849Z",
-    "website": "https://groceryalert.co/",
-    "techStack": [
-      "Shopify",
-      "AWS",
-      "Apex Charts"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@groceryalert.co"
-      ],
-      "primaryContactName": "Alex Rodriguez",
-      "linkedInUrls": [
-        "https://linkedin.com/company/groceryalert"
-      ],
-      "phones": [
-        "+1 (555) 019-2834"
-      ]
-    },
-    "companyName": "Grocery Alert",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "11-50 | United States",
-    "status": "Archived"
-  },
-  {
-    "id": "hIli6yjr4smXCK2Rodtp",
-    "createdAt": "2026-06-17T04:24:19.946Z",
-    "website": "https://zeroado.com/",
-    "techStack": [
-      "Digital marketing",
-      "SEO",
-      "Content marketing",
-      "Social media marketing",
-      "Influencer marketing"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@zeroado.com"
-      ],
-      "primaryContactName": "Zeroado Team",
-      "linkedInUrls": [
-        "https://linkedin.com/company/zeroado"
-      ],
-      "phones": [
-        "+91 (500) 000-0004"
-      ]
-    },
-    "companyName": "Zeroado",
-    "industry": "agency",
-    "source": "WebScrape",
-    "companySize": "11-50 | India",
-    "status": "Archived"
-  },
-  {
-    "id": "iPEroZGM7M20trOY9oCi",
-    "createdAt": "2026-06-17T04:05:55.074Z",
-    "website": "https://www.shopee.com/",
-    "techStack": [
-      "React",
-      "MySQL",
-      "Apache Kafka"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@shopee.com"
-      ],
-      "primaryContactName": "Francis Cheong",
-      "linkedInUrls": [
-        "https://www.linkedin.com/company/shopee/"
-      ],
-      "phones": [
-        "+65 6833 6666"
-      ]
-    },
-    "companyName": "Shopee",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "11,000-20,000 | Singapore",
-    "status": "Pending_Approval"
-  },
-  {
-    "id": "iT0p7nmjosSbYOL9tBVt",
-    "website": "yahoo.com",
-    "contactName": "Yahoo Onboarding Team",
-    "companyName": "Yahoo Communications",
-    "phones": [
-      "+1 (555) 019-2834"
-    ],
-    "industry": "Technology",
-    "source": "WebScrape",
-    "companySize": "10,000+ | United States",
-    "emails": [
-      "mail@mail.comms.yahoo.net"
-    ],
-    "createdAt": "2026-06-17T17:46:19.056Z",
-    "linkedinUrls": [
-      "https://linkedin.com/company/yahoo"
-    ],
-    "techStack": [
-      "Hadoop",
-      "Apache Traffic Server",
-      "Node.js"
-    ],
-    "status": "Discovered"
-  },
-  {
-    "id": "jMsffpxEJ6PfBOTH46Ty",
-    "createdAt": "2026-06-14T16:37:37.525Z",
-    "website": "fusionmart.store",
-    "techStack": [
-      "Next.js",
-      "Magento",
-      "Apache Kafka"
-    ],
-    "contactInfo": {
-      "emails": [
-        "support@fusionmart.store"
-      ],
-      "primaryContactName": "Rohan Patel",
-      "linkedInUrls": [
-        "https://linkedin.com/company/fusionmart"
-      ],
-      "phones": [
-        "+91 (44) 1234-5678"
-      ]
-    },
-    "companyName": "Fusion Mart",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "101-200 | India",
-    "status": "Archived"
-  },
-  {
-    "id": "kiybUiHz2o3M42jeiOoQ",
-    "createdAt": "2026-06-17T04:24:15.129Z",
-    "website": "https://superbcompanies.com/",
-    "techStack": [
-      "Marketing",
-      "SEO",
-      "Digital marketing",
-      "Web development",
-      "E-commerce solutions"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@superbcompanies.com"
-      ],
-      "primaryContactName": "Superb Companies Team",
-      "linkedInUrls": [
-        "https://linkedin.com/company/superb-companies"
-      ],
-      "phones": [
-        "+91 (500) 000-0003"
-      ]
-    },
-    "companyName": "Superb Companies",
-    "industry": "agency",
-    "source": "WebScrape",
-    "companySize": "50-200 | India",
-    "projectId": "l3YuK54NavN32rcLr0B5",
-    "status": "Converted"
-  },
-  {
-    "id": "lead_test_1781502109019",
-    "website": "nexovtestingcorp.com",
-    "contactName": "Jane Test Doe",
-    "companyName": "NEXOV Testing Corp",
-    "phones": [
-      "+91 99999 88888"
-    ],
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "51-200 | India",
-    "emails": [
-      "jane@nexovtestingcorp.com"
-    ],
-    "createdAt": "2026-06-15T05:41:49.019Z",
-    "linkedinUrls": [
-      "https://linkedin.com/company/nexovtestingcorp"
-    ],
-    "techStack": [
-      "React",
-      "Next.js",
-      "PostgreSQL"
-    ],
-    "status": "Archived"
-  },
-  {
-    "id": "lead_test_1781502217859",
-    "website": "nexovtestingcorp.com",
-    "contactName": "Jane Test Doe",
-    "companyName": "NEXOV Testing Corp",
-    "phones": [
-      "+1 (555) 999-9999"
-    ],
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "500+ | United States",
-    "emails": [
-      "jane@nexovtestingcorp.com"
-    ],
-    "createdAt": "2026-06-15T05:43:37.859Z",
-    "linkedinUrls": [
-      "https://linkedin.com/company/nexovtestingcorp"
-    ],
-    "techStack": [
-      "React",
-      "Next.js",
-      "PostgreSQL",
-      "Artificial Intelligence",
-      "Large Language Models",
-      "SaaS Architecture"
-    ],
-    "projectId": "s3ZrhzViZ9LylpoGKqj2",
-    "status": "Converted"
-  },
-  {
-    "id": "lead_test_1781502287957",
-    "website": "nexovtestingcorp.com",
-    "contactName": "Jane Test Doe",
-    "companyName": "NEXOV Testing Corp",
-    "phones": [
-      "+1 (555) 999-9999"
-    ],
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "500+ | United States",
-    "emails": [
-      "jane@nexovtestingcorp.com"
-    ],
-    "createdAt": "2026-06-15T05:44:47.957Z",
-    "linkedinUrls": [
-      "https://linkedin.com/company/nexovtestingcorp"
-    ],
-    "techStack": [
-      "React",
-      "Next.js",
-      "PostgreSQL",
-      "Artificial Intelligence",
-      "Large Language Models",
-      "SaaS Architecture"
-    ],
-    "projectId": "mt2NohMdHqvCRiEPVtax",
-    "status": "Converted"
-  },
-  {
-    "id": "lead_test_1781507932528",
-    "createdAt": "2026-06-15T07:18:52.528Z",
-    "techStack": [
-      "Node.js",
-      "React",
-      "MongoDB"
-    ],
-    "contactEmail": "billing@acme.com",
-    "companyName": "Acme Test Corp",
-    "email": "acme_test@gmail.com",
-    "projectId": "o0xYWcAfcChfC9JKdQmp",
-    "status": "Converted"
-  },
-  {
-    "id": "lead_test_1781507973650",
-    "createdAt": "2026-06-15T07:19:33.650Z",
-    "techStack": [
-      "Node.js",
-      "React",
-      "MongoDB"
-    ],
-    "contactEmail": "billing@acme.com",
-    "companyName": "Acme Test Corp",
-    "email": "acme_test@gmail.com",
-    "projectId": "5IuYXrVMAcXHsToB86z7",
-    "status": "Converted"
-  },
-  {
-    "id": "lead_test_1781508132824",
-    "createdAt": "2026-06-15T07:22:12.824Z",
-    "techStack": [
-      "Node.js",
-      "React",
-      "MongoDB"
-    ],
-    "contactEmail": "billing@acme.com",
-    "companyName": "Acme Test Corp",
-    "email": "acme_test@gmail.com",
-    "projectId": "Irw5q7C6IfTSnFXey4rY",
-    "status": "Converted"
-  },
-  {
-    "id": "ljXnBdmC1ESXYwYwthBx",
-    "createdAt": "2026-06-17T04:02:40.419Z",
-    "website": "zalando.de",
-    "techStack": [
-      "Java",
-      "Hibernate",
-      "Apache Kafka",
-      "Big Data"
-    ],
-    "contactInfo": {
-      "emails": [
-        "contact@zalando.de"
-      ],
-      "primaryContactName": "Robert Gentz",
-      "linkedInUrls": [
-        "https://linkedin.com/company/zalando"
-      ],
-      "phones": [
-        "+49 30 204 42 969"
-      ]
-    },
-    "companyName": "Zalando",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "50-200 | Germany",
-    "status": "Archived"
-  },
-  {
-    "id": "mCb57BKFGFnxgcl4bB8f",
-    "createdAt": "2026-06-14T16:57:01.907Z",
-    "website": "smileangeldental.com",
-    "techStack": [
-      "DevExpress",
-      "Nuxt",
-      "Sentry"
-    ],
-    "contactInfo": {
-      "emails": [
-        "hello@smileangeldental.com"
-      ],
-      "primaryContactName": "Dr. Samantha Lee",
-      "linkedInUrls": [
-        "https://linkedin.com/company/smileangel-dental"
-      ],
-      "phones": [
-        "+1 (780) 881-0110"
-      ]
-    },
-    "companyName": "SmileAngel Dental",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "11-50 | Canada",
-    "status": "Archived"
-  },
-  {
-    "id": "nYUZWR22YYfqlhCL9efh",
-    "createdAt": "2026-06-17T04:02:51.010Z",
-    "website": "lazada.com",
-    "techStack": [
-      "React",
-      "Node.js",
-      "GraphQL",
-      "Big Data"
-    ],
-    "contactInfo": {
-      "emails": [
-        "contact@lazada.com"
-      ],
-      "primaryContactName": "Chenyao He",
-      "linkedInUrls": [
-        "https://linkedin.com/company/lazada-group"
-      ],
-      "phones": [
-        "+65 6710 8111"
-      ]
-    },
-    "companyName": "Lazada",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "200-500 | Singapore",
-    "status": "Archived"
-  },
-  {
-    "id": "p9iLiKYnhxQUmjMwWt34",
-    "createdAt": "2026-06-17T18:38:36.208Z",
-    "website": "myntra.com",
-    "techStack": [
-      "React",
-      "Vue.js",
       "Redis"
     ],
+    "source": "WebScrape",
+    "status": "Archived",
     "contactInfo": {
       "emails": [
-        "customer@myntra.com"
-      ],
-      "primaryContactName": "Amruda Nair",
-      "linkedInUrls": [
-        "https://linkedin.com/company/myntra"
+        "support@tradegecko.com"
       ],
       "phones": [
-        "+91 022 489-73737"
-      ]
+        "+65 3157 1317"
+      ],
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/tradegecko/"
+      ],
+      "primaryContactName": "Graeme Rayner"
     },
-    "companyName": " Myntra",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "100-500 | India",
-    "status": "Archived"
+    "id": "7u1BhVAQfG8RSfjlh17d",
+    "createdAt": "2026-06-25T08:28:39.698Z"
   },
   {
-    "id": "pSLvEXkAjVPSXKidDouA",
-    "createdAt": "2026-06-14T16:54:26.552Z",
-    "website": "mwfk-frankfurt.de",
+    "companyName": "Profit.co",
+    "website": "profit.co",
+    "industry": "Retail",
+    "companySize": "11-50 | United States",
     "techStack": [
-      "Sitecore",
-      "ServiceNow",
-      "VMware"
+      "Ruby on Rails",
+      "PostgreSQL",
+      "Redis"
     ],
+    "source": "WebScrape",
+    "status": "Archived",
     "contactInfo": {
       "emails": [
-        "info@mwfk-frankfurt.de"
-      ],
-      "primaryContactName": "Frau Barbara Weidmann",
-      "linkedInUrls": [
-        "https://linkedin.com/company/medical-center-frankfurt"
+        "support@profit.co"
       ],
       "phones": [
-        "+49 (69) 630400-0"
-      ]
-    },
-    "companyName": "Medical Center Frankfurt",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "100-200 | Germany",
-    "status": "Archived"
-  },
-  {
-    "id": "pmkOW37BNekWY29VnItU",
-    "createdAt": "2026-06-17T04:01:05.034Z",
-    "website": "epicalifestyle.in",
-    "techStack": [
-      "Odoo",
-      "Vimeo",
-      "Zapier"
-    ],
-    "contactInfo": {
-      "emails": [
-        "contact@epicalifestyle.in"
+        "+1 (855) 972-2473"
       ],
-      "primaryContactName": "Aarav Bansal",
       "linkedInUrls": [
-        "https://linkedin.com/company/epica-lifestyle-ltd/"
+        "https://www.linkedin.com/company/profitco/"
       ],
-      "phones": [
-        "+91 (852) 219-9087"
-      ]
+      "primaryContactName": "Profit.co Team"
     },
-    "companyName": "Epica Lifestyle",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "6-10 | India",
-    "status": "Archived"
+    "id": "D9EsBKKz8GPcRh1puiRh",
+    "createdAt": "2026-06-25T08:28:44.856Z"
   },
   {
-    "id": "qOrUh6pSONAxc8ECiSLp",
-    "createdAt": "2026-06-13T17:07:34.913Z",
-    "website": "shopglow.co",
+    "companyName": "Jiani",
+    "website": "jiiani.com",
+    "industry": "Retail",
+    "companySize": "1-10 | India",
     "techStack": [
-      "Shopify",
-      "Klaviyo",
-      "React"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@shopglow.co",
-        "contact@shopglow.co"
-      ],
-      "primaryContactName": "John Doe",
-      "linkedInUrls": [
-        "https://linkedin.com/company/shopglow-cosmetics"
-      ],
-      "phones": [
-        "+1 (555) 019-2834"
-      ]
-    },
-    "companyName": "ShopGlow Cosmetics",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "11-50",
-    "projectId": "YJZ7ZRvvtOaKpomWwdgF",
-    "status": "Converted"
-  },
-  {
-    "id": "qoMPusQYDIVxiTDQkmHc",
-    "createdAt": "2026-06-17T04:02:37.137Z",
-    "website": "sofarsound.com",
-    "techStack": [
-      "JavaScript",
-      "React",
-      "Docker"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@sofarsound.com"
-      ],
-      "primaryContactName": "John Monolinos",
-      "linkedInUrls": [
-        "https://www.linkedin.com/company/sofarsound/"
-      ],
-      "phones": [
-        "+1 (617) 357-2100"
-      ]
-    },
-    "companyName": "Sofar Foundry",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "51-100 | United States",
-    "status": "Archived"
-  },
-  {
-    "id": "rgoUOyN79cPcjfifCl6n",
-    "createdAt": "2026-06-17T18:38:41.127Z",
-    "website": "bibaindia.com",
-    "techStack": [
-      "React",
+      "Angular",
       "Node.js",
       "MongoDB"
     ],
+    "source": "WebScrape",
+    "status": "Archived",
     "contactInfo": {
       "emails": [
-        "info@bibaindia.com"
-      ],
-      "primaryContactName": "Rahul Mehrotra",
-      "linkedInUrls": [
-        "https://linkedin.com/company/bibaindia"
+        "contact@jiiani.com"
       ],
       "phones": [
-        "+91 022 662 12700"
-      ]
-    },
-    "companyName": " Biba",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "10-100 | India",
-    "status": "Archived"
-  },
-  {
-    "id": "t7cxQe0YjNsob6hEQTxB",
-    "createdAt": "2026-06-17T04:24:04.994Z",
-    "website": "https://startupone.in/",
-    "techStack": [
-      "Digital marketing",
-      "SEO",
-      "Creativity",
-      "Strategy",
-      "Performance-driven execution"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@startupone.in"
+        "+91 88002 36655"
       ],
-      "primaryContactName": "StartupOne Alliance Team",
       "linkedInUrls": [
-        "https://linkedin.com/company/startupone-alliance"
+        "https://www.linkedin.com/company/jiani/"
       ],
-      "phones": [
-        "+91 (500) 000-0001"
-      ]
+      "primaryContactName": "Jiani Team"
     },
-    "companyName": "StartupOne Alliance",
-    "industry": "agency",
-    "source": "WebScrape",
-    "companySize": "11-50 | India",
-    "status": "Archived"
+    "id": "SygyS1W7poarQAoGLqmN",
+    "createdAt": "2026-06-25T08:28:49.822Z"
   },
   {
-    "id": "tepzq1GVYlzJa3IRJxTU",
-    "createdAt": "2026-06-17T04:17:15.599Z",
-    "website": "https://fetchery.com/",
-    "techStack": [
-      "SaaS",
-      "Python",
-      "Django"
-    ],
-    "contactInfo": {
-      "emails": [
-        "contact@fetchery.com"
-      ],
-      "primaryContactName": "Priya Sharma",
-      "linkedInUrls": [
-        "https://linkedin.com/company/fetchery"
-      ],
-      "phones": [
-        "+91 888 222 1111"
-      ]
-    },
-    "companyName": "Fetchery",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "21-99 | India",
-    "status": "Archived"
-  },
-  {
-    "id": "u3nTA4z5rRLOqXxm6TsZ",
-    "createdAt": "2026-06-17T04:23:59.934Z",
-    "website": "https://naraway.com/",
-    "techStack": [
-      "IT development",
-      "E-commerce solutions",
-      "Web development",
-      "AI integration",
-      "Digital marketing",
-      "Business services"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@naraway.com"
-      ],
-      "primaryContactName": "Naraway Team",
-      "linkedInUrls": [
-        "https://linkedin.com/company/naraway"
-      ],
-      "phones": [
-        "+91 (500) 000-0000"
-      ]
-    },
-    "companyName": "Naraway",
-    "industry": "agency",
-    "source": "WebScrape",
-    "companySize": "50-200 | India",
-    "projectId": "kRYj8maRSqnxW4Emvtbg",
-    "status": "Converted"
-  },
-  {
-    "id": "ugZ3HAIAMWQVc31D4oeS",
-    "createdAt": "2026-06-14T16:57:11.698Z",
-    "website": "denturesolutions.ca",
-    "techStack": [
-      "Elementor",
-      "WP Rocket",
-      "Google Tag Manager"
-    ],
-    "contactInfo": {
-      "emails": [
-        "support@denturesolutions.ca"
-      ],
-      "primaryContactName": "Kelsey Williams",
-      "linkedInUrls": [
-        "https://linkedin.com/company/dentures-solutions"
-      ],
-      "phones": [
-        "+1 (902) 444-7847"
-      ]
-    },
-    "companyName": "Dentures Solutions",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "11-50 | Canada",
-    "status": "Archived"
-  },
-  {
-    "id": "ui2xMvl6bvzGvkpGb0lw",
-    "createdAt": "2026-06-14T16:56:56.979Z",
-    "website": "bccancer.bc.ca",
-    "techStack": [
-      "Apache Hadoop",
-      "Python",
-      "TensorFlow"
-    ],
-    "contactInfo": {
-      "emails": [
-        "publicaffairs@bccancer.bc.ca"
-      ],
-      "primaryContactName": "Dr. Brian M. Ferguson",
-      "linkedInUrls": [
-        "https://linkedin.com/company/bccancer"
-      ],
-      "phones": [
-        "+1 (604) 877-6000"
-      ]
-    },
-    "companyName": "BC Cancer Agency",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "51-200 | Canada",
-    "projectId": "FRZI4sQ6TeQ9R7fFfWRW",
-    "status": "Converted"
-  },
-  {
-    "id": "v3XgMHvG7E9IhAHDyYjq",
-    "createdAt": "2026-06-17T18:38:31.410Z",
-    "website": "nykaa.com",
-    "techStack": [
-      "React",
-      "Django",
-      "PostgreSQL"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@nykaa.com"
-      ],
-      "primaryContactName": "Freddy Burry",
-      "linkedInUrls": [
-        "https://linkedin.com/company/nykaa"
-      ],
-      "phones": [
-        "+91 022 011-075000"
-      ]
-    },
-    "companyName": " Nykaa",
-    "industry": "ecommerce",
-    "source": "WebScrape",
-    "companySize": "100-500 | India",
-    "status": "Archived"
-  },
-  {
-    "id": "vbANPLATLWLjzgDVUyQT",
-    "createdAt": "2026-06-14T16:54:16.504Z",
-    "website": "charite.de",
-    "techStack": [
-      "Liferay",
-      "Apache Cassandra",
-      "MuleSoft"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@charite.de"
-      ],
-      "primaryContactName": "Dr. Andreas Sturm",
-      "linkedInUrls": [
-        "https://linkedin.com/company/charit%C3%BC-berlin"
-      ],
-      "phones": [
-        "+49 (30) 4505-0"
-      ]
-    },
-    "companyName": "Charité Berlin",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "1000-2000 | Germany",
-    "projectId": "3Hp2LGqjsXIFCPPzdugu",
-    "status": "Converted"
-  },
-  {
-    "id": "z9GNKh4F4K4uGxu2AFLN",
-    "createdAt": "2026-06-14T16:54:05.958Z",
-    "website": "mk-muenchen.de",
-    "techStack": [
-      "Drupal",
-      "Tableau",
-      "Zoho CRM"
-    ],
-    "contactInfo": {
-      "emails": [
-        "info@mk-muenchen.de"
-      ],
-      "primaryContactName": "Dr. Michael Schmidt",
-      "linkedInUrls": [
-        "https://linkedin.com/company/medizinische-klinik-m%C3%BCnchen"
-      ],
-      "phones": [
-        "+49 (89) 516030-0"
-      ]
-    },
-    "companyName": "Medizinische Klinik München",
-    "industry": "healthcare",
-    "source": "WebScrape",
-    "companySize": "100-200 | Germany",
-    "status": "Archived"
-  },
-  {
-    "id": "zSOVwtpoDaEJcYVvzPb0",
-    "createdAt": "2026-06-14T16:57:16.462Z",
-    "website": "creomedical.com",
+    "companyName": "Orderchamp",
+    "website": "orderchamp.com",
+    "industry": "Retail",
+    "companySize": "11-50 | Germany",
     "techStack": [
       "Ruby on Rails",
-      "Bootstrap",
-      "Moodle"
+      "React",
+      "Amazon Redshift"
     ],
+    "source": "WebScrape",
+    "status": "Outreach_Sent",
     "contactInfo": {
       "emails": [
-        "info@creomedical.com"
-      ],
-      "primaryContactName": "Tyler Smith",
-      "linkedInUrls": [
-        "https://linkedin.com/company/creomedical"
+        "info@orderchamp.com"
       ],
       "phones": [
-        "+1 (905) 930-6234"
-      ]
+        "+49 (0)30 30899860"
+      ],
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/orderchamp"
+      ],
+      "primaryContactName": "Sascha Konrad"
     },
-    "companyName": "Creo Medical",
-    "industry": "healthcare",
+    "id": "WxK4J7C2hiIA1xfDCQEB",
+    "createdAt": "2026-06-25T08:31:39.210Z"
+  },
+  {
+    "companyName": "Aucs - The Digital Marketplace",
+    "website": "aucs.com",
+    "industry": "Retail",
+    "companySize": "11-50 | Canada",
+    "techStack": [
+      "Elasticsearch",
+      "Flask",
+      "Apache Kafka"
+    ],
     "source": "WebScrape",
-    "companySize": "51-200 | Canada",
-    "status": "Archived"
+    "status": "Archived",
+    "contactInfo": {
+      "emails": [
+        "info@aucs.com"
+      ],
+      "phones": [
+        "+1 437 800-4424"
+      ],
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/aucs-com"
+      ],
+      "primaryContactName": "Victor Mercado"
+    },
+    "id": "HA7THtPgjqK4CI6gUMGz",
+    "createdAt": "2026-06-25T08:31:44.292Z"
+  },
+  {
+    "companyName": "Mokin",
+    "website": "mokin.com",
+    "industry": "Retail",
+    "companySize": "11-50 | Singapore",
+    "techStack": [
+      "Django",
+      "Vue.js",
+      "PostgreSQL"
+    ],
+    "source": "WebScrape",
+    "status": "Archived",
+    "contactInfo": {
+      "emails": [
+        "info@mokin.com"
+      ],
+      "phones": [
+        "+65 9123 1123"
+      ],
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/mokin-com"
+      ],
+      "primaryContactName": "Keith Chua"
+    },
+    "id": "zYOmbIz0WF0IIwodxQWH",
+    "createdAt": "2026-06-25T08:31:49.513Z"
   }
 ]

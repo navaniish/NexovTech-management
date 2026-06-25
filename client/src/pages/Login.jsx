@@ -5,16 +5,15 @@ import {
   ShieldCheck,
   AlertTriangle,
   ArrowRight,
-  Zap,
   Bot,
   Camera,
   Fingerprint,
-  KeyRound,
   Lock,
   RefreshCw,
   Eye,
   CheckCircle2,
-  Cpu
+  Cpu,
+  Smartphone
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { sentinel } from '../services/securityService';
@@ -23,8 +22,29 @@ import { useFaceTracking } from '../hooks/useFaceTracking';
 const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loginMethod, setLoginMethod] = useState('google'); // 'google' | 'face' | 'fingerprint' | 'admin'
-  const [adminCreds, setAdminCreds] = useState({ email: '', password: '' });
+  const [loginMethod, setLoginMethod] = useState('google'); // 'google' | 'password' | 'face' | 'fingerprint'
+
+  // Admin Password Login State
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+
+  const handleAdminPasswordLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const result = await adminLogin(adminEmail.trim(), adminPassword);
+      if (result.success) {
+        navigate('/');
+      } else {
+        setError(result.message || 'Invalid credentials.');
+      }
+    } catch (err) {
+      setError('Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fingerprint State
   const [fingerprintEmail, setFingerprintEmail] = useState('');
@@ -59,10 +79,53 @@ const Login = () => {
 
   // Real-time eye tracking
   const { eyeData, modelState, blinkCount } = useFaceTracking(videoRef, canvasRef, isScanning);
+
   const initialBlinkCountRef = useRef(0);
 
   const { user, signInWithGoogle, adminLogin, adminOverride, biometricLogin, completeBiometricLogin } = useAuth();
   const navigate = useNavigate();
+
+  // Rapid Access Protocol — logo click 5x shows key prompt
+  const [clickCount, setClickCount] = useState(0);
+  const clickTimeoutRef = useRef(null);
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [adminKeyInput, setAdminKeyInput] = useState('');
+  const [adminKeyError, setAdminKeyError] = useState('');
+  const [adminKeyLoading, setAdminKeyLoading] = useState(false);
+
+  const handleLogoClick = () => {
+    if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+    const newCount = clickCount + 1;
+    setClickCount(newCount);
+    if (newCount >= 5) {
+      setClickCount(0);
+      setAdminKeyInput('');
+      setAdminKeyError('');
+      setShowAdminModal(true); // Show key prompt — do NOT auto-login
+    } else {
+      clickTimeoutRef.current = setTimeout(() => setClickCount(0), 2000);
+    }
+  };
+
+  const handleAdminModalSubmit = async (e) => {
+    e.preventDefault();
+    if (!adminKeyInput.trim()) return;
+    setAdminKeyLoading(true);
+    setAdminKeyError('');
+    try {
+      const result = await adminOverride(adminKeyInput.trim());
+      if (result.success) {
+        setShowAdminModal(false);
+        navigate('/');
+      } else {
+        setAdminKeyError(result.message || 'Access key rejected. Try again.');
+      }
+    } catch (err) {
+      setAdminKeyError('Connection error. Check server status.');
+    } finally {
+      setAdminKeyLoading(false);
+    }
+  };
 
   // Auto-redirect if user becomes authenticated
   useEffect(() => {
@@ -72,39 +135,6 @@ const Login = () => {
     }
   }, [user, navigate]);
 
-  // Rapid Access Protocol
-  const [clickCount, setClickCount] = useState(0);
-  const [showKeyConsole, setShowKeyConsole] = useState(false);
-  const [accessKey, setAccessKey] = useState('');
-
-  const triggerRapidAccess = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const result = await adminOverride(accessKey.toUpperCase());
-      if (result.success) {
-        // Redirection handled by useEffect
-      } else {
-        setError(result.message || 'Access Key Invalid.');
-        setClickCount(0);
-        setShowKeyConsole(false);
-      }
-    } catch (err) {
-      setError('Neural link severed.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogoClick = () => {
-    const newCount = clickCount + 1;
-    setClickCount(newCount);
-    if (newCount >= 3) {
-      setShowKeyConsole(true);
-    }
-    setTimeout(() => setClickCount(0), 5000);
-  };
-
   const streamRef = useRef(null);
 
   useEffect(() => {
@@ -112,20 +142,15 @@ const Login = () => {
   }, [stream]);
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.altKey && e.shiftKey && e.key.toUpperCase() === 'A') {
-        e.preventDefault();
-        setShowKeyConsole(true);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
       if (fingerprintIntervalRef.current) {
         clearInterval(fingerprintIntervalRef.current);
+      }
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
       }
     };
   }, []);
@@ -442,26 +467,6 @@ const Login = () => {
     }
   };
 
-  const handleAdminSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const result = await adminLogin(adminCreds.email, adminCreds.password);
-      if (result.success) {
-        // Redirection handled by useEffect
-      } else {
-        sentinel.logActivity('AUTH_FAILURE_ADMIN', { email: adminCreds.email }, 'failure');
-        setError(result.message);
-      }
-    } catch (err) {
-      setError('Admin authorization service unavailable.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Stagger variants
   const cardVariants = {
     hidden: { opacity: 0, y: 30, scale: 0.96 },
@@ -575,36 +580,7 @@ const Login = () => {
           </motion.div>
         )}
 
-        {/* Rapid Access Key Console */}
-        {showKeyConsole && (
-          <motion.div
-            variants={itemVariants}
-            className="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-xl mb-4"
-          >
-            <p className="text-indigo-600 text-[8px] font-black uppercase tracking-widest mb-2 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping" />
-              Neural Override Active
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="password"
-                placeholder="ACCESS KEY"
-                value={accessKey}
-                onChange={(e) => setAccessKey(e.target.value)}
-                className="flex-1 h-10 sm:h-12 bg-white border border-slate-200 rounded-lg sm:rounded-xl px-3 text-slate-900 text-xs font-mono focus:outline-none focus:border-indigo-400 placeholder-slate-300"
-                onKeyDown={(e) => e.key === 'Enter' && triggerRapidAccess()}
-                autoFocus
-              />
-              <button
-                onClick={triggerRapidAccess}
-                disabled={loading}
-                className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-900 text-white rounded-lg sm:rounded-xl flex items-center justify-center hover:bg-slate-800 transition-colors shrink-0"
-              >
-                <Zap size={15} className="text-white" />
-              </button>
-            </div>
-          </motion.div>
-        )}
+
 
         {/* ── SECURITY MODE TAB BAR ── */}
         {!showOtpPrompt && (
@@ -614,6 +590,12 @@ const Login = () => {
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 ${loginMethod === 'google' ? 'bg-white text-slate-950 shadow-sm border border-slate-250/20' : 'text-slate-500 hover:text-slate-900'}`}
             >
               <ShieldCheck size={12} /> Google
+            </button>
+            <button
+              onClick={() => setLoginMethod('password')}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 ${loginMethod === 'password' ? 'bg-white text-slate-950 shadow-sm border border-slate-250/20' : 'text-slate-500 hover:text-slate-900'}`}
+            >
+              <Lock size={12} /> Password
             </button>
             <button
               onClick={() => setLoginMethod('face')}
@@ -626,12 +608,6 @@ const Login = () => {
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 ${loginMethod === 'fingerprint' ? 'bg-white text-slate-950 shadow-sm border border-slate-250/20' : 'text-slate-500 hover:text-slate-900'}`}
             >
               <Fingerprint size={12} /> Fingerprint
-            </button>
-            <button
-              onClick={() => setLoginMethod('admin')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all duration-300 ${loginMethod === 'admin' ? 'bg-white text-slate-950 shadow-sm border border-slate-250/20' : 'text-slate-500 hover:text-slate-900'}`}
-            >
-              <KeyRound size={12} /> Admin
             </button>
           </div>
         )}
@@ -756,6 +732,60 @@ const Login = () => {
                   </motion.div>
                 )}
               </motion.button>
+
+
+            </motion.div>
+          ) : loginMethod === 'password' ? (
+            // ── ADMIN PASSWORD LOGIN PANEL ──
+            <motion.div
+              key="password"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              className="space-y-4"
+            >
+              <div className="bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3">
+                <Lock size={14} className="text-amber-600 mt-0.5 shrink-0" />
+                <p className="text-amber-800 text-[10px] font-bold leading-relaxed">
+                  For Admin accounts only (<span className="font-black">nexovtech@myyahoo.com</span>). Team members must use Google login.
+                </p>
+              </div>
+
+              <form onSubmit={handleAdminPasswordLogin} className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Email</label>
+                  <input
+                    type="email"
+                    required
+                    value={adminEmail}
+                    onChange={(e) => { setAdminEmail(e.target.value); setError(''); }}
+                    placeholder="nexovtech@myyahoo.com"
+                    className="w-full h-12 bg-slate-50 border border-slate-200 focus:border-indigo-400 outline-none rounded-xl px-4 text-slate-900 text-sm font-semibold transition-all placeholder:text-slate-300"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Password</label>
+                  <input
+                    type="password"
+                    required
+                    value={adminPassword}
+                    onChange={(e) => { setAdminPassword(e.target.value); setError(''); }}
+                    placeholder="••••••••••••"
+                    className="w-full h-12 bg-slate-50 border border-slate-200 focus:border-indigo-400 outline-none rounded-xl px-4 text-slate-900 text-sm font-semibold transition-all placeholder:text-slate-300"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading || !adminEmail || !adminPassword}
+                  className="w-full h-13 bg-slate-950 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 mt-1 py-3.5"
+                >
+                  {loading ? (
+                    <><RefreshCw size={12} className="animate-spin" /> Authenticating...</>
+                  ) : (
+                    <><ShieldCheck size={12} /> Login as Admin</>
+                  )}
+                </button>
+              </form>
             </motion.div>
           ) : loginMethod === 'face' ? (
             // ── HIGH-SECURITY FACE ID METHOD PANEL ──
@@ -972,7 +1002,7 @@ const Login = () => {
                 </div>
               )}
             </motion.div>
-          ) : loginMethod === 'fingerprint' ? (
+          ) : (
             // ── PHYSICAL FINGERPRINT AUTH PANEL ──
             <motion.div
               key="fingerprint"
@@ -1114,7 +1144,7 @@ const Login = () => {
                               active  ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-400 animate-pulse' :
                                         'bg-slate-900 border-slate-800 text-slate-600'
                             }`}>{done ? '✓' : active ? '◉' : '⬡'}</div>
-                            <span className={done ? 'text-emerald-400 font-bold' : active ? 'text-indigo-300 font-semibold' : 'text-slate-500'}>
+                            <span className={done ? 'text-emerald-450 font-bold' : active ? 'text-indigo-300 font-semibold' : 'text-slate-500'}>
                               {label}
                             </span>
                           </div>
@@ -1153,53 +1183,19 @@ const Login = () => {
                 </div>
               )}
             </motion.div>
-          ) : (
-            // ── ADMIN METHOD PANEL (Credential Sign-in Form) ──
-            <motion.form
-              key="admin"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              onSubmit={handleAdminSubmit}
-              className="space-y-4"
-            >
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Admin Email</label>
-                <input
-                  required
-                  type="email"
-                  value={adminCreds.email}
-                  onChange={(e) => setAdminCreds({ ...adminCreds, email: e.target.value })}
-                  placeholder="admin@nexovtech.com"
-                  className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-900 focus:outline-none focus:border-indigo-500 transition-all font-medium text-xs sm:text-sm placeholder-slate-400"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Access Key</label>
-                <input
-                  required
-                  type="password"
-                  value={adminCreds.password}
-                  onChange={(e) => setAdminCreds({ ...adminCreds, password: e.target.value })}
-                  placeholder="••••••••"
-                  className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-900 focus:outline-none focus:border-indigo-500 transition-all font-medium text-xs sm:text-sm placeholder-slate-400"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full h-12 sm:h-14 bg-indigo-650 hover:bg-indigo-600 text-white rounded-xl sm:rounded-2xl font-black text-[9px] sm:text-[10px] uppercase tracking-[0.3em] mt-3 transition-all shadow-md shadow-indigo-600/10"
-              >
-                {loading ? 'Verifying...' : 'Authorize Access'}
-              </button>
-            </motion.form>
           )}
         </AnimatePresence>
 
-        <motion.div variants={itemVariants} className="mt-5 pt-4 border-t border-slate-100 text-center">
+        <motion.div variants={itemVariants} className="mt-5 pt-4 border-t border-slate-100 text-center flex flex-col items-center gap-3">
           <p className="text-[8px] sm:text-[9px] font-black text-slate-350 uppercase tracking-[0.4em]">
             Identity Verification Required
           </p>
+          <a
+            href="/api/security/android/download"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[8px] sm:text-[9px] font-black uppercase tracking-widest transition-all shadow-md border border-slate-850 hover:border-slate-700 cursor-pointer"
+          >
+            <Smartphone size={12} className="text-cyan-400" /> Download Android App (APK)
+          </a>
         </motion.div>
       </motion.div>
 
@@ -1207,6 +1203,87 @@ const Login = () => {
       <div className="mt-6 md:mt-8 opacity-30 text-center">
         <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.5em]">NexovTech Defense Systems &copy; 2026</p>
       </div>
+
+      {/* ── ADMIN OVERRIDE KEY MODAL ── */}
+      <AnimatePresence>
+        {showAdminModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[999] flex items-center justify-center p-4"
+            style={{ background: 'rgba(2,6,23,0.85)', backdropFilter: 'blur(12px)' }}
+            onClick={(e) => { if (e.target === e.currentTarget) { setShowAdminModal(false); setAdminKeyError(''); } }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.85, y: 20 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+              className="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-[28px] p-8 shadow-[0_40px_80px_rgba(0,0,0,0.6)] relative"
+            >
+              {/* Close */}
+              <button
+                onClick={() => { setShowAdminModal(false); setAdminKeyError(''); }}
+                className="absolute top-4 right-4 w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-all text-xs"
+              >
+                ✕
+              </button>
+
+              {/* Icon */}
+              <div className="flex items-center justify-center mb-6">
+                <div className="w-14 h-14 bg-indigo-500/10 border border-indigo-500/30 rounded-2xl flex items-center justify-center">
+                  <Lock size={22} className="text-indigo-400" />
+                </div>
+              </div>
+
+              <div className="text-center mb-6">
+                <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-1">Root Access</h2>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Enter override key to continue</p>
+              </div>
+
+              <form onSubmit={handleAdminModalSubmit} className="space-y-4">
+                <div className="relative">
+                  <input
+                    type="password"
+                    value={adminKeyInput}
+                    onChange={(e) => { setAdminKeyInput(e.target.value); setAdminKeyError(''); }}
+                    placeholder="••••••••••••••"
+                    autoFocus
+                    className="w-full bg-slate-800 border border-slate-600 focus:border-indigo-500 outline-none rounded-xl px-4 py-3.5 text-white text-sm font-mono tracking-[0.3em] placeholder:tracking-normal placeholder:text-slate-600 transition-all text-center"
+                  />
+                </div>
+
+                {adminKeyError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 text-rose-400 text-[10px] font-black uppercase tracking-widest bg-rose-500/10 border border-rose-500/20 rounded-xl px-3 py-2"
+                  >
+                    <AlertTriangle size={11} /> {adminKeyError}
+                  </motion.div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={adminKeyLoading || !adminKeyInput.trim()}
+                  className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2"
+                >
+                  {adminKeyLoading ? (
+                    <><RefreshCw size={12} className="animate-spin" /> Verifying...</>
+                  ) : (
+                    <><ShieldCheck size={12} /> Authenticate</>  
+                  )}
+                </button>
+              </form>
+
+              <p className="text-center text-[9px] font-black text-slate-600 uppercase tracking-widest mt-4">
+                NexovTech Root Access Protocol
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

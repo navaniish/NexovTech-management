@@ -73,5 +73,130 @@
     "description": "Superb Companies - PDF Invoice for Project #l3YuK54NavN32rcLr0B5",
     "type": "Revenue",
     "status": "Pending"
+  },
+  {
+    "id": "inv_1782232650446",
+    "date": "2026-06-23T16:37:30.446Z",
+    "createdAt": "2026-06-23T16:37:30.446Z",
+    "amount": 1000000,
+    "invoiceUrl": "/uploads/invoices/invoice-r8ZkuTHv0uBBMAD7cABv.pdf",
+    "description": "Shopify - PDF Invoice for Project #r8ZkuTHv0uBBMAD7cABv",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "inv_1782234863598",
+    "date": "2026-06-23T17:14:23.598Z",
+    "createdAt": "2026-06-23T17:14:23.598Z",
+    "amount": 750000,
+    "invoiceUrl": "/uploads/invoices/invoice-HqUlSnIReYXBWrmN2JwK.pdf",
+    "description": "Enterprise Client - PDF Invoice for Project #HqUlSnIReYXBWrmN2JwK",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "inv_1782234864987",
+    "date": "2026-06-23T17:14:24.987Z",
+    "createdAt": "2026-06-23T17:14:24.987Z",
+    "amount": 3000,
+    "invoiceUrl": "/uploads/invoices/invoice-cDI09YBIITCHkwUTyvJO.pdf",
+    "description": "Enterprise Client - PDF Invoice for Project #cDI09YBIITCHkwUTyvJO",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "inv_1782234868031",
+    "date": "2026-06-23T17:14:28.031Z",
+    "createdAt": "2026-06-23T17:14:28.031Z",
+    "amount": 1000000,
+    "invoiceUrl": "/uploads/invoices/invoice-r8ZkuTHv0uBBMAD7cABv.pdf",
+    "description": "Shopify - PDF Invoice for Project #r8ZkuTHv0uBBMAD7cABv",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "inv_1782235056838",
+    "date": "2026-06-23T17:17:36.838Z",
+    "createdAt": "2026-06-23T17:17:36.838Z",
+    "amount": 750000,
+    "invoiceUrl": "/uploads/invoices/invoice-HqUlSnIReYXBWrmN2JwK.pdf",
+    "description": "Enterprise Client - PDF Invoice for Project #HqUlSnIReYXBWrmN2JwK",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "inv_1782235059874",
+    "date": "2026-06-23T17:17:39.874Z",
+    "createdAt": "2026-06-23T17:17:39.874Z",
+    "amount": 3000,
+    "invoiceUrl": "/uploads/invoices/invoice-cDI09YBIITCHkwUTyvJO.pdf",
+    "description": "Enterprise Client - PDF Invoice for Project #cDI09YBIITCHkwUTyvJO",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "inv_1782235060428",
+    "date": "2026-06-23T17:17:40.428Z",
+    "createdAt": "2026-06-23T17:17:40.428Z",
+    "amount": 1000000,
+    "invoiceUrl": "/uploads/invoices/invoice-r8ZkuTHv0uBBMAD7cABv.pdf",
+    "description": "Shopify - PDF Invoice for Project #r8ZkuTHv0uBBMAD7cABv",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "txn_pr_1781807340457",
+    "date": {
+      "_seconds": 1781807340,
+      "_nanoseconds": 457000000
+    },
+    "createdAt": {
+      "_seconds": 1781807340,
+      "_nanoseconds": 457000000
+    },
+    "amount": 54000,
+    "description": "Payroll Settlement - Saranya Gunda (6/2026)",
+    "type": "Expense",
+    "status": "Paid"
+  },
+  {
+    "id": "inv_1782375797594",
+    "type": "Revenue",
+    "amount": 1000000,
+    "description": "Block - PDF Invoice for Project #VOj7YpCAArOnzVOsX0qH",
+    "date": "2026-06-25T08:23:17.594Z",
+    "status": "Pending",
+    "invoiceUrl": "/uploads/invoices/invoice-VOj7YpCAArOnzVOsX0qH.pdf",
+    "createdAt": "2026-06-25T08:23:17.594Z"
+  },
+  {
+    "id": "inv_1782375849605",
+    "type": "Revenue",
+    "amount": 1000000,
+    "description": "MoonPay - PDF Invoice for Project #0d8lCRKZ7ATvQXqSomtN",
+    "date": "2026-06-25T08:24:09.605Z",
+    "status": "Pending",
+    "invoiceUrl": "/uploads/invoices/invoice-0d8lCRKZ7ATvQXqSomtN.pdf",
+    "createdAt": "2026-06-25T08:24:09.605Z"
+  },
+  {
+    "id": "inv_1782375900399",
+    "type": "Revenue",
+    "amount": 1062500,
+    "description": "Stripe - PDF Invoice for Project #pTbI1ksLwWnbmLZpuT28",
+    "date": "2026-06-25T08:25:00.399Z",
+    "status": "Pending",
+    "invoiceUrl": "/uploads/invoices/invoice-pTbI1ksLwWnbmLZpuT28.pdf",
+    "createdAt": "2026-06-25T08:25:00.400Z"
+  },
+  {
+    "id": "inv_1782375984361",
+    "type": "Revenue",
+    "amount": 1062500,
+    "description": "Phia - PDF Invoice for Project #GMwMyrAPnTQLnWZCrgdW",
+    "date": "2026-06-25T08:26:24.361Z",
+    "status": "Pending",
+    "invoiceUrl": "/uploads/invoices/invoice-GMwMyrAPnTQLnWZCrgdW.pdf",
+    "createdAt": "2026-06-25T08:26:24.361Z"
   }
 ]

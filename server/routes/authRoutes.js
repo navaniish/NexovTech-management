@@ -121,11 +121,11 @@ router.post('/login', async (req, res) => {
         // Team members with '.nexovtech@gmail.com' must use Google Login ONLY
         const authEmail = firebaseUser.email.toLowerCase();
         const signInProvider = firebaseUser.firebase.sign_in_provider;
-        
+
         if (authEmail.includes('.nexovtech@gmail.com') && signInProvider === 'password') {
           console.warn(`🛡️ SECURITY_POLICY: Blocked password login for [${authEmail}]. Google OAuth required.`);
-          return res.status(403).json({ 
-            message: 'Unauthorized Provider: Please use "Sign in with Google" to access your NexovTech account.' 
+          return res.status(403).json({
+            message: 'Unauthorized Provider: Please use "Sign in with Google" to access your NexovTech account.'
           });
         }
       } catch (authErr) {
@@ -148,7 +148,7 @@ router.post('/login', async (req, res) => {
 
     if (!user) {
       const employee = await fallbackDb.findOne('employees', { email: lookupEmail }) ||
-                       await fallbackDb.findOne('employees', { companyEmail: lookupEmail });
+        await fallbackDb.findOne('employees', { companyEmail: lookupEmail });
 
       if (!employee && lookupEmail !== 'nexovtech@myyahoo.com') {
         console.warn(`🛡️ SECURITY_POLICY: Blocked login for unregistered email [${lookupEmail}].`);
@@ -201,7 +201,7 @@ router.post('/login', async (req, res) => {
       }
 
       const speakeasy = require('speakeasy');
-      
+
       // Try TOTP first
       const verified = speakeasy.totp.verify({
         secret: user.twoFactorSecret,
@@ -213,7 +213,7 @@ router.post('/login', async (req, res) => {
         // Try Backup Codes
         const backupCodes = user.backupCodes || [];
         const codeIndex = backupCodes.indexOf(token);
-        
+
         if (codeIndex !== -1) {
           console.log(`🛡️ SECURITY_BRIDGE: Emergency backup code consumed for [${user.email}]`);
           // Consume the code
@@ -243,12 +243,12 @@ router.post('/login', async (req, res) => {
       application: 'NexovTech Web Portal',
       createdAt: new Date()
     });
-    
+
     // 4.5 Send Telegram Notification if linked
     if (user.telegramId) {
       sendNotification(user.telegramId, `🛡️ *Security Alert*: A new login to your NexovTech portal was detected.\n\n📍 *IP*: ${req.ip || 'Unknown'}\n🖥️ *Device*: ${agent.os.toString()} / ${agent.toAgent()}`);
     }
- 
+
     const jwtToken = jwt.sign(
       { id: user.id || user._id, role: user.role, firebaseUid: firebaseUser.uid, tenantId: user.tenantId || 'org_default' },
       JWT_SECRET,
@@ -290,10 +290,7 @@ router.post('/grant-access', auth, async (req, res) => {
     let firebaseUid = null;
 
     // 1. Optional: Create User in Firebase Auth if password provided (otherwise rely on Google Login sync)
-    // POLICY: If email is '.nexovtech@gmail.com', password creation is FORBIDDEN.
-    const isNexovtechGmail = email.toLowerCase().includes('.nexovtech@gmail.com');
-
-    if (tempPassword && !isNexovtechGmail) {
+    if (tempPassword) {
       try {
         const firebaseUser = await admin.auth().createUser({
           email: email.trim().toLowerCase(),
@@ -314,7 +311,7 @@ router.post('/grant-access', auth, async (req, res) => {
     }
 
     let hashedPassword = null;
-    if (tempPassword && !isNexovtechGmail) {
+    if (tempPassword) {
       const salt = await bcrypt.genSalt(10);
       hashedPassword = await bcrypt.hash(tempPassword, salt);
     }
@@ -347,7 +344,7 @@ router.post('/grant-access', auth, async (req, res) => {
     const allUsers = (await fallbackDb.find('users', { tenantId: req.tenantId || 'org_default' })) || [];
 
     res.json({
-      message: isNexovtechGmail 
+      message: isNexovtechGmail
         ? `Access granted to ${email}. (Google Login Required for this identity)`
         : `Access granted to ${email}. Cloud identity activated.`,
       user: saved,
@@ -422,7 +419,7 @@ router.get('/count', async (req, res) => {
         const jwt = require('jsonwebtoken');
         const decoded = jwt.verify(token, JWT_SECRET);
         tenantId = decoded.tenantId || 'org_default';
-      } catch (_) {}
+      } catch (_) { }
     }
     const users = await fallbackDb.find('users', { tenantId });
     res.json({ count: users.length });
@@ -460,14 +457,16 @@ router.post('/admin-key', async (req, res) => {
 
     // Issue a root-level token for the super-admin identity
     const superAdmin = await fallbackDb.findOne('users', { email: 'nexovtech@myyahoo.com' });
-    const adminUser = superAdmin || {
-      id: 'root',
-      name: 'NEXOVTECH ADMINISTRATION',
+    const adminUser = {
+      ...(superAdmin || {}),
+      id: superAdmin?.id || superAdmin?._id || 'root',
+      name: superAdmin?.name || 'NEXOVTECH ADMINISTRATION',
       email: 'nexovtech@myyahoo.com',
       role: 'Super Admin',
       department: 'Executive',
       status: 'Active',
-      avatar: '/assets/logo_nexo.jpeg',
+      avatar: superAdmin?.avatar || '/assets/logo_nexo.jpeg',
+      isRoot: true
     };
 
     const token = jwt.sign(
@@ -481,6 +480,18 @@ router.post('/admin-key', async (req, res) => {
   } catch (err) {
     console.error('🔥 ADMIN_KEY_ERROR:', err);
     res.status(500).json({ success: false, message: 'Override validation failed.' });
+  }
+});
+
+// PUT /auth/theme/:id — Update theme preference
+router.put('/theme/:id', async (req, res) => {
+  const { theme } = req.body;
+  if (!theme) return res.status(400).json({ message: 'Theme is required' });
+  try {
+    const updated = await fallbackDb.update('users', req.params.id, { theme });
+    res.json({ success: true, theme: updated.theme });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update theme' });
   }
 });
 

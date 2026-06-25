@@ -4,6 +4,15 @@
   "webDir": "dist",
   "server": {
     "url": "https://nexovtech-management.vercel.app",
-    "cleartext": true
+    "cleartext": true,
+    "allowNavigation": [
+      "*.firebaseapp.com",
+      "*.google.com",
+      "*.google.co.in",
+      "accounts.google.com",
+      "*.googleusercontent.com",
+      "*.vercel.app",
+      "nexovtech-management.vercel.app"
+    ]
   }
 }

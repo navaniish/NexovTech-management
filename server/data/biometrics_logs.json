@@ -1,5 +1,17 @@
 [
   {
+    "id": "1EvBzKtVBvouQV9BmYP3",
+    "createdAt": "2026-06-24T17:38:20.852Z",
+    "deviceScore": 100,
+    "ipAddress": "127.0.0.1",
+    "tenantId": "org_test",
+    "userId": "user_biotester_1782321732904",
+    "email": "biotester@nexovtech.com",
+    "attemptType": "Revocation",
+    "status": "Revoked_By_Admin",
+    "timestamp": "2026-06-24T17:38:20.851Z"
+  },
+  {
     "id": "1ofPV20LEvA4Nv4oyXgs",
     "createdAt": "2026-06-16T13:45:55.873Z",
     "deviceScore": 100,
@@ -10,6 +22,18 @@
     "attemptType": "Revocation",
     "status": "Revoked_By_Admin",
     "timestamp": "2026-06-16T13:45:55.872Z"
+  },
+  {
+    "id": "98JJH11RfjjAbqj6pFab",
+    "createdAt": "2026-06-20T17:58:26.832Z",
+    "deviceScore": 100,
+    "ipAddress": "127.0.0.1",
+    "tenantId": "org_admin_override",
+    "userId": "Ykdj0ytfNXgRJozFnn9N",
+    "email": "daggupatinavaneeswar.nexovtech@gmail.com",
+    "attemptType": "Enrollment",
+    "status": "Success",
+    "timestamp": "2026-06-20T17:58:26.831Z"
   },
   {
     "id": "DRe7QXmWn7QY70B9a86v",
@@ -28,6 +52,30 @@
     "attemptType": "Verification",
     "status": "Success",
     "timestamp": "2026-06-17T03:14:11.355Z"
+  },
+  {
+    "id": "M2yTKC2tVRDPx4MgOTiK",
+    "createdAt": "2026-06-24T17:19:45.241Z",
+    "deviceScore": 100,
+    "ipAddress": "127.0.0.1",
+    "tenantId": "org_test",
+    "userId": "user_biotester_1782321579646",
+    "email": "biotester@nexovtech.com",
+    "attemptType": "Enrollment",
+    "status": "Success",
+    "timestamp": "2026-06-24T17:19:45.240Z"
+  },
+  {
+    "id": "MDMbXU0nAOYWi7NxpGJD",
+    "createdAt": "2026-06-24T17:17:54.597Z",
+    "deviceScore": 100,
+    "ipAddress": "127.0.0.1",
+    "tenantId": "org_test",
+    "userId": "user_biotester_1782321466983",
+    "email": "biotester@nexovtech.com",
+    "attemptType": "Enrollment",
+    "status": "Success",
+    "timestamp": "2026-06-24T17:17:54.597Z"
   },
   {
     "id": "MOhZpaEgYzHLUCwkLsOa",
@@ -120,6 +168,18 @@
     "timestamp": "2026-06-16T13:38:56.939Z"
   },
   {
+    "id": "eWFR4TA872Qbcyg7ivqP",
+    "createdAt": "2026-06-24T17:18:47.633Z",
+    "deviceScore": 100,
+    "ipAddress": "127.0.0.1",
+    "tenantId": "org_test",
+    "userId": "user_biotester_1782321521536",
+    "email": "biotester@nexovtech.com",
+    "attemptType": "Enrollment",
+    "status": "Success",
+    "timestamp": "2026-06-24T17:18:47.633Z"
+  },
+  {
     "id": "h3spqhOqKnNfbjA60fzJ",
     "deviceScore": 100,
     "os": "Android 0.0.0",
@@ -180,6 +240,18 @@
     "timestamp": "2026-06-16T13:49:29.022Z"
   },
   {
+    "id": "q41qcLPaFNk8nYPnM1Iv",
+    "createdAt": "2026-06-24T17:22:18.517Z",
+    "deviceScore": 100,
+    "ipAddress": "127.0.0.1",
+    "tenantId": "org_test",
+    "userId": "user_biotester_1782321732904",
+    "email": "biotester@nexovtech.com",
+    "attemptType": "Enrollment",
+    "status": "Success",
+    "timestamp": "2026-06-24T17:22:18.517Z"
+  },
+  {
     "id": "rIn31zMe1Uy582uOGGYk",
     "createdAt": "2026-06-16T13:21:41.453Z",
     "deviceScore": 100,
@@ -190,5 +262,17 @@
     "attemptType": "Revocation",
     "status": "Success",
     "timestamp": "2026-06-16T13:21:41.453Z"
+  },
+  {
+    "id": "xSdenZZFESuvNSO6v5au",
+    "createdAt": "2026-06-24T17:21:15.329Z",
+    "deviceScore": 100,
+    "ipAddress": "127.0.0.1",
+    "tenantId": "org_test",
+    "userId": "user_biotester_1782321669956",
+    "email": "biotester@nexovtech.com",
+    "attemptType": "Enrollment",
+    "status": "Success",
+    "timestamp": "2026-06-24T17:21:15.329Z"
   }
 ]

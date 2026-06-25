@@ -5,6 +5,7 @@ const axios = require('axios');
 const vectorStore = require('../utils/vectorStore');
 const { sendEmail } = require('../utils/mailer');
 const { performLiveSearch } = require('../utils/searchHelper');
+const socketHub = require('../utils/socketHub');
 
 // Enums mapping helpers for strict schema validation in Prisma
 function mapServiceEnum(serviceType) {
@@ -54,7 +55,7 @@ async function runQuery(systemPrompt, userPrompt, options = {}) {
   if (!aiClient || !process.env.AI_API_KEY || process.env.AI_API_KEY === 'placeholder') {
     throw new Error('AI Provider Offline');
   }
-  
+
   const body = {
     model: process.env.AI_MODEL || "nvidia/nemotron-3-ultra-550b-a55b",
     messages: [
@@ -74,7 +75,7 @@ async function runQuery(systemPrompt, userPrompt, options = {}) {
   }
 
   const completion = await aiClient.chat.completions.create(body);
-  
+
   const choice = completion.choices[0];
   const reasoningContent = choice.message?.reasoning_content || '';
   const content = choice.message?.content || '';
@@ -91,7 +92,7 @@ async function runQuery(systemPrompt, userPrompt, options = {}) {
 exports.discoverLeads = async (req, res) => {
   try {
     const { industry, region, limit = 10, sources = ['WebScrape'] } = req.body;
-    
+
     if (!industry) {
       return res.status(400).json({ message: 'Industry is required' });
     }
@@ -105,7 +106,7 @@ exports.discoverLeads = async (req, res) => {
     const isGlobal = !region || region.toLowerCase() === 'all countries' || region.toLowerCase() === 'global' || region.toLowerCase() === 'global wide';
     const targetRegionText = isGlobal ? 'all major countries globally (e.g. US, UK, India, Germany, Canada, Singapore, Australia)' : region;
     const searchQuery = `${industry} startups ${isGlobal ? 'globally' : region}`;
-    
+
     let searchResults = [];
     try {
       searchResults = await performLiveSearch(searchQuery);
@@ -174,14 +175,14 @@ ${resultsContextText}`;
     const discoveredLeads = [];
     for (let i = 0; i < Math.min(limit, targetList.length); i++) {
       const target = targetList[i];
-      
+
       // Check if lead already exists to prevent duplication
       let lead;
       try {
         lead = await prisma.lead.findFirst({
           where: { companyName: target.name }
         });
-        
+
         if (!lead) {
           lead = await prisma.lead.create({
             data: {
@@ -296,7 +297,7 @@ exports.scoreLeadById = async (leadId) => {
 
     const responseText = await runQuery(systemPrompt, userPrompt);
     const parsed = JSON.parse(responseText.trim().substring(responseText.indexOf('{'), responseText.lastIndexOf('}') + 1));
-    
+
     budgetScore = parsed.budgetScore ?? budgetScore;
     complexityScore = parsed.complexityScore ?? complexityScore;
     readinessScore = parsed.readinessScore ?? readinessScore;
@@ -332,7 +333,7 @@ exports.scoreLeadById = async (leadId) => {
       const existingScore = await prisma.leadScore.findFirst({
         where: { leadId: lead.id }
       });
-      
+
       if (existingScore) {
         scoreRecord = await prisma.leadScore.update({
           where: { id: existingScore.id },
@@ -373,7 +374,7 @@ exports.scoreLeadById = async (leadId) => {
     // Save or update score
     const existingScores = await fallbackDb.find('lead_scores', { leadId: lead.id || lead._id });
     let scoreRecordFallback = existingScores[0];
-    
+
     if (scoreRecordFallback) {
       scoreRecord = await fallbackDb.update('lead_scores', scoreRecordFallback.id || scoreRecordFallback._id, {
         budgetScore,
@@ -428,10 +429,10 @@ async function runAutonomousWorkflow(lead, scoreRecord, useFallbackDb) {
   }
 
   // 2. Generate Custom Proposal
-  console.log(`🤖 [AUTONOMOUS ENGINE] Lead [${lead.companyName}] Score is ${score} (>= 75). Queueing Pending Deal.`);
+  console.log(`🤖 [AUTONOMOUS ENGINE] Lead [${lead.companyName}] Qualified! Score is ${score} (>= 75). Auto-dispatching proposal email...`);
   const serviceType = 'AISolutions';
   const budgetVal = Number(scoreRecord.budgetScore) * 12500 || 400000;
-  
+
   let proposalText = `PROJECT PROPOSAL FOR ${lead.companyName.toUpperCase()}\n\nService: ${serviceType}\nBudget: ₹${budgetVal.toLocaleString()}\n\nGenerated autonomously by NEXA Agentic AI.`;
   try {
     const systemPrompt = `You are NEXA, the Agentic AI Administrator representing NexovTech Corp. Create a premium tailored project proposal. Make sure all contract values are formatted in Indian Rupees (₹/INR).`;
@@ -441,7 +442,36 @@ async function runAutonomousWorkflow(lead, scoreRecord, useFallbackDb) {
     // Keep default
   }
 
-  // Save the pending deal record to fallbackDb under 'pending_deals'
+  // Save proposal draft
+  let proposal;
+  if (!useFallbackDb) {
+    try {
+      proposal = await prisma.proposal.create({
+        data: {
+          leadId,
+          serviceType: 'AISolutions',
+          proposalText,
+          quotationAmount: budgetVal,
+          status: 'Draft'
+        }
+      });
+    } catch (err) {
+      useFallbackDb = true;
+    }
+  }
+
+  if (useFallbackDb) {
+    proposal = await fallbackDb.save('proposals', {
+      leadId,
+      serviceType: 'AISolutions',
+      proposalText,
+      quotationAmount: budgetVal,
+      status: 'Draft',
+      tenantId: 'org_default'
+    });
+  }
+
+  // Save the pending deal record to fallbackDb under 'pending_deals' as Pending
   const pendingDeal = {
     leadId,
     companyName: lead.companyName,
@@ -455,16 +485,85 @@ async function runAutonomousWorkflow(lead, scoreRecord, useFallbackDb) {
 
   await fallbackDb.save('pending_deals', pendingDeal);
 
-  // Update lead status to 'Pending_Approval'
+  // Auto-Dispatch Email Outreach
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  const proposalUrl = `${clientUrl}/#/proposals/shared/${proposal.id || proposal._id}`;
+  let outreachContent = `Hello there, I am NEXA, the Agentic AI Assistant representing NexovTech Corp. We have drafted a custom proposal for you. You can review, customize, negotiate, and sign/accept it directly at: ${proposalUrl}`;
+  try {
+    const systemPrompt = `You are NEXA, the Agentic AI Administrator representing NexovTech Corp. Generate a high-conversion email outreach message. Make sure all contract values are formatted in Indian Rupees (₹/INR). You MUST include the shared proposal link in the email, explaining that the client can review deliverables, select service add-ons, negotiate the budget directly with our Sales AI representative, and accept the agreement to start development autonomously.`;
+    outreachContent = await runQuery(systemPrompt, `Company: ${lead.companyName}. Shared Proposal Link: ${proposalUrl}`);
+  } catch (e) { }
+
+  let recipientEmail = null;
+  if (typeof lead.email === 'string' && lead.email.trim()) {
+    recipientEmail = lead.email.trim();
+  } else if (lead.emails && lead.emails.length > 0) {
+    recipientEmail = lead.emails[0];
+  } else if (lead.contactInfo) {
+    if (typeof lead.contactInfo.email === 'string' && lead.contactInfo.email.trim()) {
+      recipientEmail = lead.contactInfo.email.trim();
+    } else if (lead.contactInfo.emails && lead.contactInfo.emails.length > 0) {
+      recipientEmail = lead.contactInfo.emails[0];
+    }
+  }
+
+  let realEmailSent = false;
+  if (recipientEmail) {
+    console.log(`✉️ Sending auto-dispatched qualified B2B Proposal email to ${recipientEmail}...`);
+    const subject = `[NexovTech] Custom Proposal Ready - ${lead.companyName}`;
+    realEmailSent = await sendEmail(recipientEmail, subject, outreachContent);
+  } else {
+    console.warn(`⚠️ No email address found for qualified lead [${lead.companyName}], proposal email skipped.`);
+  }
+
+  const logStatus = realEmailSent ? 'Sent' : 'Failed';
+
+  // Save cold outreach log
+  await fallbackDb.save('outreach_logs', {
+    leadId,
+    channel: 'Email',
+    messageType: 'Cold_Outreach',
+    contentSent: outreachContent,
+    status: logStatus,
+    recipient: recipientEmail || 'Prospect',
+    createdAt: new Date().toISOString()
+  });
+
   if (!useFallbackDb) {
     try {
-      await prisma.lead.update({ where: { id: leadId }, data: { status: 'Pending_Approval' } });
+      await prisma.outreachLog.create({
+        data: {
+          leadId,
+          channel: 'Email',
+          messageType: 'Cold_Outreach',
+          contentSent: outreachContent,
+          status: logStatus
+        }
+      });
+      await prisma.lead.update({ where: { id: leadId }, data: { status: 'Outreach_Sent' } });
     } catch (err) {
       useFallbackDb = true;
     }
   }
+
   if (useFallbackDb) {
-    await fallbackDb.update('leads', leadId, { status: 'Pending_Approval' });
+    await fallbackDb.update('leads', leadId, { status: 'Outreach_Sent' });
+  }
+
+  // Index outreach in vectorStore RAG memory
+  if (realEmailSent) {
+    try {
+      const textToEmbed = `[CRM Outreach - Sent] Channel: Email\nLead/Client: ${lead.companyName}\nRecipient/Sender: ${recipientEmail || 'NEXA Agent'}\nContent:\n${outreachContent}`;
+      await vectorStore.addDocument('crm_memory', textToEmbed, {
+        tenantId: 'org_default',
+        leadId,
+        channel: 'Email',
+        type: 'Outreach_Sent'
+      });
+      console.log('✅ [VECTOR MEMORY]: Indexed automatic B2B proposal email in RAG store.');
+    } catch (vectorErr) {
+      console.warn('⚠️ Failed to index automated B2B proposal email:', vectorErr.message);
+    }
   }
 
   // Notify admin via Telegram bot
@@ -472,12 +571,12 @@ async function runAutonomousWorkflow(lead, scoreRecord, useFallbackDb) {
     const { sendNotification } = require('../bot/telegramBot');
     const linkedUsers = await fallbackDb.find('telegram_users', {}) || [];
     const admins = linkedUsers.filter(u => u.role === 'Admin' || u.role === 'Super Admin' || u.role === 'Manager');
-    
-    const notificationText = `🤖 *NEXA Deal Approval Required* 🚀\n\n` +
+
+    const notificationText = `🤖 *NEXA B2B Proposal Auto-Dispatched* 🚀\n\n` +
       `Qualified Lead: *${lead.companyName}*\n` +
       `Opportunity Score: *${score}/100* (🔥 High Priority)\n` +
       `Quotation Amount: *₹${budgetVal.toLocaleString()}*\n\n` +
-      `This deal has been queued for manager review. Please approve or reject via the approvals dashboard.`;
+      `NEXA has autonomously qualified this lead and dispatched the custom proposal link to *${recipientEmail || 'client'}* via email. Check status in CRM approvals dashboard.`;
 
     for (const admin of admins) {
       if (admin.telegramId) {
@@ -493,8 +592,8 @@ async function runAutonomousWorkflow(lead, scoreRecord, useFallbackDb) {
     const mailData = {
       from: 'nexa@nexovtech.ai',
       to: adminEmail,
-      subject: `[NEXA] Approval Required: ${lead.companyName}`,
-      body: `Hello Admin,\n\nNEXA has autonomously qualified a new lead [${lead.companyName}] with a score of ${score}/100 and a budget of ₹${budgetVal.toLocaleString()}.\n\nThis deal has been queued for your approval.\n\nBest regards,\nNEXA Agentic AI`,
+      subject: `[NEXA] Proposal Auto-Dispatched: ${lead.companyName}`,
+      body: `Hello Admin,\n\nNEXA has autonomously qualified a new lead [${lead.companyName}] with a score of ${score}/100 and auto-dispatched the proposal email containing the shared checkout portal link to ${recipientEmail || 'client'}.\n\nBest regards,\nNEXA Agentic AI`,
       timestamp: new Date(),
       status: 'Unread',
       priority: 'High'
@@ -523,7 +622,7 @@ exports.approvePendingDeal = async (req, res) => {
     if (!deal) {
       return res.status(404).json({ message: 'Pending deal not found' });
     }
-    
+
     if (deal.status !== 'Pending') {
       return res.status(400).json({ message: `Deal status is already ${deal.status}` });
     }
@@ -565,8 +664,8 @@ exports.approvePendingDeal = async (req, res) => {
       } catch (err) {
         useFallbackDb = true;
       }
-    } 
-    
+    }
+
     if (useFallbackDb) {
       proposal = await fallbackDb.save('proposals', {
         leadId: deal.leadId,
@@ -585,7 +684,7 @@ exports.approvePendingDeal = async (req, res) => {
     try {
       const systemPrompt = `You are NEXA, the Agentic AI Administrator representing NexovTech Corp. Generate a high-conversion email outreach message. Make sure all contract values are formatted in Indian Rupees (₹/INR). You MUST include the shared proposal link in the email, explaining that the client can review deliverables, select service add-ons, negotiate the budget directly with our Sales AI representative, and accept the agreement to start development autonomously.`;
       outreachContent = await runQuery(systemPrompt, `Company: ${lead.companyName}. Shared Proposal Link: ${proposalUrl}`);
-    } catch (e) {}
+    } catch (e) { }
 
     let recipientEmail = null;
     if (typeof lead.email === 'string' && lead.email.trim()) {
@@ -626,8 +725,8 @@ exports.approvePendingDeal = async (req, res) => {
       } catch (err) {
         useFallbackDb = true;
       }
-    } 
-    
+    }
+
     if (useFallbackDb) {
       await fallbackDb.save('outreach_logs', {
         leadId: deal.leadId,
@@ -637,6 +736,22 @@ exports.approvePendingDeal = async (req, res) => {
         status: logStatus
       });
       await fallbackDb.update('leads', deal.leadId, { status: 'Outreach_Sent' });
+    }
+
+    // Index outreach in vectorStore RAG
+    if (realEmailSent) {
+      try {
+        const textToEmbed = `[CRM Outreach - Sent] Channel: Email\nLead/Client: ${lead.companyName}\nRecipient/Sender: ${recipientEmail || 'NEXA Agent'}\nContent:\n${outreachContent}`;
+        await vectorStore.addDocument('crm_memory', textToEmbed, {
+          tenantId: req.tenantId || 'org_default',
+          leadId: deal.leadId,
+          channel: 'Email',
+          type: 'Outreach_Sent'
+        });
+        console.log('✅ [VECTOR MEMORY]: Indexed automatic B2B proposal email in RAG store.');
+      } catch (vectorErr) {
+        console.warn('⚠️ Failed to index automated B2B proposal email:', vectorErr.message);
+      }
     }
 
     // 3. Launch project
@@ -662,7 +777,7 @@ exports.approvePendingDeal = async (req, res) => {
       const { sendNotification } = require('../bot/telegramBot');
       const linkedUsers = await fallbackDb.find('telegram_users', {}) || [];
       const admins = linkedUsers.filter(u => u.role === 'Admin' || u.role === 'Super Admin' || u.role === 'Manager');
-      
+
       const notificationText = `🤖 *NEXA Deal Approved & Deployed* 🚀\n\n` +
         `Lead: *${lead.companyName}*\n` +
         `Budget: *₹${Number(deal.quotationAmount).toLocaleString()}*\n\n` +
@@ -716,7 +831,7 @@ exports.rejectPendingDeal = async (req, res) => {
       const { sendNotification } = require('../bot/telegramBot');
       const linkedUsers = await fallbackDb.find('telegram_users', {}) || [];
       const admins = linkedUsers.filter(u => u.role === 'Admin' || u.role === 'Super Admin' || u.role === 'Manager');
-      
+
       const notificationText = `🤖 *NEXA Deal Rejected & Archived* 📁\n\n` +
         `Lead: *${deal.companyName}*\n` +
         `Quotation: *₹${Number(deal.quotationAmount).toLocaleString()}*\n\n` +
@@ -972,74 +1087,48 @@ exports.sendOutreach = async (req, res) => {
       }
     }
 
-    let log;
-    let recipientEmail = null;
-    if (typeof lead.email === 'string' && lead.email.trim()) {
-      recipientEmail = lead.email.trim();
-    } else if (lead.emails && lead.emails.length > 0) {
-      recipientEmail = lead.emails[0];
-    } else if (lead.contactInfo) {
-      if (typeof lead.contactInfo.email === 'string' && lead.contactInfo.email.trim()) {
-        recipientEmail = lead.contactInfo.email.trim();
-      } else if (lead.contactInfo.emails && lead.contactInfo.emails.length > 0) {
-        recipientEmail = lead.contactInfo.emails[0];
-      }
-    }
+    // Define the pending log data structure
+    const logData = {
+      id: `out_${Date.now()}`,
+      leadId,
+      channel: channel || 'WhatsApp',
+      messageType: messageType || 'Cold_Outreach',
+      recipient: lead.phone || lead.contactPhone || (lead.emails && lead.emails[0]) || lead.companyName,
+      contentSent: finalMessage,
+      status: 'Pending',
+      tenantId: req.tenantId || 'org_default',
+      createdAt: new Date().toISOString()
+    };
 
-    let realEmailSent = false;
-    let subject = `[NexovTech] B2B Proposal & Collaboration Opportunity`;
-    if (messageType) {
-      subject = `[NexovTech] B2B ${messageType.replace(/_/g, ' ')}`;
-    }
+    // Save to local fallback cache immediately for high-speed tracking
+    const log = await fallbackDb.save('outreach_logs', logData);
 
-    if (channel && channel.toLowerCase() === 'email') {
-      if (recipientEmail) {
-        console.log(`✉️ Sending B2B AI outreach email to ${recipientEmail}...`);
-        realEmailSent = await sendEmail(recipientEmail, subject, finalMessage);
-      } else {
-        console.warn(`⚠️ No email address found for lead [${lead.companyName}], outreach email skipped.`);
-      }
-    }
-
-    const logStatus = (channel?.toLowerCase() === 'email' && !realEmailSent) ? 'Failed' : 'Sent';
-
-    if (!useFallbackDb) {
-      try {
-        log = await prisma.outreachLog.create({
+    // Also mirror to Prisma PostgreSQL if available
+    try {
+      if (prisma) {
+        const mappedChannel = mapChannelEnum(channel);
+        await prisma.outreachLog.create({
           data: {
             leadId,
-            channel: mapChannelEnum(channel),
-            messageType,
+            channel: mappedChannel,
+            messageType: messageType || 'Cold_Outreach',
             contentSent: finalMessage,
-            status: logStatus
+            status: 'Pending'
           }
         });
-
-        // Update lead status
-        await prisma.lead.update({
-          where: { id: lead.id },
-          data: { status: 'Outreach_Sent' }
-        });
-      } catch (dbErr) {
-        console.warn('⚠️ PostgreSQL write failed in sendOutreach, falling back to fallbackDb:', dbErr.message);
-        useFallbackDb = true;
       }
+    } catch (dbErr) {
+      // Ignored: fallbackDb is our primary local cache
     }
 
-    if (useFallbackDb) {
-      log = await fallbackDb.save('outreach_logs', {
-        leadId,
-        channel,
-        messageType,
-        contentSent: finalMessage,
-        status: logStatus
-      });
+    // Broadcast instant Socket.io update for real-time dashboard updates (Instagram concept)
+    socketHub.emit('outreach_update', log);
 
-      // Update lead status
-      await fallbackDb.update('leads', lead.id || lead._id, { status: 'Outreach_Sent' });
-    }
-
-    res.status(200).json({ message: 'Outreach campaign triggered successfully', log, emailDispatched: realEmailSent });
+    return res.status(200).json({
+      message: 'Outreach campaign queued successfully in background.',
+      log,
+      emailDispatched: false // Handled asynchronously by worker
+    });
   } catch (error) {
     res.status(500).json({ message: 'Outreach failed', error: error.message });
   }
@@ -1048,7 +1137,7 @@ exports.sendOutreach = async (req, res) => {
 // 4b. GENERATE OUTREACH DRAFT
 exports.generateOutreachDraft = async (req, res) => {
   try {
-    const { leadId, channel, customPrompt = '' } = req.body;
+    const { leadId, channel, customPrompt = '', language } = req.body;
 
     let lead;
     let useFallbackDb = false;
@@ -1088,12 +1177,35 @@ exports.generateOutreachDraft = async (req, res) => {
     let messageContent = '';
     const contactNameVal = lead.contactName || (lead.contactInfo ? lead.contactInfo.primaryContactName : 'there');
 
+    let langInstruction = '';
+    const selectedLang = (language || '').toLowerCase().trim();
+    if (selectedLang === 'hi' || selectedLang === 'hindi') {
+      langInstruction = 'You MUST write the entire message draft in pure Hindi (हिन्दी) script. Do not write in English or Transliterated Hindi. The message should be polite, clear, and direct, suitable to be read by a text-to-speech voice.';
+    } else if (selectedLang === 'te' || selectedLang === 'telugu') {
+      langInstruction = 'You MUST write the entire message draft in pure Telugu (తెలుగు) script. Do not write in English or Transliterated Telugu. The message should be polite, clear, and direct, suitable to be read by a text-to-speech voice.';
+    }
+
     try {
-      const systemPrompt = `You are NEXA, the Agentic AI Administrator representing NexovTech Corp.
+      let proposalUrlInstruction = '';
+      if (proposalUrl) {
+        if (channel === 'Voice Call') {
+          proposalUrlInstruction = 'Do NOT include any URL link, web address, or HTML in the draft. Instead, mention that the custom B2B proposal has been generated for them and sent to their email.';
+        } else {
+          proposalUrlInstruction = `You MUST include the client's custom B2B proposal link in the message: ${proposalUrl}. Explain that they can review details, select service add-ons, negotiate budget directly with our Sales AI, and launch the project.`;
+        }
+      }
+
+      let identityInstruction = 'You are a human sales and customer relations representative from the NexovTech administration. Do NOT mention "AI", "bot", "assistant", "NEXA", or "autonomous". Write exactly like a human sales manager.';
+      if (channel !== 'Voice Call') {
+        identityInstruction = 'You are NEXA, the Agentic AI Administrator representing NexovTech Corp. Note that you are reaching out as an agentic AI assistant on behalf of the NexovTech administration.';
+      }
+
+      const systemPrompt = `${identityInstruction}
       Generate a short, high-conversion message for ${channel}.
-      The tone should be professional and autonomous. Note that you are reaching out as an agentic AI assistant on behalf of the NexovTech administration.
+      The tone should be professional.
       Do not include place-holders or conversational setup, write the direct text ready to copy or send.
-      ${proposalUrl ? `You MUST include the client's custom B2B proposal link in the message: ${proposalUrl}. Explain that they can review details, select service add-ons, negotiate budget directly with our Sales AI, and launch the project.` : ''}
+      ${langInstruction}
+      ${proposalUrlInstruction}
       ${customPrompt ? `Incorporate the following custom details or instructions: ${customPrompt}` : ''}`;
 
       const userPrompt = `
@@ -1104,7 +1216,13 @@ exports.generateOutreachDraft = async (req, res) => {
 
       messageContent = await runQuery(systemPrompt, userPrompt);
     } catch (err) {
-      messageContent = `Hello ${contactNameVal},\n\nI am NEXA, the Agentic AI Administrator representing NexovTech Corp. I noticed ${lead.companyName} is leading innovation in the ${lead.industry} space. I am reaching out autonomously to connect and share how we can optimize your workflow with custom automated SaaS structures. Best regards, NEXA AI Admin!`;
+      if (selectedLang === 'hi' || selectedLang === 'hindi') {
+        messageContent = `नमस्ते ${contactNameVal || 'जी'},\n\nमैं नेक्सोवटेक कॉर्प का प्रतिनिधि हूँ। मैं हमारे कस्टम बी2बी सॉफ्टवेयर प्रस्ताव को साझा करने के लिए कॉल कर रहा हूँ। धन्यवाद।`;
+      } else if (selectedLang === 'te' || selectedLang === 'telugu') {
+        messageContent = `నమస్తే ${contactNameVal || 'గారు'},\n\nనేను నెక్సోవ్‌టెక్ కార్ప్ నుండి ప్రతినిధిని మాట్లాడుతున్నాను. మా అనుకూలీకరించిన బీటూబీ సాఫ్ట్‌వేర్ ప్రతిపాదనను పంచుకోవడానికి నేను కాల్ చేస్తున్నాను. ధన్యవాదాలు.`;
+      } else {
+        messageContent = `Hello ${contactNameVal},\n\nThis is a representative from NexovTech Corp. I am reaching out to share how we can optimize your workflow with custom automated SaaS structures. Best regards!`;
+      }
     }
 
     res.json({ draft: messageContent });
@@ -1144,7 +1262,7 @@ exports.getBIData = async (req, res) => {
         scoredLeads = await prisma.lead.count({ where: { status: 'Scored' } });
         proposalSent = await prisma.lead.count({ where: { status: 'Proposal_Generated' } });
         outreachSent = await prisma.lead.count({ where: { status: 'Outreach_Sent' } });
-        
+
         highPriorityCount = await prisma.leadScore.count({
           where: {
             overallOpportunityScore: { gte: 80 }
@@ -1194,7 +1312,7 @@ exports.getBIData = async (req, res) => {
       conversionsByMonth[m] = 0;
     });
 
-    const tenantLeads = useFallback 
+    const tenantLeads = useFallback
       ? await fallbackDb.find('leads', { tenantId: req.tenantId || 'org_default' })
       : [];
 
@@ -1250,7 +1368,7 @@ exports.getBIData = async (req, res) => {
         if (lines.length >= 2) {
           recommendations = lines.slice(0, 3);
         }
-        
+
         // Cache the newly generated recommendations
         biRecommendationsCache = {
           key: cacheKey,
@@ -1291,7 +1409,7 @@ exports.getRetentionAlerts = async (req, res) => {
           client: true
         }
       });
-      
+
       if (alerts.length === 0) {
         let client = await prisma.client.findFirst();
         if (!client) {
@@ -1304,7 +1422,7 @@ exports.getRetentionAlerts = async (req, res) => {
             }
           });
         }
-        
+
         const newAlert = await prisma.retentionAlert.create({
           data: {
             clientId: client.id,
@@ -1317,7 +1435,7 @@ exports.getRetentionAlerts = async (req, res) => {
             client: true
           }
         });
-        
+
         alerts = [newAlert];
       }
     } catch (dbErr) {
@@ -1405,7 +1523,7 @@ exports.listVectorDocs = async (req, res) => {
     const docs = await fallbackDb.find('vector_memory', query) || [];
     // Sort descending by createdAt
     docs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    
+
     res.json({ success: true, documents: docs });
   } catch (err) {
     console.error('❌ Failed to list vector documents:', err);
@@ -1581,7 +1699,7 @@ exports.acceptSharedProposal = async (req, res) => {
         launchedProjectData = data;
       }
     };
-    
+
     await nexaAutomationController.autoLaunchProject(mockReq, mockRes);
 
     // Send notifications to Telegram
@@ -1589,7 +1707,7 @@ exports.acceptSharedProposal = async (req, res) => {
       const { sendNotification } = require('../bot/telegramBot');
       const linkedUsers = await fallbackDb.find('telegram_users', {}) || [];
       const admins = linkedUsers.filter(u => u.role === 'Admin' || u.role === 'Super Admin' || u.role === 'Manager');
-      
+
       const notificationText = `🤝 *B2B Deal Converted Autonomously!* 🎉\n\n` +
         `Client *${lead.companyName}* accepted the proposal directly from the Shared Portal!\n` +
         `Contract Value: *₹${Number(proposal.quotationAmount).toLocaleString()}*\n\n` +
@@ -1679,7 +1797,7 @@ Strict negotiation rules:
     userPrompt += `Client: ${message}\nNEXA:`;
 
     const reply = await runQuery(systemPrompt, userPrompt);
-    
+
     // Check if the AI responded with a budget confirmation
     const budgetMatch = reply.match(/\[CONFIRMED_BUDGET:\s*₹?(\d+)\]/);
     let newBudget = null;
@@ -1715,5 +1833,79 @@ Strict negotiation rules:
   } catch (err) {
     console.error('❌ Failed to chat on shared proposal:', err);
     res.status(500).json({ success: false, message: 'Failed to negotiate proposal', error: err.message });
+  }
+};
+
+exports.syncVectorProposals = async (req, res) => {
+  try {
+    const tenantId = req.tenantId || 'org_default';
+    const proposals = await fallbackDb.find('proposals', { tenantId }) || [];
+
+    // Find all already indexed documents for dealings_memory to prevent duplicates
+    const indexedDocs = await fallbackDb.find('vector_memory', { collection: 'dealings_memory', tenantId }) || [];
+    const indexedProposalIds = new Set(indexedDocs.map(d => d.metadata?.proposalId).filter(Boolean));
+
+    let syncCount = 0;
+    for (const proposal of proposals) {
+      const propId = proposal.id || proposal._id;
+      if (indexedProposalIds.has(propId)) continue;
+
+      const lead = await fallbackDb.findById('leads', proposal.leadId);
+      const clientName = lead ? lead.companyName : 'Unknown Client';
+
+      await vectorStore.addDocument('dealings_memory', proposal.proposalText, {
+        tenantId,
+        proposalId: propId,
+        client: clientName
+      });
+      syncCount++;
+    }
+
+    console.log(`✅ [RAG SEED]: Synced ${syncCount} historical proposals to dealings_memory.`);
+    res.json({ success: true, synced: syncCount, total: proposals.length });
+  } catch (err) {
+    console.error('❌ Failed to sync vector proposals:', err);
+    res.status(500).json({ success: false, message: 'Failed to sync proposals to vector store', error: err.message });
+  }
+};
+
+exports.syncVectorOutreach = async (req, res) => {
+  try {
+    const tenantId = req.tenantId || 'org_default';
+    const outreachLogs = await fallbackDb.find('outreach_logs', { tenantId }) || [];
+
+    // Filter successful/delivered logs
+    const validLogs = outreachLogs.filter(log => log.status === 'Sent' || log.status === 'Delivered' || log.status === 'Read');
+
+    // Find already indexed documents for crm_memory to prevent duplicates
+    const indexedDocs = await fallbackDb.find('vector_memory', { collection: 'crm_memory', tenantId }) || [];
+    const indexedOutreachIds = new Set(indexedDocs.map(d => d.metadata?.outreachId).filter(Boolean));
+
+    let syncCount = 0;
+    for (const log of validLogs) {
+      const logId = log.id || log._id;
+      if (indexedOutreachIds.has(logId)) continue;
+
+      const lead = await fallbackDb.findById('leads', log.leadId);
+      if (!lead) continue;
+
+      const direction = log.messageType === 'Incoming_Response' ? 'Received' : 'Sent';
+      const textToEmbed = `[CRM Outreach - ${direction}] Channel: ${log.channel}\nLead/Client: ${lead.companyName}\nRecipient/Sender: ${log.recipient || 'NEXA Agent'}\nContent:\n${log.contentSent}`;
+
+      await vectorStore.addDocument('crm_memory', textToEmbed, {
+        tenantId,
+        leadId: log.leadId,
+        outreachId: logId,
+        channel: log.channel,
+        type: log.messageType === 'Incoming_Response' ? 'Incoming_Response' : 'Outreach_Sent'
+      });
+      syncCount++;
+    }
+
+    console.log(`✅ [RAG SEED]: Synced ${syncCount} historical outreach logs to crm_memory.`);
+    res.json({ success: true, synced: syncCount, total: validLogs.length });
+  } catch (err) {
+    console.error('❌ Failed to sync vector outreach logs:', err);
+    res.status(500).json({ success: false, message: 'Failed to sync outreach logs to vector store', error: err.message });
   }
 };

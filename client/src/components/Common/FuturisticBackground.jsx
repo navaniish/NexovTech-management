@@ -15,7 +15,7 @@ const FuturisticBackground = () => {
     const particleCount = 60;
     const lineCount = 5;
     const connectionDistance = 150;
-    
+
     const mouse = {
       x: null,
       y: null,
@@ -25,7 +25,7 @@ const FuturisticBackground = () => {
     const init = () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
-      
+
       particles = [];
       for (let i = 0; i < particleCount; i++) {
         particles.push({
@@ -55,7 +55,7 @@ const FuturisticBackground = () => {
       ctx.strokeStyle = 'rgba(0, 243, 255, 0.03)';
       ctx.lineWidth = 1;
       const gridSize = 100;
-      
+
       const offsetX = (mouse.x - width / 2) * 0.02;
       const offsetY = (mouse.y - height / 2) * 0.02;
 
@@ -78,7 +78,7 @@ const FuturisticBackground = () => {
             ctx.beginPath();
             ctx.arc(x, y, 2, 0, Math.PI * 2);
             ctx.fill();
-            
+
             // Circuit lines
             ctx.strokeStyle = 'rgba(0, 243, 255, 0.05)';
             ctx.beginPath();
@@ -181,18 +181,18 @@ const FuturisticBackground = () => {
 
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
-      
+
       const bgGradient = ctx.createRadialGradient(
-        width / 2 + (mouse.x - width / 2) * 0.05, 
-        height / 2 + (mouse.y - height / 2) * 0.05, 
-        0, 
-        width / 2, 
-        height / 2, 
+        width / 2 + (mouse.x - width / 2) * 0.05,
+        height / 2 + (mouse.y - height / 2) * 0.05,
+        0,
+        width / 2,
+        height / 2,
         width
       );
       bgGradient.addColorStop(0, '#0f172a');
       bgGradient.addColorStop(1, '#020617');
-      
+
       ctx.fillStyle = bgGradient;
       ctx.fillRect(0, 0, width, height);
 
@@ -215,7 +215,7 @@ const FuturisticBackground = () => {
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('mousemove', handleMouseMove);
-    
+
     init();
     animate();
 

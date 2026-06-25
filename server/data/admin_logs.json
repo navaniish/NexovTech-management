@@ -30,5 +30,29 @@
     "timestamp": "2026-06-18T10:19:35.171Z",
     "id": "tbAlfUr1q5lbFE1sJNxa",
     "createdAt": "2026-06-18T10:19:35.171Z"
+  },
+  {
+    "action": "BIOMETRICS_REVOKE",
+    "status": "warning",
+    "performedBy": "Biometric Admin Tester",
+    "details": {
+      "revokedUserId": "user_biotester_1782321787787",
+      "revokedUserEmail": "biotester_1782321787787@nexovtech.com"
+    },
+    "timestamp": "2026-06-24T17:23:38.875Z",
+    "id": "4eKPmacCXptHbGOQJOEc",
+    "createdAt": "2026-06-24T17:23:38.875Z"
+  },
+  {
+    "action": "BIOMETRICS_REVOKE",
+    "status": "warning",
+    "performedBy": "NEXOVTECH ADMINISTRATION",
+    "details": {
+      "revokedUserId": "user_biotester_1782321732904",
+      "revokedUserEmail": "biotester@nexovtech.com"
+    },
+    "timestamp": "2026-06-24T17:38:21.284Z",
+    "id": "YPHibL6qPGsuvw9728Tl",
+    "createdAt": "2026-06-24T17:38:21.285Z"
   }
 ]

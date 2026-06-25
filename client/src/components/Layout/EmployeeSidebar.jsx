@@ -1,138 +1,164 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  LayoutDashboard, CheckSquare, Briefcase, Clock, Wallet,
-  ChevronLeft, ChevronRight, LogOut, Sparkles, Bell, Calendar, IndianRupee, Settings, CreditCard, MessageSquare, Mail, ShieldCheck, BookOpen, X
-} from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import {
+  LayoutDashboard, CheckSquare, Briefcase, Clock, Sparkles,
+  LogOut, Calendar, IndianRupee, Settings, CreditCard, Mail, ShieldCheck, BookOpen, ChevronLeft, ChevronRight
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import API_URL from '../../config';
 
-const menuItems = [
-  { path: '/employee/dashboard', icon: LayoutDashboard, label: 'Dashboard', badge: null },
-  { path: '/employee/tasks', icon: CheckSquare, label: 'My Tasks', badge: null },
-  { path: '/employee/projects', icon: Briefcase, label: 'My Projects', badge: null },
-  { path: '/employee/attendance', icon: Clock, label: 'Attendance', badge: null },
-  { path: '/employee/leaves', icon: Calendar, label: 'Leave Request', badge: null },
-  { path: '/employee/salary', icon: IndianRupee, label: 'Salary', badge: null },
-  { path: '/employee/timesheet', icon: Clock, label: 'Timesheet', badge: null },
-  { path: '/employee/id-card', icon: CreditCard, label: 'My E-ID Card', badge: 'New' },
-  { path: '/employee/mail', icon: Mail, label: 'Nexus Mail', badge: 'OFFICIAL' },
-  { path: '/employee/security', icon: ShieldCheck, label: 'Security Shield', badge: 'PRO' },
-  { path: '/employee/learning', icon: BookOpen, label: 'My Learning', badge: 'New' },
-  { path: '/employee/settings', icon: Settings, label: 'Settings', badge: null },
+const baseSections = [
+  {
+    title: 'Workspace',
+    items: [
+      { path: '/employee/dashboard', icon: LayoutDashboard, label: 'Dashboard', badge: null },
+      { path: '/employee/ai-chat', icon: Sparkles, label: 'NEXA AI Hub', badge: 'Active' },
+    ]
+  },
+  {
+    title: 'Tasks & Projects',
+    items: [
+      { path: '/employee/tasks', icon: CheckSquare, label: 'My Tasks', badge: null },
+      { path: '/employee/projects', icon: Briefcase, label: 'My Projects', badge: null },
+      { path: '/employee/timesheet', icon: Clock, label: 'Timesheet', badge: null },
+    ]
+  },
+  {
+    title: 'Company & Learning',
+    items: [
+      { path: '/employee/attendance', icon: Clock, label: 'Attendance', badge: null },
+      { path: '/employee/leaves', icon: Calendar, label: 'Leave Request', badge: null },
+      { path: '/employee/learning', icon: BookOpen, label: 'My Learning', badge: 'New' },
+    ]
+  },
+  {
+    title: 'Registry & Comms',
+    items: [
+      { path: '/employee/id-card', icon: CreditCard, label: 'My E-ID Card', badge: 'New' },
+      { path: '/employee/mail', icon: Mail, label: 'Nexus Mail', badge: 'OFFICIAL' },
+    ]
+  },
+  {
+    title: 'Finance & Security',
+    items: [
+      { path: '/employee/salary', icon: IndianRupee, label: 'Salary', badge: null },
+      { path: '/employee/security', icon: ShieldCheck, label: 'Security Shield', badge: 'PRO' },
+      { path: '/employee/settings', icon: Settings, label: 'Settings', badge: null },
+    ]
+  }
 ];
 
-const EmployeeSidebar = ({ mobileOpen, setMobileOpen }) => {
+const EmployeeSidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const handleLogout = () => {
+    if (window.confirm('Terminate secure session?')) {
+      logout();
+      navigate('/login');
+    }
+  };
 
-  const dynamicMenuItems = [
-    ...(user?.role === 'Admin' || user?.role === 'Super Admin' || user?.role === 'Manager' ? [
-      { path: '/', icon: LayoutDashboard, label: 'Admin Command Center', badge: 'TEST' }
-    ] : []),
-    ...menuItems
-  ];
-
+  const isAdmin = user?.role === 'Admin' || user?.role === 'Super Admin' || user?.role === 'Manager';
+  const dynamicMenuSections = isAdmin
+    ? [
+      {
+        title: 'Management Command',
+        items: [
+          { path: '/', icon: LayoutDashboard, label: 'Admin Command Center', badge: 'TEST' }
+        ]
+      },
+      ...baseSections
+    ]
+    : baseSections;
 
   return (
-    <>
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-slate-900/40 z-[100] md:hidden backdrop-blur-sm"
-            onClick={() => setMobileOpen(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      <motion.aside
-        animate={{ width: isCollapsed ? '80px' : '240px' }}
-        className={`h-full backdrop-blur-2xl bg-slate-900/95 border-r border-white/10 flex flex-col fixed md:relative top-0 bottom-0 md:top-auto md:bottom-auto z-[110] transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${
-          mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        }`}
-        style={{ flexShrink: 0 }}
+    <div 
+      className={`h-full bg-slate-900 border-r border-white/10 flex flex-col py-6 shrink-0 transition-all duration-300 relative z-40 ${
+        isCollapsed ? 'w-[72px]' : 'w-[260px]'
+      }`}
+    >
+      {/* Collapse Toggle Button */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="absolute -right-3 top-10 w-6 h-6 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors z-50 shadow-md"
       >
-        {/* MOBILE CLOSE BUTTON - REMOVED */}
-        <button 
-          onClick={() => setMobileOpen(false)}
-          className="hidden absolute top-4 right-4 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white"
-        >
-          <X size={20} />
-        </button>
+        {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
+      </button>
 
-        {/* LOGO AREA - REMOVED ON MOBILE DRAWER */}
-        <div className="hidden p-6 mb-2">
-           <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-lg p-1.5 flex items-center justify-center">
-                 <img src="/assets/company-logo.jpeg" alt="NexovTech" className="w-full h-full object-contain" />
-              </div>
-              <span className="text-white font-black uppercase tracking-tighter text-lg">NexovTech</span>
-           </div>
-        </div>
-
-        <div className="h-4 shrink-0 hidden md:block" />
-
-        {/* Nav */}
-        <nav className="flex-1 px-3 space-y-1.5 overflow-y-auto no-scrollbar pt-4">
-          {dynamicMenuItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) => `
-              relative flex items-center gap-4 px-4 h-[46px] rounded-xl transition-all duration-300 group
-              ${isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-white hover:bg-white/5'}
-            `}
-            >
-              <item.icon size={18} className="shrink-0" />
-              {(!isCollapsed || mobileOpen) && <span className="font-semibold text-[13px] tracking-tight">{item.label}</span>}
-              {(!isCollapsed || mobileOpen) && item.badge && (
-                <span className="ml-auto px-2 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black">
-                  {item.badge}
-                </span>
-              )}
-            </NavLink>
-          ))}
-        </nav>
-
-        {/* User Footer - HIDDEN ON MOBILE TO PREVENT CLUTTER */}
-        <div className="hidden md:block p-6 mt-auto border-t border-white/5 bg-slate-900/50">
-          <div className={`flex items-center gap-4 ${isCollapsed ? 'justify-center' : 'px-4 py-3 rounded-2xl bg-white/5 border border-white/5'}`}>
-            <div className="w-10 h-10 rounded-xl overflow-hidden bg-indigo-600 shadow-xl relative group shrink-0 cursor-pointer">
-              <img
-                src={user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL.replace('/api', '')}${user.avatar}`) :
-                  `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'Emp'}`}
-                alt="User"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-slate-900/80 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                onClick={handleLogout}>
-                <LogOut size={16} className="text-white" />
-              </div>
-            </div>
+      {/* Navigation Icons & Labels */}
+      <div className="flex-1 w-full overflow-y-auto no-scrollbar px-3 space-y-6">
+        {dynamicMenuSections.map((section, sIdx) => (
+          <div key={`${section.title}-${sIdx}`} className="flex flex-col gap-1.5">
             {!isCollapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-black truncate leading-tight uppercase tracking-tighter text-white">{user?.name}</p>
-                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5 truncate">{user?.role || 'Developer'}</p>
-              </div>
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider px-2">
+                {section.title}
+              </span>
             )}
+            {section.items.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) => `
+                  relative flex items-center h-12 rounded-xl transition-all group px-3.5 gap-3.5
+                  ${isActive
+                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-white active:bg-white/10'}
+                `}
+              >
+                <item.icon size={18} className="shrink-0 transition-transform duration-300 group-hover:scale-110" />
+                {!isCollapsed && (
+                  <span className="text-xs font-bold truncate tracking-tight">{item.label}</span>
+                )}
+                {item.badge && (
+                  <span className={`
+                    flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-rose-500 text-[8px] font-black text-white
+                    ${isCollapsed ? 'absolute -top-1 -right-1 border border-slate-900' : 'ml-auto'}
+                  `}>
+                    !
+                  </span>
+                )}
+              </NavLink>
+            ))}
           </div>
-        </div>
+        ))}
+      </div>
 
-        {/* Collapse Toggle - HIDDEN ON MOBILE */}
-        <button onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden md:flex absolute -right-3 top-24 w-6 h-6 rounded-full bg-slate-800 border border-white/10 items-center justify-center text-white hover:bg-indigo-600 transition-all shadow-2xl z-[110]">
-          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+      {/* User Footer with Logout Action */}
+      <div className="pt-4 border-t border-white/5 w-full px-3 flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <div 
+            className="w-10 h-10 rounded-xl overflow-hidden bg-indigo-600 shadow-xl relative group shrink-0 cursor-pointer"
+            onClick={() => navigate('/employee/settings')}
+          >
+            <img
+              src={user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL.replace('/api', '')}${user.avatar}`) :
+                `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'Emp'}`}
+              alt="User"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          {!isCollapsed && (
+            <div className="flex flex-col truncate">
+              <span className="text-white text-xs font-black truncate leading-tight uppercase">{user?.name || 'Employee'}</span>
+              <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{user?.role || 'Developer'}</span>
+            </div>
+          )}
+        </div>
+        
+        <button
+          onClick={handleLogout}
+          className="h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-white/5 hover:text-white active:bg-white/10 transition-colors w-full px-3 gap-3"
+          title="Logout"
+        >
+          <LogOut size={18} className="shrink-0" />
+          {!isCollapsed && (
+            <span className="text-xs font-bold tracking-tight text-slate-400 group-hover:text-white w-full text-left uppercase">Logout</span>
+          )}
         </button>
-      </motion.aside>
-    </>
+      </div>
+    </div>
   );
 };
 

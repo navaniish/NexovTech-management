@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
+const axios = require('axios');
 const fallbackDb = require('../utils/fallbackDb');
 const { bucket } = require('../firebaseAdmin');
 const { auth } = require('../middleware/auth');
+const socketHub = require('../utils/socketHub');
  
 // GET /tasks — get all tasks (Admin)
 router.get('/', auth, async (req, res) => {
@@ -84,6 +86,103 @@ router.get('/my', auth, async (req, res) => {
   }
 });
 
+// Atlassian Document Format (ADF) to Plaintext parser helper
+function extractTextFromADF(desc) {
+  if (!desc) return '';
+  if (typeof desc === 'string') return desc;
+  if (desc.type === 'text') return desc.text || '';
+  if (Array.isArray(desc.content)) {
+    return desc.content.map(extractTextFromADF).join(' ');
+  }
+  if (desc.content && typeof desc.content === 'object') {
+    return extractTextFromADF(desc.content);
+  }
+  return '';
+}
+
+// GET /tasks/jira — Jira tickets assigned to logged-in user (email)
+router.get('/jira', auth, async (req, res) => {
+  const userEmail = req.user?.email || req.query.email;
+  if (!userEmail) {
+    console.log('⚠️ JIRA_FETCH: No email found on authorized user.');
+    return res.json([]);
+  }
+
+  const host = process.env.JIRA_HOST;
+  const email = process.env.JIRA_EMAIL;
+  const token = process.env.JIRA_API_TOKEN;
+
+  if (!host || !email || !token || token === 'placeholder') {
+    console.warn('⚠️ JIRA_FETCH: Jira credentials not fully configured.');
+    return res.json([]);
+  }
+
+  try {
+    const authHeader = Buffer.from(`${email}:${token}`).toString('base64');
+    const jql = `assignee = "${userEmail}"`;
+    const searchUrl = `https://${host}/rest/api/3/search?jql=${encodeURIComponent(jql)}`;
+
+    console.log(`🎫 JIRA_FETCH: Fetching Jira tasks for assignee: ${userEmail}`);
+    const response = await axios.get(searchUrl, {
+      headers: {
+        'Authorization': `Basic ${authHeader}`,
+        'Accept': 'application/json'
+      },
+      timeout: 10000 // 10 seconds timeout
+    });
+
+    const issues = response.data?.issues || [];
+    const formatted = issues.map(issue => {
+      const fields = issue.fields || {};
+      const rawDesc = fields.description;
+      const parsedDesc = extractTextFromADF(rawDesc);
+
+      // Map Jira priority to portal priority (High, Medium, Low)
+      let priority = 'Medium';
+      const jp = fields.priority?.name?.toLowerCase() || '';
+      if (jp.includes('high') || jp.includes('crit') || jp.includes('block')) {
+        priority = 'High';
+      } else if (jp.includes('low') || jp.includes('triv')) {
+        priority = 'Low';
+      }
+
+      // Map Jira status to portal status (Pending, In Progress, Completed)
+      let status = 'Pending';
+      const js = fields.status?.name?.toLowerCase() || '';
+      if (js.includes('done') || js.includes('complete') || js.includes('resolve')) {
+        status = 'Completed';
+      } else if (js.includes('progress') || js.includes('active')) {
+        status = 'In Progress';
+      }
+
+      return {
+        id: issue.key || issue.id,
+        _id: issue.key || issue.id, // For key matching consistency
+        title: fields.summary || 'Jira Task',
+        priority,
+        status,
+        projectId: {
+          title: fields.project?.name || 'Jira Project',
+          sector: 'External JIRA'
+        },
+        projectName: fields.project?.name || 'Jira Project',
+        deadline: fields.duedate || null,
+        description: parsedDesc || 'No JIRA description provided.',
+        files: [],
+        comments: [],
+        source: 'jira',
+        key: issue.key
+      };
+    });
+
+    res.json(formatted);
+  } catch (err) {
+    console.error('❌ JIRA_FETCH_ERROR:', err.response?.data || err.message);
+    // Degrade gracefully as per plan
+    res.json([]);
+  }
+});
+
 // PUT /tasks/:id/status — update task status
 router.put('/:id/status', auth, async (req, res) => {
   const { status } = req.body;
@@ -109,7 +208,13 @@ router.post('/:id/comment', auth, async (req, res) => {
     }
     
     const comments = task.comments || [];
-    comments.push({ user: userId || req.user.id || req.user._id, text, date: new Date() });
+    comments.push({
+      userId: req.user.id || req.user._id || userId,
+      user: req.user.name || 'Collaborator',
+      text,
+      createdAt: new Date().toISOString(),
+      date: new Date()
+    });
     
     const updated = await fallbackDb.update('tasks', req.params.id, { comments });
     res.json(updated);
@@ -233,6 +338,70 @@ router.post('/', auth, upload.array('attachments'), async (req, res) => {
       message: 'Failed to deploy new task', 
       error: err.message
     });
+  }
+});
+
+// POST /tasks/jira/webhook — handle real-time alerts from JIRA Cloud
+router.post('/jira/webhook', async (req, res) => {
+  try {
+    const { webhookEvent, issue } = req.body;
+    console.log(`📡 JIRA_WEBHOOK: Received event "${webhookEvent}" for issue "${issue?.key || 'unknown'}"`);
+
+    if (!issue) {
+      return res.status(400).json({ message: 'No issue context found in payload' });
+    }
+
+    const fields = issue.fields || {};
+    const rawDesc = fields.description;
+    const parsedDesc = extractTextFromADF(rawDesc);
+
+    // Map Jira priority to portal priority (High, Medium, Low)
+    let priority = 'Medium';
+    const jp = fields.priority?.name?.toLowerCase() || '';
+    if (jp.includes('high') || jp.includes('crit') || jp.includes('block')) {
+      priority = 'High';
+    } else if (jp.includes('low') || jp.includes('triv')) {
+      priority = 'Low';
+    }
+
+    // Map Jira status to portal status (Pending, In Progress, Completed)
+    let status = 'Pending';
+    const js = fields.status?.name?.toLowerCase() || '';
+    if (js.includes('done') || js.includes('complete') || js.includes('resolve')) {
+      status = 'Completed';
+    } else if (js.includes('progress') || js.includes('active')) {
+      status = 'In Progress';
+    }
+
+    const assigneeEmail = fields.assignee?.emailAddress || null;
+
+    const mappedTask = {
+      id: issue.key || issue.id,
+      _id: issue.key || issue.id, // For key matching consistency
+      title: fields.summary || 'Jira Task',
+      priority,
+      status,
+      projectId: {
+        title: fields.project?.name || 'Jira Project',
+        sector: 'External JIRA'
+      },
+      projectName: fields.project?.name || 'Jira Project',
+      deadline: fields.duedate || null,
+      description: parsedDesc || 'No JIRA description provided.',
+      files: [],
+      comments: [],
+      source: 'jira',
+      key: issue.key,
+      assigneeEmail
+    };
+
+    // Emit live task update to the frontend using socketHub
+    socketHub.emit('jira_task_updated', mappedTask);
+
+    res.status(200).json({ success: true, message: 'Jira webhook processed and broadcasted.' });
+  } catch (err) {
+    console.error('❌ JIRA_WEBHOOK_ERROR:', err.message);
+    res.status(500).json({ message: 'Failed to process webhook alert' });
   }
 });
 

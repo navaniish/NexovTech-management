@@ -190,4 +190,21 @@ router.post('/trigger-telegram-alert', async (req, res) => {
   }
 });
 
+// --- ADMIN: Cron Trigger Daily Attendance Alert (Vercel Cron) ---
+router.get('/cron-trigger', async (req, res) => {
+  try {
+    const isVercelCron = req.headers['x-vercel-cron'] === '1';
+    // Allow request if we are in development environment or if it is a genuine Vercel Cron trigger
+    if (process.env.NODE_ENV === 'production' && !isVercelCron) {
+      return res.status(401).json({ message: 'Unauthorized: Only Vercel Cron can call this gateway' });
+    }
+
+    const { sendDailyAttendanceAlert } = require('../services/schedulerService');
+    const result = await sendDailyAttendanceAlert();
+    res.json({ success: true, message: 'Cron daily attendance alert triggered successfully', result });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to trigger cron daily attendance alert', error: err.message });
+  }
+});
+
 module.exports = router;

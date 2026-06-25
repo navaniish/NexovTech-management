@@ -6,8 +6,9 @@
     "client": "cd client && npm run dev",
     "server": "cd server && npm run dev",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "build": "cd client && npm ci && npm run build",
-    "generate": "prisma generate --schema=server/prisma/schema.prisma"
+    "build": "npm run generate && cd client && npm ci && npm run build",
+    "generate": "prisma generate --schema=server/prisma/schema.prisma || (cd server && npx prisma generate)",
+    "deploy": "vercel --prod"
   },
   "engines": {
     "node": ">=20.0.0"

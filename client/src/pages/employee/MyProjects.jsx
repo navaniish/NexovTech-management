@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Briefcase, Calendar, Target, Users, ExternalLink, 
+import {
+  Briefcase, Calendar, Target, Users, ExternalLink,
   ArrowRight, RefreshCw, Layers, Zap, Globe, ShieldCheck, Cpu,
   Code, FileText
 } from 'lucide-react';
@@ -27,7 +27,7 @@ const MyProjects = () => {
       });
       if (response.ok) {
         const allProjects = await response.json();
-        const myProjects = allProjects.filter(p => 
+        const myProjects = allProjects.filter(p =>
           p.team?.some(m => m.email?.toLowerCase() === user?.email?.toLowerCase())
         );
         setProjects(myProjects);
@@ -43,14 +43,14 @@ const MyProjects = () => {
   useEffect(() => {
     if (user?.email) {
       fetchMyProjects();
-      
+
       const interval = setInterval(() => {
         if (!document.hidden) fetchMyProjects(true);
       }, 10000);
 
       const handleFocus = () => fetchMyProjects(true);
       window.addEventListener('focus', handleFocus);
-      
+
       return () => {
         clearInterval(interval);
         window.removeEventListener('focus', handleFocus);
@@ -62,22 +62,22 @@ const MyProjects = () => {
 
   return (
     <div className="space-y-10 pb-20 animate-in fade-in duration-700">
-      
+
       {/* 1. DYNAMIC HEADER */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
         <div className="space-y-2">
-           <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-2xl">
-                 <Layers size={24} />
-              </div>
-              <div>
-                 <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none italic">Operation Center</h1>
-                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Active Deployment Registry</p>
-              </div>
-           </div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-2xl">
+              <Layers size={24} />
+            </div>
+            <div>
+              <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase leading-none italic">Operation Center</h1>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Active Deployment Registry</p>
+            </div>
+          </div>
         </div>
-        
-        <button 
+
+        <button
           onClick={() => fetchMyProjects(true)}
           disabled={isSyncing}
           className="flex items-center gap-3 px-8 py-4 bg-white border border-slate-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-brand-500/20 hover:text-brand-600 transition-all shadow-xl group"
@@ -96,11 +96,11 @@ const MyProjects = () => {
         ) : projects.length === 0 ? (
           <div className="lg:col-span-2 py-32 text-center glass-card rounded-[48px] border border-slate-100 flex flex-col items-center justify-center gap-6">
             <div className="w-24 h-24 bg-slate-50 rounded-[40px] flex items-center justify-center text-slate-200">
-               <Globe size={56} />
+              <Globe size={56} />
             </div>
             <div className="space-y-1">
-               <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">No Active Deployments</h3>
-               <p className="text-slate-400 text-[11px] font-bold uppercase tracking-[0.2em]">Awaiting project assignment from command center</p>
+              <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">No Active Deployments</h3>
+              <p className="text-slate-400 text-[11px] font-bold uppercase tracking-[0.2em]">Awaiting project assignment from command center</p>
             </div>
           </div>
         ) : (
@@ -115,12 +115,11 @@ const MyProjects = () => {
               <div className="p-8">
                 <div className="flex items-start justify-between mb-8">
                   <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                     <Cpu size={28} />
+                    <Cpu size={28} />
                   </div>
-                  <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${
-                    project.status === 'Completed' ? 'bg-emerald-50 text-emerald-500 border border-emerald-100' : 
-                    project.status === 'In Progress' ? 'bg-brand-50 text-brand-600 border border-brand-100' : 'bg-amber-50 text-amber-500 border border-amber-100'
-                  }`}>
+                  <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${project.status === 'Completed' ? 'bg-emerald-50 text-emerald-500 border border-emerald-100' :
+                      project.status === 'In Progress' ? 'bg-brand-50 text-brand-600 border border-brand-100' : 'bg-amber-50 text-amber-500 border border-amber-100'
+                    }`}>
                     {project.status}
                   </span>
                 </div>
@@ -147,12 +146,12 @@ const MyProjects = () => {
 
                 {/* Progress bar */}
                 <div className="relative w-full h-2 bg-slate-100 rounded-full overflow-hidden mb-8">
-                   <motion.div 
-                     initial={{ width: 0 }}
-                     animate={{ width: `${project.progress || 0}%` }}
-                     transition={{ duration: 1.5, ease: "easeOut" }}
-                     className="absolute h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-400" 
-                   />
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${project.progress || 0}%` }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    className="absolute h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-400"
+                  />
                 </div>
 
                 {/* Team & Action */}
@@ -160,8 +159,8 @@ const MyProjects = () => {
                   <div className="flex -space-x-3">
                     {(project.team || []).slice(0, 4).map((m, j) => (
                       <div key={j} className="w-10 h-10 rounded-full border-2 border-white bg-slate-100 overflow-hidden shadow-sm hover:scale-110 hover:z-10 transition-all">
-                        <img 
-                          src={m.avatar ? (m.avatar.startsWith('http') || m.avatar.startsWith('data:') ? m.avatar : `${API_URL.replace('/api', '')}${m.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${m.name || j}`} 
+                        <img
+                          src={m.avatar ? (m.avatar.startsWith('http') || m.avatar.startsWith('data:') ? m.avatar : `${API_URL.replace('/api', '')}${m.avatar}`) : `https://api.dicebear.com/7.x/avataaars/svg?seed=${m.name || j}`}
                           alt={m.name}
                           className="w-full h-full object-cover"
                         />
@@ -173,10 +172,10 @@ const MyProjects = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="flex items-center gap-4">
                     {project.githubRepoUrl && (
-                      <a 
+                      <a
                         href={project.githubRepoUrl}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -187,7 +186,7 @@ const MyProjects = () => {
                       </a>
                     )}
                     {project.invoiceUrl && (
-                      <a 
+                      <a
                         href={project.invoiceUrl.startsWith('http') ? project.invoiceUrl : `${API_URL.replace('/api', '')}${project.invoiceUrl}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -198,7 +197,7 @@ const MyProjects = () => {
                       </a>
                     )}
                     <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-brand-600 hover:text-brand-800 transition-colors">
-                       View Dossier <ArrowRight size={14} />
+                      View Dossier <ArrowRight size={14} />
                     </button>
                   </div>
                 </div>

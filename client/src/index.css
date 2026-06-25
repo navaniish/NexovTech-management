@@ -17,7 +17,8 @@
 :root {
   /* High-Fidelity Palette */
   --bg-glass: rgba(255, 255, 255, 0.6);
-  --sidebar-width: 240px; /* Slimmer Profile */
+  --sidebar-width: 240px;
+  /* Slimmer Profile */
   --accent-blue: #4F46E5;
   --accent-purple: #8B5CF6;
   --radius-premium: 24px;
@@ -35,7 +36,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: 
+  background:
     linear-gradient(rgba(248, 250, 252, 0.6), rgba(226, 232, 240, 0.5)),
     url('/assets/office-bg.png');
   background-size: cover;
@@ -48,7 +49,7 @@ body::before {
   background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(40px);
   border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 
+  box-shadow:
     0 10px 40px -10px rgba(15, 23, 42, 0.1),
     inset 0 0 0 1px rgba(255, 255, 255, 0.5);
 }
@@ -57,7 +58,7 @@ body::before {
   background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 
+  box-shadow:
     0 25px 50px -12px rgba(15, 23, 42, 0.08),
     inset 0 0 0 1px rgba(255, 255, 255, 0.6);
   padding: 16px !important;
@@ -80,7 +81,7 @@ body::before {
 
 .glass-card:hover {
   transform: translateY(-12px);
-  box-shadow: 
+  box-shadow:
     0 30px 60px -12px rgba(0, 0, 0, 0.08),
     0 18px 36px -18px rgba(0, 0, 0, 0.03);
 }
@@ -103,7 +104,12 @@ body::before {
 }
 
 @keyframes ping {
-  75%, 100% { transform: scale(2); opacity: 0; }
+
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
 }
 
 .animate-float {
@@ -111,13 +117,21 @@ body::before {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -168,14 +182,31 @@ body::before {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-12px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
 }
 
 @keyframes swing {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(10deg); }
-  75% { transform: rotate(-10deg); }
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(10deg);
+  }
+
+  75% {
+    transform: rotate(-10deg);
+  }
 }
 
 .animate-swing {
@@ -187,7 +218,7 @@ body::before {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(40px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 
+  box-shadow:
     0 4px 24px -1px rgba(0, 0, 0, 0.05),
     0 1px 2px -1px rgba(0, 0, 0, 0.02);
 }
@@ -202,13 +233,16 @@ body::before {
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(15, 23, 42, 0.05);
   border-radius: 10px;
 }
+
 .custom-scrollbar:hover::-webkit-scrollbar-thumb {
   background: rgba(15, 23, 42, 0.1);
 }
@@ -217,37 +251,75 @@ body::before {
 .perspective-1000 {
   perspective: 1000px;
 }
+
 .preserve-3d {
   transform-style: preserve-3d;
 }
+
 .backface-hidden {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
+
 .rotate-y-180 {
   transform: rotateY(180deg);
 }
+
 /* Cyber-Aesthetic Animations */
 @keyframes drift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(10%, 10%) scale(1.1); }
-  66% { transform: translate(-5%, 15%) scale(0.9); }
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate(10%, 10%) scale(1.1);
+  }
+
+  66% {
+    transform: translate(-5%, 15%) scale(0.9);
+  }
 }
 
 @keyframes drift-reverse {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(-15%, -5%) scale(0.9); }
-  66% { transform: translate(10%, -10%) scale(1.1); }
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate(-15%, -5%) scale(0.9);
+  }
+
+  66% {
+    transform: translate(10%, -10%) scale(1.1);
+  }
 }
 
 @keyframes pulse-slow {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.05); }
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-150%) skewX(-12deg); }
-  100% { transform: translateX(150%) skewX(-12deg); }
+  0% {
+    transform: translateX(-150%) skewX(-12deg);
+  }
+
+  100% {
+    transform: translateX(150%) skewX(-12deg);
+  }
 }
 
 .animate-drift-slow {
@@ -349,6 +421,7 @@ h1 {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

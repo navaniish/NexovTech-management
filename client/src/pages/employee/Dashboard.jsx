@@ -34,52 +34,16 @@ const EmployeeDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // WhatsApp Chatbot States
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState([
-    { sender: 'assistant', text: 'Hello! I am your NEXA AI Administrator. Ask me about your attendance, tasks, salary, payslips, or leaves here on WhatsApp.', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-  ]);
-  const [chatInput, setChatInput] = useState('');
-  const [chatTyping, setChatTyping] = useState(false);
-
-  const handleSendChatMessage = async (e) => {
-    if (e) e.preventDefault();
-    if (!chatInput.trim() || chatTyping) return;
-
-    const userText = chatInput.trim();
-    setChatInput('');
-
-    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    setChatMessages(prev => [...prev, {
-      sender: 'user',
-      text: userText,
-      time: currentTime
-    }]);
-
-    setChatTyping(true);
-
+  // Prefer nexov_token; fall back to Firebase ID token (prevents 401 race on initial load)
+  const getBestToken = async () => {
+    const stored = localStorage.getItem('nexov_token') || localStorage.getItem('token');
+    if (stored && stored !== 'null' && stored !== 'undefined') return stored;
     try {
-      const result = await nexaApi.sendWhatsappSimulatorMessage(userText);
-      if (result.success) {
-        setChatMessages(prev => [...prev, {
-          sender: 'assistant',
-          text: result.response,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }]);
-      } else {
-        throw new Error('Failed reply');
-      }
-    } catch (err) {
-      setChatMessages(prev => [...prev, {
-        sender: 'assistant',
-        text: '⚠️ Unable to connect to NEXA Multi-Agent event loop.',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }]);
-    } finally {
-      setChatTyping(false);
-    }
+      const { auth: fbAuth } = await import('../../firebase');
+      if (fbAuth.currentUser) return await fbAuth.currentUser.getIdToken(false);
+    } catch {}
+    return null;
   };
-
   const fetchDashboardData = async () => {
     // Priority: id (DocID) > _id > firebaseUid
     const userId = user?.id || user?._id || user?.firebaseUid;
@@ -93,9 +57,10 @@ const EmployeeDashboard = () => {
     setError(null);
     try {
       console.log(`📋 DASHBOARD_SYNC: Synchronizing missions for [${userId}]...`);
+      const token = await getBestToken();
       const response = await fetch(`${API_URL}/tasks/my?userId=${userId}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('nexov_token') || localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -248,7 +213,7 @@ const EmployeeDashboard = () => {
         <div className="lg:col-span-5 flex flex-col gap-4 md:gap-6">
            <div className="flex items-center gap-3 px-4">
               <div className="w-3 h-3 rounded-full bg-brand-500 shadow-[0_0_12px_rgba(139,92,246,0.6)]" />
-              <span className="text-[12px] md:text-[14px] font-black text-slate-900 tracking-[0.2em] uppercase">Tactical Analysis</span>
+              <span className="text-[12px] md:text-[14px] font-black text-slate-100 tracking-[0.2em] uppercase">Tactical Analysis</span>
            </div>
            <div className="glass-card !p-6 md:!p-10 flex flex-col items-center justify-center min-h-[380px] md:min-h-[460px] relative overflow-hidden bg-white/40 border-slate-100 shadow-2xl">
               {/* Background Glow */}
@@ -286,7 +251,7 @@ const EmployeeDashboard = () => {
         <div className="lg:col-span-7 flex flex-col gap-4 md:gap-6">
            <div className="flex items-center gap-3 px-4">
               <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
-              <span className="text-[12px] md:text-[14px] font-black text-slate-900 tracking-[0.2em] uppercase">Deployment Queue</span>
+              <span className="text-[12px] md:text-[14px] font-black text-slate-100 tracking-[0.2em] uppercase">Deployment Queue</span>
            </div>
            <div className="glass-card !p-0 overflow-hidden min-h-[380px] md:min-h-[460px] flex flex-col shadow-2xl border-indigo-50/50">
               <div className="p-6 md:p-10 border-b border-slate-50 flex items-center justify-between bg-gradient-to-r from-indigo-50/50 to-white/0">
@@ -423,115 +388,16 @@ const EmployeeDashboard = () => {
                <p className="text-base md:text-[18px] font-black text-slate-900 uppercase tracking-tighter leading-none">Optimal (98%)</p>
             </div>
          </div>
-         <div 
-           onClick={() => setIsChatOpen(true)}
-           className="glass-card !p-6 md:!p-10 flex items-center gap-6 md:gap-8 border-brand-200/50 bg-gradient-to-br from-brand-50/50 to-white shadow-xl hover:shadow-2xl transition-all group cursor-pointer min-w-[280px] md:min-w-0 shrink-0 md:shrink"
-         >
+         <div className="glass-card !p-6 md:!p-10 flex items-center gap-6 md:gap-8 border-brand-200/50 bg-gradient-to-br from-brand-50/50 to-white shadow-xl hover:shadow-2xl transition-all group min-w-[280px] md:min-w-0 shrink-0 md:shrink">
             <div className="w-12 h-12 md:w-16 md:h-16 bg-brand-600 rounded-xl md:rounded-[24px] flex items-center justify-center text-white shadow-2xl shadow-brand-600/40 group-hover:scale-110 transition-transform">
                <MessageSquare className="w-6 h-6 md:w-8 md:h-8" />
             </div>
             <div>
                <h5 className="text-[9px] md:text-[11px] font-black text-brand-400 uppercase tracking-[0.3em] mb-1">Comms Uplink</h5>
-               <p className="text-base md:text-[18px] font-black text-slate-900 uppercase tracking-tighter leading-none">WhatsApp AI Online</p>
+               <p className="text-base md:text-[18px] font-black text-slate-900 uppercase tracking-tighter leading-none">Comms Node Active</p>
             </div>
          </div>
       </section>
-
-      {/* 5. FLOATING WHATSAPP CHAT WIDGET */}
-      <div className="fixed bottom-6 left-6 md:left-auto md:right-28 md:bottom-8 z-50 flex flex-col items-start md:items-end">
-        <AnimatePresence>
-          {isChatOpen && (
-            <motion.div 
-              initial={{ opacity: 0, y: 50, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 50, scale: 0.9 }}
-              className="w-[320px] sm:w-[360px] h-[480px] bg-slate-900 rounded-[28px] p-2.5 shadow-2xl border-2 border-slate-800 flex flex-col mb-4 overflow-hidden"
-            >
-              <div className="flex-1 bg-[#efeae2] rounded-[22px] overflow-hidden flex flex-col relative">
-                {/* WhatsApp Header */}
-                <div className="bg-[#075E54] text-white p-3 flex items-center justify-between shadow-md z-10 relative">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-emerald-400/30 overflow-hidden">
-                      <Cpu size={18} className="text-emerald-400" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-black leading-tight">NEXA AI WhatsApp</h4>
-                      <span className="text-[8px] text-emerald-200/90 font-medium block">Online Assistant</span>
-                    </div>
-                  </div>
-                  <button 
-                    type="button"
-                    onClick={() => setIsChatOpen(false)}
-                    className="text-white/80 hover:text-white text-xs font-black uppercase"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {/* Message Window */}
-                <div className="flex-1 overflow-y-auto p-3.5 space-y-3 flex flex-col custom-scrollbar z-10 relative">
-                  {chatMessages.map((msg, idx) => (
-                    <div 
-                      key={idx} 
-                      className={`flex flex-col max-w-[85%] ${
-                        msg.sender === 'user' ? 'self-end items-end' : 'self-start items-start'
-                      }`}
-                    >
-                      <div 
-                        className={`p-2.5 rounded-xl text-[10px] font-semibold leading-relaxed shadow-sm ${
-                          msg.sender === 'user' 
-                            ? 'bg-[#dcf8c6] text-slate-800 rounded-tr-none' 
-                            : 'bg-white text-slate-800 rounded-tl-none'
-                      }`}
-                      >
-                        <div className="whitespace-pre-wrap">{msg.text}</div>
-                        <div className="text-right text-[7px] text-slate-400 mt-1">{msg.time}</div>
-                      </div>
-                    </div>
-                  ))}
-                  {chatTyping && (
-                    <div className="self-start flex flex-col items-start max-w-[85%]">
-                      <div className="bg-white border border-gray-100 p-2.5 rounded-xl rounded-tl-none flex gap-1 items-center">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#128C7E] animate-bounce"></span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#128C7E] animate-bounce [animation-delay:0.2s]"></span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#128C7E] animate-bounce [animation-delay:0.4s]"></span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Input Footer */}
-                <form onSubmit={handleSendChatMessage} className="p-2.5 bg-[#f0f0f0] border-t border-slate-200/50 flex gap-2 items-center z-10 relative">
-                  <input
-                    type="text"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    placeholder="Ask WhatsApp bot..."
-                    disabled={chatTyping}
-                    className="flex-1 bg-white rounded-full px-3 py-2 text-xs font-semibold text-slate-800 placeholder-slate-400 outline-none border border-slate-200 focus:border-emerald-500"
-                  />
-                  <button
-                    type="submit"
-                    disabled={!chatInput.trim() || chatTyping}
-                    className="p-2 bg-[#128C7E] text-white rounded-full transition-all disabled:opacity-40"
-                  >
-                    <MessageSquare size={12} />
-                  </button>
-                </form>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Floating Green WhatsApp Button */}
-        <button
-          type="button"
-          onClick={() => setIsChatOpen(!isChatOpen)}
-          className="w-14 h-14 bg-[#25D366] hover:bg-[#1ebd59] text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 border border-emerald-400/20"
-        >
-          <MessageSquare size={24} className="animate-pulse" />
-        </button>
-      </div>
 
     </div>
   );

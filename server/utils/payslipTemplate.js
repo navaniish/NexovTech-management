@@ -11,6 +11,10 @@ const payslipTemplate = (data) => {
     metadata = {} 
   } = data;
 
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const monthName = months[Number(month) - 1] || 'May';
+  const totalDaysInMonth = new Date(year, Number(month), 0).getDate();
+
   const baseSalary = calculatedSalary.base || data.salary || data.netSalary || 0;
   const bonus = calculatedSalary.bonus || data.bonus || 0;
   const totalAmount = calculatedSalary.total || baseSalary + bonus;
@@ -212,7 +216,7 @@ const payslipTemplate = (data) => {
 
         <div class="title-section">
           <h2>Payment Statement</h2>
-          <p class="month">For the Month of <span>May ${year}</span></p>
+          <p class="month">For the Month of <span>${monthName} ${year}</span></p>
         </div>
 
         <div class="greeting">
@@ -228,7 +232,7 @@ const payslipTemplate = (data) => {
           <div class="grid-item"><span class="grid-label">Member Name</span><span class="grid-val">: ${employeeName}</span></div>
           <div class="grid-item"><span class="grid-label">Payment Date</span><span class="grid-val">: ${displayDate}</span></div>
           <div class="grid-item"><span class="grid-label">Member ID</span><span class="grid-val">: ${employeeId || 'NX-' + Date.now().toString().slice(-4)}</span></div>
-          <div class="grid-item"><span class="grid-label">Pay Period</span><span class="grid-val">: 01 May ${year} - 31 May ${year}</span></div>
+          <div class="grid-item"><span class="grid-label">Pay Period</span><span class="grid-val">: 01 ${monthName} ${year} - ${totalDaysInMonth} ${monthName} ${year}</span></div>
           <div class="grid-item"><span class="grid-label">Member Service</span><span class="grid-val">: ${metadata.service || 'Specialist Services'}</span></div>
           <div class="grid-item"><span class="grid-label">Project Name</span><span class="grid-val">: ${metadata.projectName || 'Internal Operations'}</span></div>
           <div class="grid-item"><span class="grid-label">Department</span><span class="grid-val">: ${metadata.department || 'Development'}</span></div>

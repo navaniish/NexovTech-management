@@ -28,13 +28,19 @@ exports.redirectToAuth = (req, res) => {
     ? (process.env.LINKEDIN_CLIENT_ID_COMPANY || 'placeholder_client_id')
     : (process.env.LINKEDIN_CLIENT_ID_PERSONAL || 'placeholder_client_id');
   
+  const stateVal = useCompany ? 'nexa_company' : 'nexa_personal';
+
+  if (clientId === 'placeholder_client_id' || !clientId) {
+    console.warn('❌ [LINKEDIN OAUTH]: No client ID configured.');
+    return res.redirect(`${CLIENT_DASHBOARD_URL}?error=${encodeURIComponent('LinkedIn App ID is not configured.')}`);
+  }
+
   // Scopes are already defined globally based on env, recompute if overridden
   const scopes = (useCompany
     ? (process.env.LINKEDIN_SCOPES_COMPANY || 'w_organization_social r_organization_social')
     : (process.env.LINKEDIN_SCOPES_PERSONAL || 'openid profile email w_member_social')).replace(/["']/g, '');
   const scopeEncoded = encodeURIComponent(scopes);
   
-  const stateVal = useCompany ? 'nexa_company' : 'nexa_personal';
   const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(CALLBACK_URL)}&state=${stateVal}&scope=${scopeEncoded}`;
   res.redirect(authUrl);
 };
@@ -50,6 +56,11 @@ exports.handleCallback = async (req, res) => {
 
   if (!code) {
     return res.status(400).json({ message: 'Authorization code is missing' });
+  }
+
+  // Simulated authentication code bypass removed for strictly real integrations
+  if (code.startsWith('simulated_')) {
+    return res.redirect(`${CLIENT_DASHBOARD_URL}?error=${encodeURIComponent('Simulated LinkedIn tokens are disabled.')}`);
   }
 
   const useCompany = state === 'nexa_company';
@@ -284,8 +295,12 @@ exports.sharePost = async (req, res) => {
       config = configs[0] || null;
     }
 
-    if (!config || !config.isActive) {
-      return res.status(400).json({ message: 'LinkedIn integration is not active' });
+    const isSimulated = !config || !config.isActive || (config.accessToken && config.accessToken.startsWith('simulated_'));
+
+    if (isSimulated) {
+      return res.status(400).json({
+        message: 'LinkedIn Sharing requires a real, connected LinkedIn profile/company page. Please connect a real account.'
+      });
     }
 
     // Call LinkedIn rest/posts API
