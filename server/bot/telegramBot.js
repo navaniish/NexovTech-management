@@ -1291,12 +1291,38 @@ Please activate the multi-agent network to analyze this deployment failure, reco
   // Default fallback to AI Assistant
   bot.on('text', async (ctx) => {
     if (ctx.state.user) {
-      const response = await getAIResponse(ctx.message.text, ctx.state.user);
+      const result = await getAIResponse(ctx.message.text, ctx.state.user);
       try {
-        await ctx.reply(response, { parse_mode: 'Markdown' });
+        if (result.requiresApproval) {
+          const inlineKeyboard = {
+            inline_keyboard: [
+              [
+                { text: '✅ Approve & Resume', callback_data: `approve_run:${result.runId}` },
+                { text: '❌ Reject & Abort', callback_data: `reject_run:${result.runId}` }
+              ]
+            ]
+          };
+          await ctx.reply(result.text, { parse_mode: 'Markdown', reply_markup: inlineKeyboard });
+        } else {
+          await ctx.reply(result.text, { parse_mode: 'Markdown' });
+        }
       } catch (err) {
         console.warn('⚠️ Telegram Markdown parsing failed, falling back to plain text:', err.message);
-        await ctx.reply(response);
+        if (result.requiresApproval) {
+          const inlineKeyboard = {
+            inline_keyboard: [
+              [
+                { text: '✅ Approve & Resume', callback_data: `approve_run:${result.runId}` },
+                { text: '❌ Reject & Abort', callback_data: `reject_run:${result.runId}` }
+              ]
+            ]
+          };
+          const plainMsg = result.text.replace(/\\_/g, '_');
+          await ctx.reply(plainMsg, { reply_markup: inlineKeyboard });
+        } else {
+          const plainMsg = result.text.replace(/\\_/g, '_');
+          await ctx.reply(plainMsg);
+        }
       }
     }
   });

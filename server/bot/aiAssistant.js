@@ -17,10 +17,11 @@ async function getRAGContext(tenantId = 'org_default', limit = 5) {
 
 async function getAIResponse(userMessage, userContext = {}) {
   try {
+    const tenantId = userContext.tenantId || 'org_default';
     // Prepend RAG context from the vector store
-    const ragContext = await getRAGContext(userContext.tenantId || 'org_default');
+    const ragContext = await getRAGContext(tenantId);
 
-    const result = await runMultiAgentOrchestration(userMessage);
+    const result = await runMultiAgentOrchestration(userMessage, null, tenantId);
     
     // Format the event hops visualization
     let hopsText = "";
@@ -37,11 +38,36 @@ async function getAIResponse(userMessage, userContext = {}) {
     if (hopsText) {
       finalMsg += `🤖 *NEXA Multi-Agent Event Loop Hops:*\n${hopsText}\n\n`;
     }
+
+    if (result.requiresApproval) {
+      const runId = `run_${Date.now()}`;
+      const newRun = {
+        id: runId,
+        message: userMessage,
+        state: result,
+        status: 'Pending_Approval',
+        tenantId,
+        createdAt: new Date().toISOString()
+      };
+      await fallbackDb.save('agent_runs', newRun);
+
+      // Emit real-time WebSocket update for immediate UI sync
+      const socketHub = require('../utils/socketHub');
+      socketHub.emit('agent_run_update', newRun);
+
+      finalMsg += `⚠️ *NEXA Agentic Action Paused* ⚠️\n\n` +
+        `💰 *Reason:* ${result.approvalData?.reason || 'High-value validation required'}\n` +
+        `🆔 *Session ID:* \`${runId}\`\n\n` +
+        `Please authorize this request using the buttons below:`;
+
+      return { text: finalMsg, requiresApproval: true, runId };
+    }
+
     finalMsg += `📋 *Consolidated Strategic Report:*\n${result.response}`;
-    return finalMsg;
+    return { text: finalMsg, requiresApproval: false };
   } catch (error) {
     console.error('❌ AI_BOT_ERROR (Multi-Agent):', error.message);
-    return "I encountered a synchronization error in the multi-agent network event loop.";
+    return { text: "I encountered a synchronization error in the multi-agent network event loop.", requiresApproval: false };
   }
 }
 

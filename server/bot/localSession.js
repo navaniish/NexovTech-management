@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const { db } = require('../firebaseAdmin');
 
+const timeoutPromise = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore operation timeout')), ms));
+
 class LocalSession {
   constructor(options = {}) {
     this.database = options.database || 'data/sessions.json';
@@ -25,7 +27,10 @@ class LocalSession {
   async save(key, session) {
     if (this.useFirestore && db) {
       try {
-        await db.collection(this.database).doc(key).set(session);
+        await Promise.race([
+          db.collection(this.database).doc(key).set(session),
+          timeoutPromise(1500)
+        ]);
       } catch (e) {
         console.error('Cloud Session save failed:', e.message);
       }
@@ -50,7 +55,10 @@ class LocalSession {
       
       if (this.useFirestore && db) {
         try {
-          const doc = await db.collection(this.database).doc(key).get();
+          const doc = await Promise.race([
+            db.collection(this.database).doc(key).get(),
+            timeoutPromise(1500)
+          ]);
           ctx.session = doc.exists ? doc.data() : {};
         } catch (e) {
           ctx.session = {};

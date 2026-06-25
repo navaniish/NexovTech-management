@@ -13,7 +13,7 @@ try {
   aiClient = new OpenAI({
     baseURL: process.env.AI_BASE_URL || "https://api.nexovtech.ai/v1",
     apiKey: process.env.AI_API_KEY || 'placeholder',
-    timeout: 30000
+    timeout: 5000
   });
 } catch (e) {
   console.warn('⚠️ Multi-Agent Network offline: Missing OpenAI client setup.');
