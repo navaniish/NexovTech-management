@@ -17,7 +17,7 @@ import { sentinel } from '../services/securityService';
 
 const AuthContext = createContext(null);
 
-const SESSION_VERSION = 'v3'; // Bump this to force-clear all cached sessions on next load
+const SESSION_VERSION = 'v4'; // Bump this to force-clear all cached sessions on next load
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {

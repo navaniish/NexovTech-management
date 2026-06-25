@@ -554,7 +554,7 @@ const Clients = () => {
   if (error) return (
     <div className="text-center py-20 glass rounded-[40px] border border-rose-500/20">
       <AlertTriangle size={64} className="text-rose-500 mx-auto mb-6" />
-      <h3 className="text-2xl font-black text-gray-900">Directory Unreachable</h3>
+      <h3 className="text-2xl font-black text-slate-100">Directory Unreachable</h3>
       <p className="text-surface-500 mt-2">{error}</p>
       <button onClick={fetchClients} className="mt-8 px-8 py-3 bg-brand-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-500 transition-all">Retry Link</button>
     </div>
@@ -565,7 +565,7 @@ const Clients = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-          <h1 className="text-4xl font-black text-gray-900 tracking-tighter">Client Portfolio</h1>
+          <h1 className="text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tighter">Client Portfolio</h1>
           <p className="text-surface-500 mt-2 font-medium">Acquire B2B client contracts and monitor CRM active pipelines.</p>
         </div>
 
@@ -580,10 +580,10 @@ const Clients = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-150 gap-8">
+      <div className="flex border-b border-slate-200 dark:border-white/10 gap-8">
         <button
           onClick={() => setActiveTab('roster')}
-          className={`pb-4 text-xs font-black uppercase tracking-widest transition-all border-b-2 ${activeTab === 'roster' ? 'border-brand-600 text-gray-900 font-bold' : 'border-transparent text-surface-500 hover:text-gray-900'
+          className={`pb-4 text-xs font-black uppercase tracking-widest transition-all border-b-2 ${activeTab === 'roster' ? 'border-brand-600 text-slate-900 dark:text-slate-100 font-bold' : 'border-transparent text-surface-500 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
         >
           Active Clients Roster
@@ -591,7 +591,7 @@ const Clients = () => {
 
         <button
           onClick={() => setActiveTab('discovery')}
-          className={`pb-4 text-xs font-black uppercase tracking-widest transition-all border-b-2 ${activeTab === 'discovery' ? 'border-brand-600 text-gray-900 font-bold' : 'border-transparent text-surface-500 hover:text-gray-900'
+          className={`pb-4 text-xs font-black uppercase tracking-widest transition-all border-b-2 ${activeTab === 'discovery' ? 'border-brand-600 text-slate-900 dark:text-slate-100 font-bold' : 'border-transparent text-surface-500 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
         >
           Client Acquisition AI (Scraper)
@@ -599,7 +599,7 @@ const Clients = () => {
 
         <button
           onClick={() => setActiveTab('gateway')}
-          className={`pb-4 text-xs font-black uppercase tracking-widest transition-all border-b-2 relative ${activeTab === 'gateway' ? 'border-brand-600 text-gray-900 font-bold' : 'border-transparent text-surface-500 hover:text-gray-900'
+          className={`pb-4 text-xs font-black uppercase tracking-widest transition-all border-b-2 relative ${activeTab === 'gateway' ? 'border-brand-600 text-slate-900 dark:text-slate-100 font-bold' : 'border-transparent text-surface-500 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
         >
           Pending Deals Gateway
@@ -623,45 +623,45 @@ const Clients = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by client company name, service vertical..."
-                className="w-full pl-12 pr-6 py-4 bg-white/[0.03] border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500/30 transition-all text-gray-900 placeholder:text-surface-700"
+                className="w-full pl-12 pr-6 py-4 bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500/30 transition-all text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
               />
             </div>
-            <button className="p-4 bg-gray-50 border border-gray-100 rounded-2xl text-surface-500 hover:text-gray-900 transition-all">
+            <button className="p-4 bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-2xl text-surface-500 hover:text-slate-900 dark:hover:text-slate-100 transition-all">
               <Filter size={20} />
             </button>
           </div>
 
           {/* Table */}
-          <div className="glass-light rounded-[40px] border border-gray-100 overflow-hidden shadow-2xl">
+          <div className="glass-light rounded-[40px] border border-slate-200 dark:border-white/10 overflow-hidden shadow-2xl">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-gray-100 bg-white/[0.02]">
+                <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.04]">
                   <th className="px-8 py-6 text-[10px] font-black text-surface-500 uppercase tracking-widest">Client Identity</th>
                   <th className="px-8 py-6 text-[10px] font-black text-surface-500 uppercase tracking-widest">Service Vertical</th>
                   <th className="px-8 py-6 text-[10px] font-black text-surface-500 uppercase tracking-widest">Engagement Status</th>
                   <th className="px-8 py-6 text-[10px] font-black text-surface-500 uppercase tracking-widest text-right">Operations</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                 {filteredClients.length === 0 ? (
                   <tr>
                     <td colSpan="4" className="px-8 py-20 text-center text-surface-500 font-bold">No active corporate clients found.</td>
                   </tr>
                 ) : filteredClients.map((client) => (
-                  <tr key={client._id} className="hover:bg-white/[0.02] transition-colors group">
+                  <tr key={client._id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.04] transition-colors group">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-neon-blue flex items-center justify-center text-white font-black text-xl shadow-lg">
                           {client.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-bold text-gray-900 text-base">{client.name}</p>
+                          <p className="font-bold text-slate-900 dark:text-slate-100 text-base">{client.name}</p>
                           <p className="text-[10px] text-surface-500 font-black uppercase tracking-widest">{client.businessType || 'Enterprise'}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <div className="flex items-center gap-2 text-surface-300 font-bold text-sm">
+                      <div className="flex items-center gap-2 text-surface-700 dark:text-surface-300 font-bold text-sm">
                         <Globe size={14} className="text-brand-500" /> {client.serviceType || 'Custom Solutions'}
                       </div>
                     </td>
@@ -679,7 +679,7 @@ const Clients = () => {
                         >
                           <FileText size={18} />
                         </button>
-                        <button className="p-3 bg-gray-50 hover:bg-white/10 rounded-xl text-surface-500 hover:text-gray-900 transition-colors">
+                        <button className="p-3 bg-slate-100 dark:bg-white/[0.04] hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl text-surface-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
                           <Mail size={18} />
                         </button>
                         <button
@@ -707,7 +707,7 @@ const Clients = () => {
             {/* Section Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+                <h2 className="text-xl font-black text-slate-100 tracking-tight flex items-center gap-2">
                   <TrendingUp size={20} className="text-brand-500" /> Real-Time Pipeline Analytics
                 </h2>
                 <p className="text-xs text-slate-400 font-medium mt-1">Live metrics computed from scraped B2B prospect database.</p>
@@ -736,7 +736,7 @@ const Clients = () => {
                   className={`glass-light p-5 rounded-[24px] border ${kpi.border} shadow-sm flex flex-col gap-1`}
                 >
                   <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{kpi.label}</span>
-                  <span className="text-2xl font-black text-slate-900" style={{ color: kpi.color }}>{kpi.value}</span>
+                  <span className="text-2xl font-black text-slate-100" style={{ color: kpi.color }}>{kpi.value}</span>
                   <span className="text-[10px] font-semibold text-slate-400">{kpi.sub}</span>
                 </motion.div>
               ))}
@@ -746,8 +746,8 @@ const Clients = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
               {/* Chart 1: Pipeline by Industry (Area Chart) */}
-              <div className="glass-light p-6 rounded-[28px] border border-gray-100 shadow-xl">
-                <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1 flex items-center gap-2">
+              <div className="glass-light p-6 rounded-[28px] border border-white/10 shadow-xl">
+                <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest mb-1 flex items-center gap-2">
                   <IndianRupee size={14} className="text-indigo-500" /> Projected Pipeline
                 </h4>
                 <p className="text-[10px] text-slate-400 font-medium mb-5">Estimated revenue by niche segment</p>
@@ -779,8 +779,8 @@ const Clients = () => {
               </div>
 
               {/* Chart 2: Conversion Funnel (Bar Chart) */}
-              <div className="glass-light p-6 rounded-[28px] border border-gray-100 shadow-xl">
-                <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1 flex items-center gap-2">
+              <div className="glass-light p-6 rounded-[28px] border border-white/10 shadow-xl">
+                <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest mb-1 flex items-center gap-2">
                   <Zap size={14} className="text-amber-500" /> Conversion Funnel
                 </h4>
                 <p className="text-[10px] text-slate-400 font-medium mb-5">Lead progression through pipeline stages</p>
@@ -810,8 +810,8 @@ const Clients = () => {
               </div>
 
               {/* Chart 3: Niche Distribution (Horizontal mini-bars) */}
-              <div className="glass-light p-6 rounded-[28px] border border-gray-100 shadow-xl">
-                <h4 className="text-xs font-black text-gray-900 uppercase tracking-widest mb-1 flex items-center gap-2">
+              <div className="glass-light p-6 rounded-[28px] border border-white/10 shadow-xl">
+                <h4 className="text-xs font-black text-slate-100 uppercase tracking-widest mb-1 flex items-center gap-2">
                   <Cpu size={14} className="text-violet-500" /> Niche Distribution
                 </h4>
                 <p className="text-[10px] text-slate-400 font-medium mb-5">Active prospects by industry segment</p>
@@ -828,7 +828,7 @@ const Clients = () => {
                       return analytics.distributionData.map((item, i) => (
                         <div key={i} className="space-y-1">
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black text-slate-700">{item.name}</span>
+                            <span className="text-[10px] font-black text-slate-300">{item.name}</span>
                             <span className="text-[10px] font-black text-slate-400">{item.value} lead{item.value !== 1 ? 's' : ''}</span>
                           </div>
                           <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -852,8 +852,8 @@ const Clients = () => {
           {/* === SCRAPER & LEADS SECTION === */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left: Scraper Input Form */}
-            <div className="glass-light p-8 rounded-[32px] border border-gray-100 shadow-xl h-fit">
-              <h3 className="text-lg font-black text-gray-900 tracking-tight mb-6 flex items-center gap-2">
+            <div className="glass-light p-8 rounded-[32px] border border-slate-200 dark:border-white/10 shadow-xl h-fit">
+              <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight mb-6 flex items-center gap-2">
                 <Search size={18} className="text-brand-500" /> B2B Target Crawler
               </h3>
 
@@ -863,13 +863,13 @@ const Clients = () => {
                   <select
                     value={industry}
                     onChange={(e) => setIndustry(e.target.value)}
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:border-brand-500 transition-all cursor-pointer"
+                    className="w-full p-4 bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-2xl text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition-all cursor-pointer"
                   >
-                    <option value="healthcare">Healthcare & Medical Clinics</option>
-                    <option value="ecommerce">E-Commerce Enterprises</option>
-                    <option value="agency">Agencies & Consulting</option>
-                    <option value="fintech">Financial Technologies (FinTech)</option>
-                    <option value="logistics">Supply Chain & Logistics</option>
+                    <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="healthcare">Healthcare & Medical Clinics</option>
+                    <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="ecommerce">E-Commerce Enterprises</option>
+                    <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="agency">Agencies & Consulting</option>
+                    <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="fintech">Financial Technologies (FinTech)</option>
+                    <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="logistics">Supply Chain & Logistics</option>
                   </select>
                 </div>
 
@@ -886,15 +886,15 @@ const Clients = () => {
                         setRegion('');
                       }
                     }}
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:border-brand-500 transition-all cursor-pointer"
+                    className="w-full p-4 bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-2xl text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition-all cursor-pointer"
                   >
-                    <option value="All Countries">🌎 Global (All Regions)</option>
-                    <option value="United States">🇺🇸 United States</option>
-                    <option value="United Kingdom">🇬🇧 United Kingdom</option>
-                    <option value="India">🇮🇳 India</option>
-                    <option value="Germany">🇩🇪 Germany</option>
-                    <option value="Singapore">🇸🇬 Singapore</option>
-                    <option value="custom">🔍 Custom Location...</option>
+                    <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="All Countries">🌎 Global (All Regions)</option>
+                    <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="United States">🇺🇸 United States</option>
+                    <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="United Kingdom">🇬🇧 United Kingdom</option>
+                    <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="India">🇮🇳 India</option>
+                    <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="Germany">🇩🇪 Germany</option>
+                    <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="Singapore">🇸🇬 Singapore</option>
+                    <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="custom">🔍 Custom Location...</option>
                   </select>
                 </div>
 
@@ -906,7 +906,7 @@ const Clients = () => {
                       value={region}
                       onChange={(e) => setRegion(e.target.value)}
                       placeholder="e.g. London, UK or Bengaluru, India"
-                      className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:border-brand-500 transition-all"
+                      className="w-full p-4 bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-2xl text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition-all"
                     />
                   </div>
                 )}
@@ -931,10 +931,10 @@ const Clients = () => {
 
             {/* Right: Crawled Prospect Lists & Actions */}
             <div className="lg:col-span-2 space-y-6">
-              <div className="glass-light p-8 rounded-[32px] border border-gray-100 shadow-xl">
+              <div className="glass-light p-8 rounded-[32px] border border-slate-200 dark:border-white/10 shadow-xl">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                   <div>
-                    <h3 className="text-lg font-black text-gray-900 tracking-tight">Discovered Sales Leads</h3>
+                    <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">Discovered Sales Leads</h3>
                     <p className="text-xs text-slate-400 font-medium">B2B sales prospects scraped and qualified autonomously.</p>
                   </div>
 
@@ -953,21 +953,21 @@ const Clients = () => {
                         value={leadSearchTerm}
                         onChange={(e) => setLeadSearchTerm(e.target.value)}
                         placeholder="Search leads..."
-                        className="pl-8 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-brand-500 w-36"
+                        className="pl-8 pr-4 py-2 bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 w-36"
                       />
                     </div>
 
                     <select
                       value={leadStatusFilter}
                       onChange={(e) => setLeadStatusFilter(e.target.value)}
-                      className="p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-brand-500 cursor-pointer"
+                      className="p-2 bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 cursor-pointer"
                     >
-                      <option value="All">All Statuses</option>
-                      <option value="Discovered">Discovered</option>
-                      <option value="Scored">Scored</option>
-                      <option value="Proposal_Generated">Proposal Generated</option>
-                      <option value="Outreach_Sent">Outreach Sent</option>
-                      <option value="Converted">Converted</option>
+                      <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="All">All Statuses</option>
+                      <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="Discovered">Discovered</option>
+                      <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="Scored">Scored</option>
+                      <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="Proposal_Generated">Proposal Generated</option>
+                      <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="Outreach_Sent">Outreach Sent</option>
+                      <option className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value="Converted">Converted</option>
                     </select>
                   </div>
                 </div>
@@ -977,7 +977,7 @@ const Clients = () => {
                     <Loader2 size={32} className="text-brand-500 animate-spin" />
                   </div>
                 ) : filteredLeads.length === 0 ? (
-                  <div className="text-center py-12 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                  <div className="text-center py-12 bg-slate-50/50 dark:bg-white/[0.02] rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
                     <Bot size={48} className="text-surface-300 mx-auto mb-4" />
                     <p className="text-xs text-surface-500 font-bold uppercase tracking-wide">No leads matched search filters.</p>
                     <p className="text-[10px] text-surface-400 mt-1">Initiate a scraper crawl to discover new prospects.</p>
@@ -986,7 +986,7 @@ const Clients = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="border-b border-slate-100 text-slate-400 uppercase tracking-widest text-[9px] font-black">
+                        <tr className="border-b border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[9px] font-black">
                           <th className="pb-3">Company Details</th>
                           <th className="pb-3">Contact Person</th>
                           <th className="pb-3">Opportunity Index</th>
@@ -994,46 +994,46 @@ const Clients = () => {
                           <th className="pb-3 text-right">Operations</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-50">
+                      <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                         {filteredLeads.map((lead) => {
                           const [sizeVal, countryVal] = (lead.companySize || '').includes(' | ')
-                            ? lead.companySize.split(' | ')
-                            : [lead.companySize, 'Global'];
+                             ? lead.companySize.split(' | ')
+                             : [lead.companySize, 'Global'];
 
                           const score = lead.leadScores?.[0]?.overallOpportunityScore || null;
 
                           return (
-                            <tr key={lead.id || lead._id} className="hover:bg-slate-50/30 transition-all group">
+                            <tr key={lead.id || lead._id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.04] transition-all group">
                               <td className="py-4">
-                                <div className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                                <div className="font-bold text-slate-900 dark:text-slate-100 text-xs flex items-center gap-1.5">
                                   <span>{getFlagEmoji(countryVal)}</span>
                                   <span className="truncate max-w-[140px]">{lead.companyName}</span>
                                 </div>
-                                <div className="text-[9px] text-slate-400 font-bold flex items-center gap-1.5 mt-1">
+                                <div className="text-[9px] text-slate-500 dark:text-slate-400 font-bold flex items-center gap-1.5 mt-1">
                                   <Globe size={10} />
                                   <a href={`https://${lead.website}`} target="_blank" rel="noreferrer" className="hover:underline hover:text-brand-600">{lead.website}</a>
-                                  <span className="text-slate-200">|</span>
+                                  <span className="text-slate-350 dark:text-white/10">|</span>
                                   <span>{sizeVal} employees</span>
                                 </div>
                               </td>
                               <td className="py-4">
-                                <div className="font-bold text-slate-700 text-xs truncate max-w-[120px]">
+                                <div className="font-bold text-slate-800 dark:text-slate-200 text-xs truncate max-w-[120px]">
                                   {lead.contactName || lead.contactInfo?.primaryContactName || 'Sales Representative'}
                                 </div>
-                                <div className="text-[9px] text-slate-400 mt-0.5 font-semibold">
+                                <div className="text-[9px] text-slate-500 dark:text-slate-400 mt-0.5 font-semibold">
                                   {lead.emails?.[0] || lead.contactInfo?.emails?.[0] || 'info@domain.com'}
                                 </div>
                               </td>
                               <td className="py-4">
                                 {score !== null ? (
                                   <div className="flex items-center gap-2">
-                                    <div className="w-12 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div className="w-12 bg-slate-150 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
                                       <div
                                         className={`h-full rounded-full ${score >= 80 ? 'bg-gradient-to-r from-orange-400 to-rose-500' : 'bg-brand-500'}`}
                                         style={{ width: `${score}%` }}
                                       />
                                     </div>
-                                    <span className="text-[10px] font-black text-slate-800">
+                                    <span className="text-[10px] font-black text-slate-800 dark:text-slate-200">
                                       {score}% {score >= 80 && '🔥'}
                                     </span>
                                   </div>
@@ -1045,13 +1045,13 @@ const Clients = () => {
                                 <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wide border ${lead.status === 'Scored'
                                     ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20'
                                     : lead.status === 'Proposal_Generated'
-                                      ? 'bg-brand-500/10 text-brand-600 border-brand-500/20'
-                                      : lead.status === 'Outreach_Sent'
-                                        ? 'bg-blue-500/10 text-blue-600 border-blue-500/20'
-                                        : lead.status === 'Converted'
-                                          ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                                          : 'bg-gray-100 text-gray-600 border-gray-200'
-                                  }`}>
+                                       ? 'bg-brand-500/10 text-brand-600 border-brand-500/20'
+                                       : lead.status === 'Outreach_Sent'
+                                         ? 'bg-blue-500/10 text-blue-600 border-blue-500/20'
+                                         : lead.status === 'Converted'
+                                           ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                                           : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                                   }`}>
                                   {lead.status.replace('_', ' ')}
                                 </span>
                               </td>
@@ -1090,11 +1090,11 @@ const Clients = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="glass-light p-8 rounded-[32px] border border-gray-100 shadow-xl space-y-6"
+                  className="glass-light p-8 rounded-[32px] border border-white/10 shadow-xl space-y-6"
                 >
-                  <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+                  <div className="flex justify-between items-center pb-4 border-b border-white/10">
                     <div>
-                      <h4 className="text-sm font-black text-gray-900 tracking-tight">
+                      <h4 className="text-sm font-black text-slate-100 tracking-tight">
                         Lead Actions: {selectedLead.companyName}
                       </h4>
                       <p className="text-[10px] text-surface-400">Initiate custom proposal drafting or custom outreach templates.</p>
@@ -1110,7 +1110,7 @@ const Clients = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Proposal Gen Form */}
                     <div className="space-y-4">
-                      <h5 className="text-xs font-black text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                      <h5 className="text-xs font-black text-slate-100 uppercase tracking-widest flex items-center gap-2">
                         <FileText size={14} className="text-brand-500" /> B2B Proposal Creator
                       </h5>
 
@@ -1120,7 +1120,7 @@ const Clients = () => {
                           <select
                             value={serviceType}
                             onChange={(e) => setServiceType(e.target.value)}
-                            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none"
+                            className="w-full p-3 bg-white/[0.04] border border-gray-200 rounded-xl text-xs font-bold text-white focus:outline-none"
                           >
                             <option value="AI Solutions">AI Solutions</option>
                             <option value="Web Development">Web Development</option>
@@ -1136,7 +1136,7 @@ const Clients = () => {
                             type="number"
                             value={quotationAmount}
                             onChange={(e) => setQuotationAmount(e.target.value)}
-                            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none"
+                            className="w-full p-3 bg-white/[0.04] border border-gray-200 rounded-xl text-xs font-bold focus:outline-none"
                           />
                         </div>
 
@@ -1154,7 +1154,7 @@ const Clients = () => {
                           <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
                             <CheckCircle2 size={12} /> Tailored Proposal Generated
                           </span>
-                          <div className="max-h-48 overflow-y-auto p-2 border border-slate-200 bg-white rounded-lg text-[9px] font-semibold font-mono whitespace-pre-wrap leading-relaxed text-slate-800">
+                          <div className="max-h-48 overflow-y-auto p-2 border border-slate-200 bg-white rounded-lg text-[9px] font-semibold font-mono whitespace-pre-wrap leading-relaxed text-slate-200">
                             {generatedProposal.proposalText}
                           </div>
                           <p className="text-[10px] text-slate-400 font-bold">Proposal has been indexed in deals memory.</p>
@@ -1164,7 +1164,7 @@ const Clients = () => {
 
                     {/* Outreach Drafting Panel */}
                     <div className="space-y-4">
-                      <h5 className="text-xs font-black text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                      <h5 className="text-xs font-black text-slate-100 uppercase tracking-widest flex items-center gap-2">
                         <Mail size={14} className="text-brand-500" /> Outreach Campaign Manager
                       </h5>
 
@@ -1177,7 +1177,7 @@ const Clients = () => {
                               onClick={() => setActiveOutreachChannel(ch)}
                               className={`py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${activeOutreachChannel === ch
                                   ? 'bg-slate-900 text-white border-slate-900'
-                                  : 'bg-transparent text-slate-400 border-slate-200 hover:text-slate-900 hover:border-slate-300'
+                                  : 'bg-transparent text-slate-400 border-slate-200 hover:text-slate-100 hover:border-slate-300'
                                 }`}
                             >
                               {ch}
@@ -1191,7 +1191,7 @@ const Clients = () => {
                             <select
                               value={language}
                               onChange={(e) => setLanguage(e.target.value)}
-                              className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none"
+                              className="w-full p-2.5 bg-white/[0.04] border border-gray-200 rounded-xl text-xs font-bold focus:outline-none"
                             >
                               <option value="en">English (US/UK)</option>
                               <option value="hi">Hindi (हिन्दी)</option>
@@ -1206,7 +1206,7 @@ const Clients = () => {
                               value={customPrompt}
                               onChange={(e) => setCustomPrompt(e.target.value)}
                               placeholder="Add core hooks..."
-                              className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none"
+                              className="w-full p-2.5 bg-white/[0.04] border border-gray-200 rounded-xl text-xs font-bold focus:outline-none"
                             />
                           </div>
                         </div>
@@ -1226,7 +1226,7 @@ const Clients = () => {
                               value={outreachContent}
                               onChange={(e) => setOutreachContent(e.target.value)}
                               rows={4}
-                              className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-xs font-semibold focus:outline-none leading-relaxed text-gray-800"
+                              className="w-full p-3 bg-white/[0.04] border border-white/10 rounded-xl text-xs font-semibold focus:outline-none leading-relaxed text-gray-800"
                             />
 
                             <button
@@ -1258,7 +1258,7 @@ const Clients = () => {
                 <span className="px-2 py-0.5 bg-brand-500/10 text-brand-600 rounded-full text-[9px] font-black uppercase tracking-wider border border-brand-500/20 animate-pulse">
                   HITL Review Gateway
                 </span>
-                <h3 className="text-xl font-black text-gray-900 tracking-tight mt-2 flex items-center gap-2">
+                <h3 className="text-xl font-black text-slate-100 tracking-tight mt-2 flex items-center gap-2">
                   <ShieldCheck className="text-brand-500" size={24} /> B2B Contract Approvals
                 </h3>
                 <p className="text-xs text-slate-400 font-medium">
@@ -1278,25 +1278,25 @@ const Clients = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {pendingDeals.map((deal) => (
-                    <div key={deal.id || deal._id} className="p-5 bg-white border border-gray-150 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-4">
+                    <div key={deal.id || deal._id} className="p-5 bg-white border border-white/10 rounded-2xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-4">
                       <div className="space-y-3">
                         <div className="flex justify-between items-start">
                           <div>
                             <span className="text-[9px] font-black text-brand-600 uppercase tracking-widest">{deal.serviceType}</span>
-                            <h4 className="text-sm font-black text-slate-900 mt-0.5">{deal.companyName}</h4>
+                            <h4 className="text-sm font-black text-slate-100 mt-0.5">{deal.companyName}</h4>
                           </div>
                           <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-600 border border-yellow-500/20 rounded-lg text-[9px] font-black">
                             Opportunity: {deal.opportunityScore}%
                           </span>
                         </div>
 
-                        <div className="p-3 bg-gray-50 border border-gray-100 rounded-xl max-h-32 overflow-y-auto">
+                        <div className="p-3 bg-white/[0.04] border border-white/10 rounded-xl max-h-32 overflow-y-auto">
                           <pre className="text-[9px] font-semibold text-gray-750 whitespace-pre-wrap font-mono leading-relaxed">
                             {deal.proposalText}
                           </pre>
                         </div>
 
-                        <div className="flex items-center justify-between text-xs font-bold text-gray-900 border-t border-gray-100 pt-3">
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-100 border-t border-white/10 pt-3">
                           <span className="text-surface-400 text-[10px]">Quoted Amount:</span>
                           <span className="text-brand-600 font-black text-sm">₹{Number(deal.quotationAmount).toLocaleString()}</span>
                         </div>
@@ -1324,8 +1324,8 @@ const Clients = () => {
           </div>
 
           {/* Right: Outreach log status tracker */}
-          <div className="glass-light p-8 rounded-[32px] border border-gray-100 shadow-xl space-y-6">
-            <h3 className="text-lg font-black text-gray-900 tracking-tight flex items-center gap-2">
+          <div className="glass-light p-8 rounded-[32px] border border-white/10 shadow-xl space-y-6">
+            <h3 className="text-lg font-black text-slate-100 tracking-tight flex items-center gap-2">
               <History size={18} className="text-brand-500" /> Outreach Campaign Logs
             </h3>
             <p className="text-xs text-slate-400 font-medium">Monitoring dispatch logs and feedback loops from cold outreach initiatives.</p>
@@ -1367,7 +1367,7 @@ const Clients = () => {
                         </span>
                       </div>
 
-                      <p className="text-xs text-slate-800 font-bold truncate">To: {log.recipient || 'Prospect Client'}</p>
+                      <p className="text-xs text-slate-200 font-bold truncate">To: {log.recipient || 'Prospect Client'}</p>
                       <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed italic">"{log.contentSent}"</p>
 
                       <div className="flex justify-between items-center pt-1 border-t border-slate-100">
@@ -1407,8 +1407,8 @@ const Clients = () => {
               className="relative w-full max-w-md glass border border-gray-200 rounded-[40px] p-10 shadow-2xl z-10"
             >
               <div className="flex justify-between items-center mb-10">
-                <h2 className="text-3xl font-black text-gray-900 tracking-tighter">Onboard Client</h2>
-                <button onClick={() => setAddModal(false)} className="p-2 text-surface-500 hover:text-gray-900 transition-colors"><X size={24} /></button>
+                <h2 className="text-3xl font-black text-slate-100 tracking-tighter">Onboard Client</h2>
+                <button onClick={() => setAddModal(false)} className="p-2 text-surface-500 hover:text-slate-100 transition-colors"><X size={24} /></button>
               </div>
 
               <form onSubmit={handleAddClient} className="space-y-6">
@@ -1418,7 +1418,7 @@ const Clients = () => {
                     required
                     value={newClient.name}
                     onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
-                    className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 focus:outline-none focus:border-brand-500/50"
+                    className="w-full px-6 py-4 bg-white/[0.04] border border-white/10 rounded-2xl text-white focus:outline-none focus:border-brand-500/50"
                     placeholder="e.g. Acme Corp"
                   />
                 </div>
@@ -1429,7 +1429,7 @@ const Clients = () => {
                     type="email"
                     value={newClient.email}
                     onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
-                    className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 focus:outline-none focus:border-brand-500/50"
+                    className="w-full px-6 py-4 bg-white/[0.04] border border-white/10 rounded-2xl text-white focus:outline-none focus:border-brand-500/50"
                     placeholder="ops@acme.com"
                   />
                 </div>
@@ -1439,7 +1439,7 @@ const Clients = () => {
                     <select
                       value={newClient.businessType}
                       onChange={(e) => setNewClient({ ...newClient, businessType: e.target.value })}
-                      className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 focus:outline-none focus:border-brand-500/50 appearance-none cursor-pointer"
+                      className="w-full px-4 py-4 bg-white/[0.04] border border-white/10 rounded-2xl text-white focus:outline-none focus:border-brand-500/50 appearance-none cursor-pointer"
                     >
                       <option>Enterprise</option>
                       <option>Startup</option>
@@ -1451,7 +1451,7 @@ const Clients = () => {
                     <select
                       value={newClient.serviceType}
                       onChange={(e) => setNewClient({ ...newClient, serviceType: e.target.value })}
-                      className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 focus:outline-none focus:border-brand-500/50 appearance-none cursor-pointer"
+                      className="w-full px-4 py-4 bg-white/[0.04] border border-white/10 rounded-2xl text-white focus:outline-none focus:border-brand-500/50 appearance-none cursor-pointer"
                     >
                       <option>AI Solutions</option>
                       <option>Web Development</option>
@@ -1485,10 +1485,10 @@ const Clients = () => {
             >
               <div className="flex justify-between items-center mb-10">
                 <div>
-                  <h2 className="text-3xl font-black text-gray-900 tracking-tighter">Forge Invoice</h2>
+                  <h2 className="text-3xl font-black text-slate-100 tracking-tighter">Forge Invoice</h2>
                   <p className="text-xs text-brand-500 font-black uppercase tracking-widest mt-1">For: {invoiceModal.clientName}</p>
                 </div>
-                <button onClick={() => setInvoiceModal({ ...invoiceModal, show: false })} className="p-2 text-surface-500 hover:text-gray-900 transition-colors"><X size={24} /></button>
+                <button onClick={() => setInvoiceModal({ ...invoiceModal, show: false })} className="p-2 text-surface-500 hover:text-slate-100 transition-colors"><X size={24} /></button>
               </div>
 
               <form onSubmit={handleGenerateInvoice} className="space-y-6">
@@ -1502,14 +1502,14 @@ const Clients = () => {
                         type="number"
                         value={invoiceModal.amount}
                         onChange={(e) => setInvoiceModal({ ...invoiceModal, amount: e.target.value })}
-                        className="w-full pl-10 pr-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 focus:outline-none focus:border-brand-500/50 font-bold"
+                        className="w-full pl-10 pr-6 py-4 bg-white/[0.04] border border-white/10 rounded-2xl text-white focus:outline-none focus:border-brand-500/50 font-bold"
                         placeholder="e.g. 85000"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-surface-500 uppercase tracking-widest ml-1">Payment Terms</label>
-                    <select className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 focus:outline-none focus:border-brand-500/50 appearance-none cursor-pointer">
+                    <select className="w-full px-6 py-4 bg-white/[0.04] border border-white/10 rounded-2xl text-white focus:outline-none focus:border-brand-500/50 appearance-none cursor-pointer">
                       <option>Net 15</option>
                       <option>Net 30</option>
                       <option>Due on Receipt</option>
@@ -1522,7 +1522,7 @@ const Clients = () => {
                     required
                     value={invoiceModal.description}
                     onChange={(e) => setInvoiceModal({ ...invoiceModal, description: e.target.value })}
-                    className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-gray-900 focus:outline-none focus:border-brand-500/50 h-32 leading-relaxed"
+                    className="w-full px-6 py-4 bg-white/[0.04] border border-white/10 rounded-2xl text-white focus:outline-none focus:border-brand-500/50 h-32 leading-relaxed"
                     placeholder="Specify deliverables..."
                   />
                 </div>
@@ -1553,12 +1553,12 @@ const Clients = () => {
               <div className="w-20 h-20 bg-rose-500/20 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-8 border border-rose-500/20 animate-bounce">
                 <AlertTriangle size={40} />
               </div>
-              <h2 className="text-3xl font-black text-gray-900 tracking-tighter mb-4">Confirm Removal</h2>
+              <h2 className="text-3xl font-black text-slate-100 tracking-tighter mb-4">Confirm Removal</h2>
               <p className="text-surface-500 text-sm font-medium leading-relaxed mb-10">
-                Are you sure you want to remove <span className="text-gray-900 font-bold">{deleteModal.clientName}</span> from the system?
+                Are you sure you want to remove <span className="text-slate-100 font-bold">{deleteModal.clientName}</span> from the system?
               </p>
               <div className="flex gap-4">
-                <button onClick={() => setDeleteModal({ show: false, clientId: null, clientName: '' })} className="flex-1 py-4 bg-gray-50 text-surface-400 rounded-2xl text-xs font-black uppercase tracking-widest hover:text-gray-900 transition-all border border-gray-100 font-bold">Cancel</button>
+                <button onClick={() => setDeleteModal({ show: false, clientId: null, clientName: '' })} className="flex-1 py-4 bg-white/[0.04] text-surface-400 rounded-2xl text-xs font-black uppercase tracking-widest hover:text-slate-100 transition-all border border-white/10 font-bold">Cancel</button>
                 <button onClick={confirmDelete} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-rose-500 transition-all shadow-xl shadow-rose-600/30 font-bold">Delete Account</button>
               </div>
             </motion.div>
@@ -1615,7 +1615,7 @@ const Clients = () => {
                       <Mail size={20} />
                     </div>
                     <div>
-                      <h3 className="font-black text-sm tracking-tight text-slate-800">
+                      <h3 className="font-black text-sm tracking-tight text-slate-200">
                         {selectedLog.recipient || 'Prospect Client'}
                       </h3>
                       <span className="text-[10px] text-slate-400 font-bold block mt-0.5 uppercase tracking-wider">
@@ -1625,7 +1625,7 @@ const Clients = () => {
                   </div>
                   <button
                     onClick={() => setSelectedLog(null)}
-                    className="p-2 text-slate-400 hover:text-slate-800 rounded-xl hover:bg-slate-100 transition-all"
+                    className="p-2 text-slate-400 hover:text-slate-200 rounded-xl hover:bg-slate-100 transition-all"
                   >
                     <X size={20} />
                   </button>
@@ -1700,7 +1700,7 @@ const Clients = () => {
                       onChange={(e) => setChatInputText(e.target.value)}
                       placeholder={`Reply to ${selectedLog.recipient || 'prospect'}...`}
                       disabled={sendingChatReply}
-                      className="flex-1 bg-transparent border-none outline-none text-xs font-semibold text-slate-800 placeholder-slate-400"
+                      className="flex-1 bg-transparent border-none outline-none text-xs font-semibold text-slate-200 placeholder-slate-500"
                     />
                   </div>
                   <button
@@ -1724,7 +1724,7 @@ const Clients = () => {
             initial={{ opacity: 0, y: 50, x: '-50%' }}
             animate={{ opacity: 1, y: 0, x: '-50%' }}
             exit={{ opacity: 0, y: 50, x: '-50%' }}
-            className="fixed bottom-10 left-1/2 glass border border-brand-500/30 px-8 py-4 rounded-3xl shadow-2xl text-gray-900 font-bold flex items-center gap-6 z-50"
+            className="fixed bottom-10 left-1/2 glass border border-brand-500/30 px-8 py-4 rounded-3xl shadow-2xl text-slate-100 font-bold flex items-center gap-6 z-50"
           >
             <div className="flex items-center gap-3">
               {notification.isError ? <AlertTriangle className="text-rose-500" /> : <CheckCircle2 className="text-emerald-500" />}

@@ -371,6 +371,20 @@
     "timestamp": "2026-06-24T17:23:17.930Z"
   },
   {
+    "id": "3Ivee4B9yvEXh1Q6VAHG",
+    "createdAt": "2026-06-25T17:41:38.079Z",
+    "subject": "[NEXA] Proposal Auto-Dispatched: Stripe",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [Stripe] with a score of 81/100 and auto-dispatched the proposal email containing the shared checkout portal link to contact@stripe.com.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1782409298,
+      "_nanoseconds": 79000000
+    }
+  },
+  {
     "id": "3hi1hBfXSliPQhNuf5E8",
     "createdAt": "2026-06-14T16:49:55.345Z",
     "subject": "[NEXA] Autonomous Launch: Zeal Commerce",
@@ -424,6 +438,20 @@
     "timestamp": {
       "_seconds": 1781456101,
       "_nanoseconds": 158000000
+    }
+  },
+  {
+    "id": "AfsAs6a477RMbmlOzf3L",
+    "createdAt": "2026-06-25T10:03:48.526Z",
+    "subject": "[NEXA] Proposal Auto-Dispatched: MoonPay",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [MoonPay] with a score of 75/100 and auto-dispatched the proposal email containing the shared checkout portal link to info@moonpay.com.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1782381828,
+      "_nanoseconds": 526000000
     }
   },
   {
@@ -830,6 +858,20 @@
     "timestamp": {
       "_seconds": 1782274423,
       "_nanoseconds": 577000000
+    }
+  },
+  {
+    "id": "or0qbxwi04mZkxYiCJoJ",
+    "createdAt": "2026-06-25T17:41:34.583Z",
+    "subject": "[NEXA] Proposal Auto-Dispatched: Remitly",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [Remitly] with a score of 76/100 and auto-dispatched the proposal email containing the shared checkout portal link to info@remitly.com.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1782409294,
+      "_nanoseconds": 582000000
     }
   },
   {

@@ -173,21 +173,18 @@ router.post('/login', async (req, res) => {
         createdAt: new Date()
       });
     } else {
-      // If user exists, but doesn't have tenantId yet (legacy profile), assign one based on domain
+      // Update tenantId and firebaseUid if missing, plus lastActive on every login/sync
+      const updateFields = {
+        lastActive: new Date()
+      };
       if (!user.tenantId) {
-        const tenantId = resolveTenantId(lookupEmail);
-        const updatedUser = await fallbackDb.update('users', user.id || user._id, {
-          tenantId,
-          lastActive: new Date()
-        });
-        if (updatedUser) user = updatedUser;
-      } else {
-        // Update lastActive on every login/sync
-        const updatedUser = await fallbackDb.update('users', user.id || user._id, {
-          lastActive: new Date()
-        });
-        if (updatedUser) user = updatedUser;
+        updateFields.tenantId = resolveTenantId(lookupEmail);
       }
+      if (!user.firebaseUid || user.firebaseUid !== firebaseUser.uid) {
+        updateFields.firebaseUid = firebaseUser.uid;
+      }
+      const updatedUser = await fallbackDb.update('users', user.id || user._id, updateFields);
+      if (updatedUser) user = updatedUser;
     }
 
     if (!user) {

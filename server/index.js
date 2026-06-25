@@ -33,6 +33,38 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Dynamic fallback for serving uploads from writable /tmp directory under serverless environments
+app.get(['/uploads/:folder/:file', '/api/uploads/:folder/:file'], (req, res) => {
+  const { folder, file } = req.params;
+  const localPath = path.join(__dirname, 'uploads', folder, file);
+  const tmpPath = path.join('/tmp', folder, file);
+  const directTmpPath = path.join('/tmp', file);
+
+  if (fs.existsSync(localPath)) {
+    return res.sendFile(localPath);
+  } else if (fs.existsSync(tmpPath)) {
+    return res.sendFile(tmpPath);
+  } else if (fs.existsSync(directTmpPath)) {
+    return res.sendFile(directTmpPath);
+  } else {
+    res.status(404).send('File not found');
+  }
+});
+
+app.get(['/uploads/:file', '/api/uploads/:file'], (req, res) => {
+  const { file } = req.params;
+  const localPath = path.join(__dirname, 'uploads', file);
+  const tmpPath = path.join('/tmp', file);
+
+  if (fs.existsSync(localPath)) {
+    return res.sendFile(localPath);
+  } else if (fs.existsSync(tmpPath)) {
+    return res.sendFile(tmpPath);
+  } else {
+    res.status(404).send('File not found');
+  }
+});
+
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const teamRoutes = require('./routes/teamRoutes');
@@ -200,12 +232,17 @@ app.get('/api/send-test-msg', async (req, res) => {
 
 // Secure Cron endpoint for triggering daily alerts
 app.get('/api/cron/daily-alerts', async (req, res) => {
+  const isVercelCron = req.headers['x-vercel-cron'] === '1';
   const key = req.query.key || req.headers['x-cron-key'];
   const expectedKey = process.env.ADMIN_OVERRIDE_KEY || 'NEXOV-PRIME-2026';
   
-  if (!key || key !== expectedKey) {
+  if (!isVercelCron && (!key || key !== expectedKey)) {
     return res.status(401).json({ success: false, message: 'Unauthorized: Invalid override key.' });
   }
+
+  // Await dynamic credentials loading to guarantee environment variables are fully loaded
+  const { loadIntegrationCredentials } = require('./utils/credentialLoader');
+  await loadIntegrationCredentials();
 
   console.log(`⏰ CRON_ENDPOINT: Secure trigger received for daily alerts.`);
   try {
@@ -226,11 +263,119 @@ app.get('/api/cron/daily-alerts', async (req, res) => {
   }
 });
 
-// Root Route
-app.get('/', (req, res) => {
+// Secure Cron endpoint for triggering NEXA Autopilot & Sync Ticks
+app.get('/api/cron/autopilot', async (req, res) => {
+  const isVercelCron = req.headers['x-vercel-cron'] === '1';
+  const key = req.query.key || req.headers['x-cron-key'];
+  const expectedKey = process.env.ADMIN_OVERRIDE_KEY || 'NEXOV-PRIME-2026';
+  
+  if (!isVercelCron && (!key || key !== expectedKey)) {
+    return res.status(401).json({ success: false, message: 'Unauthorized: Invalid override key.' });
+  }
+
+  // Await dynamic credentials loading to guarantee environment variables are fully loaded
+  const { loadIntegrationCredentials } = require('./utils/credentialLoader');
+  await loadIntegrationCredentials();
+
+  console.log(`⏰ CRON_ENDPOINT: Secure trigger received for NEXA Autopilot & Polling sync.`);
+  const results = {};
+
+  // Auto-set Telegram Webhook
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (token && IS_SERVERLESS) {
+    try {
+      const host = req.get('host');
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+      const webhookUrl = `${protocol}://${host}/api/telegram-webhook`;
+      const axios = require('axios');
+      console.log(`🤖 [CRON Telegram Webhook Auto-Set]: Registering webhook url: ${webhookUrl}`);
+      const webhookResponse = await axios.get(`https://api.telegram.org/bot${token}/setWebhook`, {
+        params: { url: webhookUrl }
+      });
+      results.telegramWebhookAutoSet = webhookResponse.data;
+    } catch (err) {
+      console.error(`⚠️ [CRON Telegram Webhook Auto-Set FAILED]:`, err.message);
+      results.telegramWebhookAutoSet = `Failed: ${err.message}`;
+    }
+  }
+
+  const host = req.get('host');
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const baseUrl = `${protocol}://${host}`;
+  
+  // 1. Run Autopilot Cycle
+  try {
+    const { runAutopilotCycle } = require('./services/nexaAutopilotService');
+    await runAutopilotCycle();
+    results.autopilot = 'Executed successfully';
+  } catch (err) {
+    console.error('⏰ CRON_ENDPOINT ERROR [Autopilot]:', err.message);
+    results.autopilot = `Error: ${err.message}`;
+  }
+
+  // 2. Process Pending Outreach
+  try {
+    const { processPendingOutreach } = require('./services/outreachWorker');
+    await processPendingOutreach(baseUrl);
+    results.outreachWorker = 'Executed successfully';
+  } catch (err) {
+    console.error('⏰ CRON_ENDPOINT ERROR [Outreach]:', err.message);
+    results.outreachWorker = `Error: ${err.message}`;
+  }
+
+  // 3. Poll Incoming Emails
+  try {
+    const { pollIncomingEmails } = require('./services/mailPollingService');
+    await pollIncomingEmails();
+    results.mailPolling = 'Executed successfully';
+  } catch (err) {
+    console.error('⏰ CRON_ENDPOINT ERROR [Mail Polling]:', err.message);
+    results.mailPolling = `Error: ${err.message}`;
+  }
+
+  // 4. Poll LinkedIn Comments
+  try {
+    const { pollLinkedInComments } = require('./services/linkedinPollingService');
+    await pollLinkedInComments();
+    results.linkedinPolling = 'Executed successfully';
+  } catch (err) {
+    console.error('⏰ CRON_ENDPOINT ERROR [LinkedIn Polling]:', err.message);
+    results.linkedinPolling = `Error: ${err.message}`;
+  }
+
+  res.json({
+    success: true,
+    message: 'NEXA Autopilot tick and poller synchronization completed.',
+    timestamp: new Date(),
+    results
+  });
+});
+
+// Root Route - Automatically registers Telegram Webhook in serverless/production to ensure Zero-Config Bot setup
+app.get('/', async (req, res) => {
+  let webhookStatus = 'Not configured';
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (token && IS_SERVERLESS) {
+    try {
+      const host = req.get('host');
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+      const webhookUrl = `${protocol}://${host}/api/telegram-webhook`;
+      const axios = require('axios');
+      const response = await axios.get(`https://api.telegram.org/bot${token}/setWebhook`, {
+        params: { url: webhookUrl }
+      });
+      webhookStatus = response.data?.description || 'Configured successfully';
+      console.log(`🤖 [TELEGRAM WEBHOOK AUTO-SET]: ${webhookStatus}`);
+    } catch (err) {
+      console.error(`⚠️ [TELEGRAM WEBHOOK AUTO-SET FAILED]:`, err.message);
+      webhookStatus = `Failed: ${err.message}`;
+    }
+  }
+
   res.json({
     message: 'NexovTech Management API - Mission Control Online',
-    version: '1.0.0'
+    version: '1.0.0',
+    telegramWebhookStatus: webhookStatus
   });
 });
 

@@ -1,110 +1,14 @@
 [
   {
-    "id": "bRXpNFX5EpfcqjLYLDiA",
-    "urgencyScore": 68,
-    "createdAt": "2026-06-17T04:02:55.478Z",
-    "budgetScore": 78,
-    "evaluationLog": "Ada Health's integration of advanced technologies like Angular and Django for web development, and Python for Python indicates a comprehensive tech stack suitable for complex healthcare applications. Company size indicates some maturity. Budget score takes into account average spending in healthcare industry for enterprises with similar size. However, their German location doesn't significantly increase or decrease the budget.",
-    "overallOpportunityScore": 73,
-    "readinessScore": 62,
-    "aiRecommendation": "Medium Priority",
-    "complexityScore": 82,
-    "leadId": "NN3MW1sTyf1xNE37II1U"
-  },
-  {
-    "leadId": "xCfEIbi3mYev4vnmocmw",
-    "budgetScore": 72,
-    "complexityScore": 58,
-    "readinessScore": 82,
-    "urgencyScore": 65,
-    "overallOpportunityScore": 73,
-    "aiRecommendation": "Medium Priority",
-    "evaluationLog": "Applause Oncology, a mid-sized healthcare provider with a website indicating high-quality cancer care services, demonstrates moderate urgency in investing in digital transformation. Their adoption of Cloud and Microsoft Azure positions them to scale efficiently, yet their use of Tableau may imply data analytics needs. They are generally well-prepared for digital partnerships, hence a Medium Priority recommendation.",
-    "id": "MzMqfgtsDTa5k2njyOU6",
-    "createdAt": "2026-06-25T08:25:55.917Z"
-  },
-  {
-    "leadId": "qtK1hRkfyTueUg5P8dyI",
-    "budgetScore": 60,
-    "complexityScore": 80,
-    "readinessScore": 40,
-    "urgencyScore": 30,
-    "overallOpportunityScore": 55,
-    "aiRecommendation": "Medium Priority",
-    "evaluationLog": "HealthCube, a mid-sized Indian company in the rapidly growing healthcare industry, has a moderate budget based on its size, but its tech stack consisting of AWS, React, and MongoDB suggests a complex project. However, its website and industry presence indicate a relatively low readiness, and the overall need for technology solutions in healthcare suggests a lower urgency. The overall opportunity score is moderate due to the market potential and growing demand for digital health solutions.",
-    "id": "MZyr9fUJvBVkn9ncRjki",
-    "createdAt": "2026-06-25T08:25:56.212Z"
-  },
-  {
-    "leadId": "D9EsBKKz8GPcRh1puiRh",
-    "budgetScore": 60,
-    "complexityScore": 40,
-    "readinessScore": 70,
-    "urgencyScore": 60,
-    "overallOpportunityScore": 65,
-    "aiRecommendation": "Medium Priority",
-    "evaluationLog": "Profit.co has a solid foundation with a well-known industry presence, moderate company size, and a relatively stable tech stack. However, the budget and complexity scores are moderate due to the moderate company size and the need for potential infrastructure upgrades.",
-    "id": "b0vcdbBHlAyOydPmSllR",
-    "createdAt": "2026-06-25T08:28:57.593Z"
-  },
-  {
-    "leadId": "7u1BhVAQfG8RSfjlh17d",
-    "budgetScore": 80,
-    "complexityScore": 60,
-    "readinessScore": 70,
+    "id": "u0aDo437Cc9eDP0iXiKP",
     "urgencyScore": 40,
-    "overallOpportunityScore": 67.4,
+    "createdAt": "2026-06-17T04:02:54.863Z",
+    "budgetScore": 50,
+    "evaluationLog": "Company size and budget suggest a medium-scale project, with a moderate complexity due to a mix of technologies, and a relatively low urgency due to industry stability. Biofourmis' website and online presence indicate a mature company, contributing to the relatively high readiness score.",
+    "overallOpportunityScore": 60,
+    "readinessScore": 70,
     "aiRecommendation": "Medium Priority",
-    "evaluationLog": "TradeGecko, an established retail company, has a solid tech stack in place but is slightly outdated with Ruby on Rails and PostgreSQL. The company size and industry also indicate a relatively stable and mature operation, which may lead to a moderate complexity and readiness score. The urgency score is low due to TradeGecko's established presence, but the opportunity score is still respectable given their market position.",
-    "id": "hLUN7b2DyWkQhnaivHgT",
-    "createdAt": "2026-06-25T08:28:58.468Z"
-  },
-  {
-    "leadId": "SygyS1W7poarQAoGLqmN",
-    "budgetScore": 60,
-    "complexityScore": 40,
-    "readinessScore": 20,
-    "urgencyScore": 80,
-    "overallOpportunityScore": 55,
-    "aiRecommendation": "High Priority",
-    "evaluationLog": "Based on the provided information, Jiani is considered a high priority due to its retail industry, with a high urgency score due to the competitive nature of the retail sector. The tech stack, which includes Angular, Node.js, and MongoDB, suggests a mid-range complexity level. However, the company's small size in India (1-10 employees) and the fact that we do not have data about their current technology infrastructure, leads to a lower readiness score, suggesting they might be more in need of advanced tools and guidance.",
-    "id": "KrH4EHP7g2UpYXBqyGIR",
-    "createdAt": "2026-06-25T08:28:58.827Z"
-  },
-  {
-    "leadId": "zYOmbIz0WF0IIwodxQWH",
-    "budgetScore": 78,
-    "complexityScore": 62,
-    "readinessScore": 82,
-    "urgencyScore": 70,
-    "overallOpportunityScore": 74,
-    "aiRecommendation": "Medium Priority",
-    "evaluationLog": "Mokin appears to be a mid-sized retail company in Singapore with a well-established online presence. Their tech stack, including Django and Vue.js, suggests a robust and scalable architecture. However, their relatively moderate complexity score may indicate some existing technical debt or integration issues. Overall, the estimated budget for such a project could range between $100,000 - $250,000.",
-    "id": "LoMzAmZqxdMZC1PS7oDm",
-    "createdAt": "2026-06-25T08:31:57.808Z"
-  },
-  {
-    "leadId": "WxK4J7C2hiIA1xfDCQEB",
-    "budgetScore": 80,
-    "complexityScore": 70,
-    "readinessScore": 90,
-    "urgencyScore": 60,
-    "overallOpportunityScore": 75,
-    "aiRecommendation": "Medium Priority",
-    "evaluationLog": "Orderchamp, a German retail company, appears well-established with a good tech stack. The use of Ruby on Rails and Amazon Redshift suggests a focus on scalability and data analysis. However, the medium budget score indicates potential resource constraints. The complexity score is moderate due to the use of React and Redshift. Readiness is high as the company seems prepared for digital transformation. Urgency is medium as there is no clear indication of a pressing need for immediate action.",
-    "id": "0fQ7luMLyXvdGghBFpMQ",
-    "createdAt": "2026-06-25T08:31:57.815Z"
-  },
-  {
-    "leadId": "HA7THtPgjqK4CI6gUMGz",
-    "budgetScore": 60,
-    "complexityScore": 80,
-    "readinessScore": 40,
-    "urgencyScore": 70,
-    "overallOpportunityScore": 58,
-    "aiRecommendation": "Medium Priority",
-    "evaluationLog": "Aucs, as a retail company with a tech stack that includes Elasticsearch, Flask, and Apache Kafka, presents moderate complexity due to its use of distributed systems and microservices architecture. With a relatively small team of 11-50 employees, they may have limited resources to dedicate to new initiatives. However, their use of modern technologies suggests a level of business readiness and potential for digital transformation. The high urgency score is due to the potential for disruption in the retail industry, making it crucial for Aucs to adapt and innovate quickly to stay competitive.",
-    "id": "cg2m0D9CvO2RjJJiF72v",
-    "createdAt": "2026-06-25T08:31:58.389Z"
+    "complexityScore": 60,
+    "leadId": "L0ujGQOIuSFag8EQdLnu"
   }
 ]

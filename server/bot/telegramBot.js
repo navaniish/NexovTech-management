@@ -530,10 +530,11 @@ Please activate the multi-agent network to analyze this deployment failure, reco
       state.paused = false;
       state.resumed = true;
 
+      const actionName = state.approvalData?.action === 'send_client_email' ? 'email dispatch' : 'proposal contract';
       state.hops.push({
         sender: 'Admin Gateway (Telegram)',
         recipient: 'CEO Agent',
-        message: `APPROVED: High-value proposal contract validated via Telegram by Admin: ${user.name || user.email}. Resuming graph execution.`,
+        message: `APPROVED: High-value ${actionName} validated via Telegram by Admin: ${user.name || user.email}. Resuming graph execution.`,
         timestamp: new Date().toISOString()
       });
 
@@ -647,7 +648,7 @@ Please activate the multi-agent network to analyze this deployment failure, reco
       // Run one background cycle immediately to provide instant feedback if enabled
       if (settings.nexa_autopilot) {
         const { runAutopilotCycle } = require('../services/nexaAutopilotService');
-        runAutopilotCycle().catch(cycleErr => {
+        await runAutopilotCycle().catch(cycleErr => {
           console.error('🤖 [NEXA AUTOPILOT]: Bot toggle background cycle failed:', cycleErr.message);
         });
       }
@@ -936,18 +937,24 @@ Please activate the multi-agent network to analyze this deployment failure, reco
       `*Admin Commands:*\n` +
       `• /dashboard — Live analytics\n` +
       `• /specialists — View team directory\n` +
-      `• /assign_task — Deploy a task\n` +
+      `• /assign\\_task — Deploy a task\n` +
       `• /leaves — Pending leave requests\n` +
-      `• /attendance_alert — Attendance briefing\n` +
-      `• /trigger_broadcast — Send attendance alerts\n` +
-      `• /rag_search <query> — Semantic search\n` +
-      `• /security_alerts — Geo-threat alerts\n` +
-      `• /voice_campaigns — Outreach logs\n` +
-      `• /debug_phone <number> — Test phone lookup (Admin only)\n\n` +
+      `• /attendance\\_alert — Attendance briefing\n` +
+      `• /trigger\\_broadcast — Send attendance alerts\n` +
+      `• /rag\\_search <query> — Semantic search\n` +
+      `• /security\\_alerts — Geo-threat alerts\n` +
+      `• /voice\\_campaigns — Outreach logs\n` +
+      `• /debug\\_phone <number> — Test phone lookup (Admin only)\n\n` +
       `*Navigation:*\n` +
       `• /menu — Open the command center\n\n` +
       `💡 You can also just chat with me naturally for AI assistance.`;
-    await ctx.reply(helpMsg, { parse_mode: 'Markdown' });
+    try {
+      await ctx.reply(helpMsg, { parse_mode: 'Markdown' });
+    } catch (err) {
+      console.warn('⚠️ Telegram Markdown parsing failed for help command, falling back to plain text:', err.message);
+      const plainMsg = helpMsg.replace(/\\_/g, '_');
+      await ctx.reply(plainMsg);
+    }
   });
 
   // Admin diagnostic: test phone lookup

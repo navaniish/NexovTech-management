@@ -31,7 +31,13 @@ function extractEmail(fromHeader) {
  * incoming messages as Seen.
  */
 function pollIncomingEmails() {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
+    const timeoutId = setTimeout(() => {
+      console.warn('⚠️ [AUTO-REPLY] pollIncomingEmails master execution timeout reached (12s). Force terminating...');
+      cleanup();
+      resolve();
+    }, 12000);
+
     const host = 'imap.mail.yahoo.com';
     const port = 993;
     const user = process.env.SMTP_USER || 'nexovtech@myyahoo.com';
@@ -39,12 +45,40 @@ function pollIncomingEmails() {
 
     if (!user || !pass) {
       console.warn('⚠️ [AUTO-REPLY] Credentials not set in environment.');
+      clearTimeout(timeoutId);
       return resolve();
     }
 
+    let socket;
+    let cleanedUp = false;
+
+    function cleanup() {
+      if (cleanedUp) return;
+      cleanedUp = true;
+      clearTimeout(timeoutId);
+      if (socket) {
+        try {
+          socket.destroy();
+        } catch (e) {}
+      }
+    }
+
     console.log(`📡 [AUTO-REPLY] Connecting to IMAP server ${host}:${port}...`);
-    const socket = tls.connect(port, host, {}, () => {
-      console.log('📡 [AUTO-REPLY] Connected to IMAP socket.');
+    try {
+      socket = tls.connect(port, host, {}, () => {
+        console.log('📡 [AUTO-REPLY] Connected to IMAP socket.');
+      });
+    } catch (connErr) {
+      console.error('❌ [AUTO-REPLY] IMAP TLS connection setup failed:', connErr.message);
+      cleanup();
+      return resolve();
+    }
+
+    socket.setTimeout(8000);
+    socket.on('timeout', () => {
+      console.warn('⚠️ [AUTO-REPLY] IMAP Socket connection or operation timed out (8s).');
+      cleanup();
+      resolve();
     });
 
     socket.setEncoding('utf8');
@@ -65,6 +99,7 @@ function pollIncomingEmails() {
 
     function sendCmd(cmd) {
       const tag = `A${cmdCount++}`;
+      if (!socket || socket.destroyed) return tag;
       socket.write(`${tag} ${cmd}\r\n`);
       return tag;
     }
@@ -169,7 +204,7 @@ function pollIncomingEmails() {
             }
           }
         } else if (currentStep === 'LOGOUT' && line.includes(`A${cmdCount - 1} OK`)) {
-          socket.end();
+          cleanup();
           resolve();
         }
       }
@@ -177,12 +212,14 @@ function pollIncomingEmails() {
 
     socket.on('end', () => {
       console.log('📡 [AUTO-REPLY] Disconnected from IMAP server.');
+      cleanup();
       resolve();
     });
 
     socket.on('error', (err) => {
       console.error('❌ [AUTO-REPLY] IMAP Socket failure:', err.message);
-      reject(err);
+      cleanup();
+      resolve();
     });
   });
 }
@@ -282,6 +319,18 @@ async function processIncomingMail(mail) {
     }
   }
 
+  // First-pass keyword safety net to override or act as robust fallback for client approval
+  if (pendingDeal) {
+    const bodyLower = (mail.body || '').toLowerCase();
+    const hasPositiveKeyword = /\b(approve|approved|proceed|agree|accept|accepted|go ahead|confirm|confirmed|ok|okay|yes)\b/.test(bodyLower);
+    const hasNegativeKeyword = /\b(reject|rejected|decline|declined|cancel|cancelled|dont|do not|no|stop)\b/.test(bodyLower);
+    
+    if (hasPositiveKeyword && !hasNegativeKeyword) {
+      clientApproved = true;
+      aiEvaluationLog = 'Approved via keyword safety net (positive keywords detected).';
+    }
+  }
+
   if (pendingDeal && aiClient) {
     try {
       console.log(`🤖 [DEAL GATEKEEPER]: Active pending deal found for ${lead.companyName}. Evaluating incoming mail body for contract approval...`);
@@ -311,9 +360,13 @@ Client Incoming Email:
       });
 
       const evalText = evalCompletion.choices[0].message?.content?.trim() || '';
-      const parsedEval = JSON.parse(evalText.trim().substring(evalText.indexOf('{'), evalText.lastIndexOf('}') + 1));
-      clientApproved = parsedEval.approved === true;
-      aiEvaluationLog = parsedEval.reasoning || '';
+      try {
+        const parsedEval = JSON.parse(evalText.trim().substring(evalText.indexOf('{'), evalText.lastIndexOf('}') + 1));
+        clientApproved = parsedEval.approved === true;
+        aiEvaluationLog = parsedEval.reasoning || '';
+      } catch (parseErr) {
+        console.warn('⚠️ [DEAL GATEKEEPER] Failed to parse AI JSON response, using keyword check state instead:', parseErr.message);
+      }
       console.log(`🤖 [DEAL GATEKEEPER]: Client Approval classification: ${clientApproved}. Reason: ${aiEvaluationLog}`);
     } catch (evalErr) {
       console.error('⚠️ [DEAL GATEKEEPER ERROR] AI deal evaluation failed:', evalErr.message);

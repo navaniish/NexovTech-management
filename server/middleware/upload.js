@@ -2,11 +2,17 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+const IS_SERVERLESS = !!(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = path.join(__dirname, '../uploads/avatars');
+    const uploadPath = IS_SERVERLESS ? '/tmp/avatars' : path.join(__dirname, '../uploads/avatars');
     if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
+      try {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      } catch (err) {
+        // Safe catch
+      }
     }
     cb(null, uploadPath);
   },

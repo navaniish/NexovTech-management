@@ -155,6 +155,87 @@ class StateGraph {
   }
 }
 
+// Helper to extract email params using AI with robust regex fallback
+async function extractEmailParams(message) {
+  const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
+  const emailMatch = message.match(emailRegex);
+  if (!emailMatch) return null;
+
+  const to = emailMatch[1];
+  let subject = 'NEXA Agentic AI Update';
+  let body = '';
+
+  if (aiClient && process.env.AI_API_KEY && process.env.AI_API_KEY !== 'placeholder') {
+    try {
+      const extractionPromptSystem = `You are a data extraction assistant. Extract the subject line and message body content from this user request:
+"${message}"
+
+Return ONLY a valid JSON object with the keys "subject" and "body". Do NOT write any code blocks, markdown formatting, or conversational text. Output only the raw JSON.`;
+      const res = await runQuery(extractionPromptSystem, "Extract JSON data.");
+      const startIdx = res.indexOf('{');
+      const endIdx = res.lastIndexOf('}');
+      if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+        const parsed = JSON.parse(res.substring(startIdx, endIdx + 1));
+        if (parsed.subject) subject = parsed.subject.trim();
+        if (parsed.body) body = parsed.body.trim();
+      }
+    } catch (e) {
+      console.warn('⚠️ AI email parameter extraction failed:', e.message);
+    }
+  }
+
+  // Regex Fallback if AI is offline or failed to extract body
+  if (!body) {
+    let matchedSubject = null;
+    const subjectRegexes = [
+      /(?:subject|about):\s*["']?([^"'\n\r]+)["']?/i,
+      /with\s+subject\s+["']?([^"'\n\r]+)["']?/i
+    ];
+    for (const regex of subjectRegexes) {
+      const match = message.match(regex);
+      if (match) {
+        matchedSubject = match[1].trim();
+        break;
+      }
+    }
+    if (matchedSubject) subject = matchedSubject;
+
+    const bodyRegexes = [
+      /(?:body|message|content|text):\s*["']?([^"'\n\r]+)["']?/i,
+      /and\s+body\s+["']?([^"'\n\r]+)["']?/i,
+      /saying\s+["']?([^"'\n\r]+)["']?/i
+    ];
+    let matchedBody = null;
+    for (const regex of bodyRegexes) {
+      const match = message.match(regex);
+      if (match) {
+        matchedBody = match[1].trim();
+        break;
+      }
+    }
+    if (matchedBody) {
+      body = matchedBody;
+    } else {
+      // Look for text following the email address
+      const parts = message.split(to);
+      if (parts.length > 1) {
+        body = parts[1].trim();
+        // Remove subject matching text
+        if (matchedSubject) {
+          body = body.replace(new RegExp(`(with\\s+)?(subject|about):?\\s*["']?${matchedSubject.replace(/[.*+?^${}()|[\]\\+]/g, '\\$&')}["']?`, 'i'), '');
+        }
+        body = body.replace(/^(saying|body|message|content|text|:|\s)+/i, '').trim();
+      }
+    }
+  }
+
+  if (!body) {
+    body = `Hello,\n\nThis is an automated operational briefing dispatched from the NEXA Agentic AI Systems Manager.\n\nBest regards,\nNEXA CEO`;
+  }
+
+  return { to, subject, body };
+}
+
 // Build the LangGraph Orchestrator
 function buildStateGraph() {
   const graph = new StateGraph();
@@ -174,7 +255,7 @@ Available Divisions & Responsibilities:
 - "security": Zero-trust, geo-fencing logs, system shield, threat alerts.
 - "project": Milestones, active tasks, team assignments, velocity.
 - "support": Client retention, support tickets, help desk issues.
-- "dealings": Outbound cold outreach, proposal drafting, contract negotiation, and autonomous deal closing.
+- "dealings": Outbound cold outreach, proposal drafting, contract negotiation, email dispatch to clients, and autonomous deal closing.
 
 Output a raw JSON array containing the selected keys from: ["hr", "finance", "sales", "marketing", "security", "project", "support", "dealings"].
 Select ONLY the divisions whose expertise is directly necessary. Do NOT output any conversational text, explanations, or markdown code blocks (such as \`\`\`json). Output only the raw JSON array.`;
@@ -224,7 +305,7 @@ Select ONLY the divisions whose expertise is directly necessary. Do NOT output a
       if (upperMsg.includes('LOCK') || upperMsg.includes('SECURITY') || upperMsg.includes('BREACH') || upperMsg.includes('SAFE') || upperMsg.includes('THREAT')) selectedAgents.push('security');
       if (upperMsg.includes('PROJECT') || upperMsg.includes('TASK') || upperMsg.includes('ASSIGN') || upperMsg.includes('MILESTONE')) selectedAgents.push('project');
       if (upperMsg.includes('SUPPORT') || upperMsg.includes('TICKET') || upperMsg.includes('ISSUE') || upperMsg.includes('CLIENT')) selectedAgents.push('support');
-      if (upperMsg.includes('DEAL') || upperMsg.includes('PROPOSAL') || upperMsg.includes('NEGOTIAT') || upperMsg.includes('OUTREACH') || upperMsg.includes('CONTACT') || upperMsg.includes('CONTRACT')) selectedAgents.push('dealings');
+      if (upperMsg.includes('DEAL') || upperMsg.includes('PROPOSAL') || upperMsg.includes('NEGOTIAT') || upperMsg.includes('OUTREACH') || upperMsg.includes('CONTACT') || upperMsg.includes('CONTRACT') || upperMsg.includes('EMAIL') || upperMsg.includes('MAIL')) selectedAgents.push('dealings');
     }
 
     const validAgents = ["hr", "finance", "sales", "marketing", "security", "project", "support", "dealings"];
@@ -633,8 +714,65 @@ ${semanticContext ? `\nRelated Historical Records:\n${semanticContext}` : ''}`;
       state.reports.sales = reply1 + " " + reply2;
     }
 
-    // 2. Human-in-the-Loop Gateways (Budgets >= ₹10,00,000 / 1 Million / 10 Lakhs)
     const lowerMsg = state.message.toLowerCase();
+    const isEmailRequest = lowerMsg.includes('send email') || lowerMsg.includes('send mail') || lowerMsg.includes('email to') || lowerMsg.includes('mail to') || lowerMsg.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+
+    if (isEmailRequest) {
+      const emailParams = await extractEmailParams(state.message);
+      if (emailParams) {
+        const isApproved = state.approvedActions?.['send_client_email'];
+        if (!isApproved) {
+          state.requiresApproval = true;
+          state.approvalData = {
+            agent: 'dealings',
+            action: 'send_client_email',
+            params: emailParams,
+            reason: `Dealings Agent requested approval to dispatch email to client "${emailParams.to}" with subject "${emailParams.subject}".`
+          };
+          return; // Pause for HITL approval
+        } else {
+          const { sendEmail } = require('../utils/mailer');
+          logHop('Dealings Agent', 'SMTP Mail Server', `Dispatching real email to ${emailParams.to}...`);
+          
+          const mailResult = await sendEmail(emailParams.to, emailParams.subject, emailParams.body);
+          if (mailResult) {
+            logHop('SMTP Mail Server', 'Dealings Agent', `SUCCESS: Email delivered to ${emailParams.to}.`);
+            state.reports.dealings = `Dealings Agent: Email sent successfully to ${emailParams.to}. Subject: "${emailParams.subject}".`;
+            
+            // Save outreach log in database
+            try {
+              await fallbackDb.save('outreach_logs', {
+                recipientName: emailParams.to,
+                channel: 'email',
+                contentSent: emailParams.body,
+                status: 'sent',
+                tenantId: state.tenantId || 'org_default',
+                createdAt: new Date().toISOString()
+              });
+            } catch (dbErr) {
+              console.warn('⚠️ Failed to save outreach log:', dbErr.message);
+            }
+
+            // Emit socket update for real-time frontend outreach tracking
+            socketHub.emit('outreach_update', {
+              id: `email_${Date.now()}`,
+              channel: 'Email',
+              recipient: emailParams.to,
+              contentSent: emailParams.body,
+              outcome: `Email dispatched successfully (Subject: "${emailParams.subject}")`,
+              status: 'Delivered',
+              createdAt: new Date().toISOString()
+            });
+          } else {
+            logHop('SMTP Mail Server', 'Dealings Agent', `FAILED: Email delivery to ${emailParams.to} failed.`);
+            state.reports.dealings = `Dealings Agent: Tried to send email to ${emailParams.to} but SMTP server rejected it.`;
+          }
+          return;
+        }
+      }
+    }
+
+    // 2. Human-in-the-Loop Gateways (Budgets >= ₹10,00,000 / 1 Million / 10 Lakhs)
     const hasHighValueKeyword = lowerMsg.includes('high-value') || lowerMsg.includes('12,00,000') || lowerMsg.includes('10,00,000') || lowerMsg.includes('lakh') || lowerMsg.includes('million') || lowerMsg.includes('contract') || lowerMsg.includes('proposal');
     
     if (hasHighValueKeyword) {
@@ -913,10 +1051,11 @@ exports.approveAgentRun = async (req, res) => {
     state.paused = false;
     state.resumed = true; // prevent infinite loops on the same gate
 
+    const actionName = state.approvalData?.action === 'send_client_email' ? 'email dispatch' : 'proposal contract';
     state.hops.push({
       sender: 'Admin Gateway',
       recipient: 'CEO Agent',
-      message: 'APPROVED: High-value proposal contract validated by Administrator. Resuming graph execution.',
+      message: `APPROVED: High-value ${actionName} validated by Administrator. Resuming graph execution.`,
       timestamp: new Date().toISOString()
     });
 

@@ -121,7 +121,8 @@ async function runSimulatedVoiceCall(log, lead) {
 /**
  * Main background worker cycle: Polls database for Pending outreach logs and processes them.
  */
-async function processPendingOutreach() {
+async function processPendingOutreach(baseUrl) {
+  const IS_SERVERLESS = !!(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
   try {
     // Find all pending outreach logs
     const allLogs = await fallbackDb.find('outreach_logs', {}) || [];
@@ -176,12 +177,17 @@ async function processPendingOutreach() {
         await fallbackDb.update('outreach_logs', log.id || log._id, log);
         socketHub.emit('outreach_update', log);
         await indexOutreachToVectorStore(log, lead, 'Outreach_Sent');
-
+ 
       } else if (channelLower === 'voice' || channelLower === 'voice call') {
         const accountSid = process.env.TWILIO_ACCOUNT_SID;
         const authToken = process.env.TWILIO_AUTH_TOKEN;
         const fromNumber = process.env.TWILIO_PHONE_NUMBER;
-        const callbackUrl = process.env.VOICE_CALLBACK_URL;
+        
+        let callbackUrl = process.env.VOICE_CALLBACK_URL;
+        if (IS_SERVERLESS && baseUrl) {
+          callbackUrl = baseUrl;
+        }
+
         const targetNumber = lead.phone || lead.contactPhone || '';
 
         const hasRealTwilio = accountSid && authToken && fromNumber && callbackUrl && 

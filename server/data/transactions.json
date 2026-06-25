@@ -145,6 +145,46 @@
     "status": "Pending"
   },
   {
+    "id": "inv_1782375797594",
+    "date": "2026-06-25T08:23:17.594Z",
+    "createdAt": "2026-06-25T08:23:17.594Z",
+    "amount": 1000000,
+    "invoiceUrl": "/uploads/invoices/invoice-VOj7YpCAArOnzVOsX0qH.pdf",
+    "description": "Block - PDF Invoice for Project #VOj7YpCAArOnzVOsX0qH",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "inv_1782375849605",
+    "date": "2026-06-25T08:24:09.605Z",
+    "createdAt": "2026-06-25T08:24:09.605Z",
+    "amount": 1000000,
+    "invoiceUrl": "/uploads/invoices/invoice-0d8lCRKZ7ATvQXqSomtN.pdf",
+    "description": "MoonPay - PDF Invoice for Project #0d8lCRKZ7ATvQXqSomtN",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "inv_1782375900399",
+    "date": "2026-06-25T08:25:00.399Z",
+    "createdAt": "2026-06-25T08:25:00.400Z",
+    "amount": 1062500,
+    "invoiceUrl": "/uploads/invoices/invoice-pTbI1ksLwWnbmLZpuT28.pdf",
+    "description": "Stripe - PDF Invoice for Project #pTbI1ksLwWnbmLZpuT28",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
+    "id": "inv_1782375984361",
+    "date": "2026-06-25T08:26:24.361Z",
+    "createdAt": "2026-06-25T08:26:24.361Z",
+    "amount": 1062500,
+    "invoiceUrl": "/uploads/invoices/invoice-GMwMyrAPnTQLnWZCrgdW.pdf",
+    "description": "Phia - PDF Invoice for Project #GMwMyrAPnTQLnWZCrgdW",
+    "type": "Revenue",
+    "status": "Pending"
+  },
+  {
     "id": "txn_pr_1781807340457",
     "date": {
       "_seconds": 1781807340,
@@ -158,45 +198,5 @@
     "description": "Payroll Settlement - Saranya Gunda (6/2026)",
     "type": "Expense",
     "status": "Paid"
-  },
-  {
-    "id": "inv_1782375797594",
-    "type": "Revenue",
-    "amount": 1000000,
-    "description": "Block - PDF Invoice for Project #VOj7YpCAArOnzVOsX0qH",
-    "date": "2026-06-25T08:23:17.594Z",
-    "status": "Pending",
-    "invoiceUrl": "/uploads/invoices/invoice-VOj7YpCAArOnzVOsX0qH.pdf",
-    "createdAt": "2026-06-25T08:23:17.594Z"
-  },
-  {
-    "id": "inv_1782375849605",
-    "type": "Revenue",
-    "amount": 1000000,
-    "description": "MoonPay - PDF Invoice for Project #0d8lCRKZ7ATvQXqSomtN",
-    "date": "2026-06-25T08:24:09.605Z",
-    "status": "Pending",
-    "invoiceUrl": "/uploads/invoices/invoice-0d8lCRKZ7ATvQXqSomtN.pdf",
-    "createdAt": "2026-06-25T08:24:09.605Z"
-  },
-  {
-    "id": "inv_1782375900399",
-    "type": "Revenue",
-    "amount": 1062500,
-    "description": "Stripe - PDF Invoice for Project #pTbI1ksLwWnbmLZpuT28",
-    "date": "2026-06-25T08:25:00.399Z",
-    "status": "Pending",
-    "invoiceUrl": "/uploads/invoices/invoice-pTbI1ksLwWnbmLZpuT28.pdf",
-    "createdAt": "2026-06-25T08:25:00.400Z"
-  },
-  {
-    "id": "inv_1782375984361",
-    "type": "Revenue",
-    "amount": 1062500,
-    "description": "Phia - PDF Invoice for Project #GMwMyrAPnTQLnWZCrgdW",
-    "date": "2026-06-25T08:26:24.361Z",
-    "status": "Pending",
-    "invoiceUrl": "/uploads/invoices/invoice-GMwMyrAPnTQLnWZCrgdW.pdf",
-    "createdAt": "2026-06-25T08:26:24.361Z"
   }
 ]

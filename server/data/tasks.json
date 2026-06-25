@@ -1,5 +1,19 @@
 [
   {
+    "id": "0F2ZxGRJc9A7uTifTgjz",
+    "createdAt": "2026-06-25T08:26:22.468Z",
+    "assignedToName": "DAGGUPATI NAVANEESWAR",
+    "dueDate": "2026-07-02",
+    "githubIssueNumber": 1,
+    "priority": "High",
+    "projectName": "Phia - A I Solutions",
+    "title": "Phase 1: Specs & Requirement Analysis",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/phia---a-i-solutions/issues/1",
+    "projectId": "GMwMyrAPnTQLnWZCrgdW",
+    "assignedTo": "daggupatinavaneeswar.nexovtech@gmail.com",
+    "status": "In Progress"
+  },
+  {
     "id": "2d4tLKjD0MCMxW8WYyKo",
     "createdAt": "2026-06-17T18:36:36.557Z",
     "assignedToName": "MANI CHARAN TEJA ",
@@ -28,6 +42,20 @@
     "status": "In Progress"
   },
   {
+    "id": "7xcbgJcgQMhBVjnASLRc",
+    "createdAt": "2026-06-25T08:26:22.927Z",
+    "assignedToName": "REKHA SIDHARDHA",
+    "dueDate": "2026-07-09",
+    "githubIssueNumber": 2,
+    "priority": "High",
+    "projectName": "Phia - A I Solutions",
+    "title": "Phase 2: Architectural Setup & DB Design",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/phia---a-i-solutions/issues/2",
+    "projectId": "GMwMyrAPnTQLnWZCrgdW",
+    "assignedTo": "sidhardharekha.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
     "id": "8asyFDL6SyoRIsOUl5no",
     "createdAt": "2026-06-23T16:37:28.928Z",
     "assignedToName": "DAGGUPATI NAVANEESWAR",
@@ -53,6 +81,20 @@
     "githubIssueUrl": "https://github.com/nexovtech-simulation/naraway---a-i-solutions/issues/3",
     "projectId": "kRYj8maRSqnxW4Emvtbg",
     "assignedTo": "tracedanalyst.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "GbebVJNzQla6LHNjiSlW",
+    "createdAt": "2026-06-25T08:26:23.406Z",
+    "assignedToName": "DAGGUPATI NAVANEESWAR",
+    "dueDate": "2026-07-16",
+    "githubIssueNumber": 3,
+    "priority": "High",
+    "projectName": "Phia - A I Solutions",
+    "title": "Phase 3: Core Implementation & API Dev",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/phia---a-i-solutions/issues/3",
+    "projectId": "GMwMyrAPnTQLnWZCrgdW",
+    "assignedTo": "daggupatinavaneeswar.nexovtech@gmail.com",
     "status": "Pending"
   },
   {
@@ -215,6 +257,20 @@
     "title": "Phase 4: Client Staging & Review",
     "projectId": "5lZ2hicH82yeqIZRpDLQ",
     "assignedTo": "manicharanteja.nexovtech@gmail.com",
+    "status": "Pending"
+  },
+  {
+    "id": "VB8tDBHfgLzoshYGCVad",
+    "createdAt": "2026-06-25T08:26:23.885Z",
+    "assignedToName": "REKHA SIDHARDHA",
+    "dueDate": "2026-07-23",
+    "githubIssueNumber": 4,
+    "priority": "High",
+    "projectName": "Phia - A I Solutions",
+    "title": "Phase 4: Client Staging & Review",
+    "githubIssueUrl": "https://github.com/nexovtech-simulation/phia---a-i-solutions/issues/4",
+    "projectId": "GMwMyrAPnTQLnWZCrgdW",
+    "assignedTo": "sidhardharekha.nexovtech@gmail.com",
     "status": "Pending"
   },
   {
@@ -682,61 +738,5 @@
     "projectId": "phgL2JiHIglKiZUujXRH",
     "assignedTo": "manicharanteja.nexovtech@gmail.com",
     "status": "Pending"
-  },
-  {
-    "projectId": "GMwMyrAPnTQLnWZCrgdW",
-    "projectName": "Phia - A I Solutions",
-    "title": "Phase 1: Specs & Requirement Analysis",
-    "assignedTo": "daggupatinavaneeswar.nexovtech@gmail.com",
-    "assignedToName": "DAGGUPATI NAVANEESWAR",
-    "status": "In Progress",
-    "priority": "High",
-    "dueDate": "2026-07-02",
-    "createdAt": "2026-06-25T08:26:22.468Z",
-    "githubIssueUrl": "https://github.com/nexovtech-simulation/phia---a-i-solutions/issues/1",
-    "githubIssueNumber": 1,
-    "id": "0F2ZxGRJc9A7uTifTgjz"
-  },
-  {
-    "projectId": "GMwMyrAPnTQLnWZCrgdW",
-    "projectName": "Phia - A I Solutions",
-    "title": "Phase 2: Architectural Setup & DB Design",
-    "assignedTo": "sidhardharekha.nexovtech@gmail.com",
-    "assignedToName": "REKHA SIDHARDHA",
-    "status": "Pending",
-    "priority": "High",
-    "dueDate": "2026-07-09",
-    "createdAt": "2026-06-25T08:26:22.927Z",
-    "githubIssueUrl": "https://github.com/nexovtech-simulation/phia---a-i-solutions/issues/2",
-    "githubIssueNumber": 2,
-    "id": "7xcbgJcgQMhBVjnASLRc"
-  },
-  {
-    "projectId": "GMwMyrAPnTQLnWZCrgdW",
-    "projectName": "Phia - A I Solutions",
-    "title": "Phase 3: Core Implementation & API Dev",
-    "assignedTo": "daggupatinavaneeswar.nexovtech@gmail.com",
-    "assignedToName": "DAGGUPATI NAVANEESWAR",
-    "status": "Pending",
-    "priority": "High",
-    "dueDate": "2026-07-16",
-    "createdAt": "2026-06-25T08:26:23.406Z",
-    "githubIssueUrl": "https://github.com/nexovtech-simulation/phia---a-i-solutions/issues/3",
-    "githubIssueNumber": 3,
-    "id": "GbebVJNzQla6LHNjiSlW"
-  },
-  {
-    "projectId": "GMwMyrAPnTQLnWZCrgdW",
-    "projectName": "Phia - A I Solutions",
-    "title": "Phase 4: Client Staging & Review",
-    "assignedTo": "sidhardharekha.nexovtech@gmail.com",
-    "assignedToName": "REKHA SIDHARDHA",
-    "status": "Pending",
-    "priority": "High",
-    "dueDate": "2026-07-23",
-    "createdAt": "2026-06-25T08:26:23.885Z",
-    "githubIssueUrl": "https://github.com/nexovtech-simulation/phia---a-i-solutions/issues/4",
-    "githubIssueNumber": 4,
-    "id": "VB8tDBHfgLzoshYGCVad"
   }
 ]

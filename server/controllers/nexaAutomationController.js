@@ -277,10 +277,15 @@ async function createStripeOrPDFInvoice(clientName, budget, projectId, clientEma
   // Custom PDF Invoice using PDFKit
   console.log(`📄 [NEXA FINANCE AGENT]: Generating premium corporate PDF invoice for ${clientName}...`);
   try {
-    const uploadsDir = path.join(__dirname, '..', 'uploads');
-    const invoiceDir = path.join(uploadsDir, 'invoices');
+    const IS_SERVERLESS = !!(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+    const uploadsDir = IS_SERVERLESS ? '/tmp' : path.join(__dirname, '..', 'uploads');
+    const invoiceDir = IS_SERVERLESS ? '/tmp' : path.join(uploadsDir, 'invoices');
     if (!fs.existsSync(invoiceDir)) {
-      fs.mkdirSync(invoiceDir, { recursive: true });
+      try {
+        fs.mkdirSync(invoiceDir, { recursive: true });
+      } catch (err) {
+        // Safe catch
+      }
     }
     
     const fileName = `invoice-${projectId}.pdf`;
@@ -821,12 +826,14 @@ exports.toggleAutopilot = async (req, res) => {
 
     console.log(`🤖 [NEXA AUTOPILOT]: Autopilot mode set to ${settings.nexa_autopilot ? 'ENABLED' : 'DISABLED'}`);
 
-    // If enabled, run one cycle immediately in the background to provide instant feedback
+    // If enabled, run one cycle immediately and await it in serverless environment to prevent early termination
     if (settings.nexa_autopilot) {
       const { runAutopilotCycle } = require('../services/nexaAutopilotService');
-      runAutopilotCycle().catch(cycleErr => {
+      try {
+        await runAutopilotCycle();
+      } catch (cycleErr) {
         console.error('🤖 [NEXA AUTOPILOT]: Immediate background cycle failed:', cycleErr.message);
-      });
+      }
     }
 
     res.json({ success: true, enabled: settings.nexa_autopilot });
