@@ -44,7 +44,7 @@ const DashboardLayout = () => {
 
         {/* 4. SCROLLABLE CONTENT AREA */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-transparent scroll-smooth">
-          <main className="min-h-full flex flex-col px-6 py-6 md:px-8">
+          <main className="min-h-full flex flex-col px-4 py-6 md:px-8">
 
             {/* CONTENT WRAPPER */}
             <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-700">

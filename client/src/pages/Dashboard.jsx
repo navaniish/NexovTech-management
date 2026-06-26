@@ -125,9 +125,9 @@ const Dashboard = () => {
          </section>
 
          {/* KPI GRID */}
-         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-6">
+         <section className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-6">
             {kpiStats.map((stat, i) => (
-               <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="glass-card !p-4 md:!p-5 flex flex-col relative overflow-hidden group min-h-[110px] md:min-h-[130px] border-slate-100 hover:scale-[1.02] transition-all">
+               <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="glass-card !p-4 md:!p-5 flex flex-col relative overflow-hidden group min-h-[110px] md:min-h-[130px] border-slate-100 hover:scale-[1.02] transition-all min-w-0">
                   <div className="flex items-center gap-2.5 md:gap-3.5 mb-3 md:mb-4 relative z-10">
                      <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: `${stat.color}10`, color: stat.color }}>
                         <stat.icon size={16} md:size={20} strokeWidth={2.5} />
@@ -142,7 +142,7 @@ const Dashboard = () => {
                   </div>
                </motion.div>
             ))}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="glass-card !p-4 md:!p-5 flex flex-col group justify-center items-center text-center bg-white/40 border-slate-100 min-h-[110px] md:min-h-[130px] col-span-1 sm:col-span-2 lg:col-span-1">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="glass-card !p-4 md:!p-5 flex flex-col group justify-center items-center text-center bg-white/40 border-slate-100 min-h-[110px] md:min-h-[130px] col-span-2 sm:col-span-2 lg:col-span-1 min-w-0">
                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center shadow-md mb-2 group-hover:scale-110 transition-transform">
                   <Activity size={16} md:size={20} strokeWidth={2.5} />
                </div>
@@ -154,7 +154,7 @@ const Dashboard = () => {
          {/* AI EXECUTIVE COMMAND CENTER */}
          <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Health Score Gauge */}
-            <div className="lg:col-span-3 glass-card !p-6 flex flex-col items-center justify-center border-slate-100 relative overflow-hidden text-center min-h-[220px]">
+            <div className="lg:col-span-3 glass-card !p-6 flex flex-col items-center justify-center border-slate-100 relative overflow-hidden text-center min-h-[220px] min-w-0">
                <div className="absolute top-4 left-4 flex items-center gap-1.5 text-indigo-600">
                   <Cpu size={14} className="animate-pulse" />
                   <span className="text-[9px] font-black uppercase tracking-wider">Health Index</span>
@@ -184,7 +184,7 @@ const Dashboard = () => {
             </div>
 
             {/* Revenue Forecasting */}
-            <div className="lg:col-span-4 glass-card !p-6 flex flex-col border-slate-100 min-h-[220px]">
+            <div className="lg:col-span-4 glass-card !p-6 flex flex-col border-slate-100 min-h-[220px] min-w-0">
                <div className="flex items-center justify-between mb-4">
                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Revenue Forecasts</h4>
                   <span className="text-[9px] text-indigo-500 font-bold">30/60/90 Days</span>
@@ -215,7 +215,7 @@ const Dashboard = () => {
             </div>
 
             {/* Dynamic COO Alert & Strategic Briefing Feed */}
-            <div className="lg:col-span-5 glass-card !p-6 flex flex-col border-slate-100 min-h-[220px]">
+            <div className="lg:col-span-5 glass-card !p-6 flex flex-col border-slate-100 min-h-[220px] min-w-0">
                <div className="flex items-center gap-2 mb-3">
                   <Sparkles size={16} className="text-violet-500 animate-pulse" />
                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">AI Strategic Recommendations</h4>
@@ -247,7 +247,7 @@ const Dashboard = () => {
 
          {/* ANALYTICS HUB */}
          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 items-stretch">
-            <div className="lg:col-span-3 glass-card !p-6 flex flex-col min-h-[280px] md:min-h-[300px] border-slate-100">
+            <div className="lg:col-span-3 glass-card !p-6 flex flex-col min-h-[280px] md:min-h-[300px] border-slate-100 min-w-0">
                <h4 className="mobile-section-title text-slate-900 uppercase mb-6 tracking-tight italic text-center">Unit Allocation</h4>
                <div className="flex-1 relative min-h-[160px] md:min-h-[180px]">
                   <ResponsiveContainer width="100%" height={160} md:height={180} debounce={50}>
@@ -264,7 +264,7 @@ const Dashboard = () => {
                </div>
             </div>
 
-            <div className="lg:col-span-3 glass-card !p-6 flex flex-col gap-4 min-h-[280px] md:min-h-[300px] border-slate-100">
+            <div className="lg:col-span-3 glass-card !p-6 flex flex-col gap-4 min-h-[280px] md:min-h-[300px] border-slate-100 min-w-0">
                <h4 className="mobile-section-title text-slate-900 uppercase tracking-tight italic">Intelligence</h4>
                <div className="grid grid-cols-2 md:grid-cols-1 gap-3">
                   {[
@@ -280,19 +280,19 @@ const Dashboard = () => {
                </div>
             </div>
 
-            <div className="md:col-span-2 lg:col-span-6 glass-card !p-6 flex flex-col border-slate-100">
+            <div className="md:col-span-2 lg:col-span-6 glass-card !p-6 flex flex-col border-slate-100 min-w-0">
                <h4 className="mobile-section-title text-slate-900 uppercase tracking-tight italic mb-6">Event Horizon</h4>
                <div className="space-y-3 md:space-y-4">
                   {(stats?.recentOrders || []).slice(0, 4).map((ev, i) => (
-                     <div key={i} className="flex items-center justify-between p-3 bg-slate-50/30 rounded-2xl">
-                        <div className="flex items-center gap-3 md:gap-4">
-                           <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white text-[10px] md:text-[12px] font-black">{ev.avatar}</div>
+                     <div key={i} className="flex items-center justify-between p-3 bg-slate-50/30 rounded-2xl gap-3">
+                        <div className="flex items-center gap-3 md:gap-4 min-w-0">
+                           <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white text-[10px] md:text-[12px] font-black shrink-0">{ev.avatar}</div>
                            <div className="min-w-0">
-                              <h5 className="text-[10px] md:text-[11px] font-black text-slate-900 uppercase truncate">{ev.name}</h5>
-                              <span className="text-[7px] md:text-[8px] font-bold text-slate-400 truncate block">{ev.status} • {ev.date}</span>
+                              <h5 className="text-[11px] md:text-xs font-black text-slate-900 uppercase truncate">{ev.name}</h5>
+                              <span className="text-[9px] md:text-[10px] font-bold text-slate-400 truncate block">{ev.status} • {ev.date}</span>
                            </div>
                         </div>
-                        <span className="text-[10px] md:text-[11px] font-black text-emerald-600 whitespace-nowrap">{ev.price}</span>
+                        <span className="text-[11px] md:text-xs font-black text-emerald-600 whitespace-nowrap">{ev.price}</span>
                      </div>
                   ))}
                </div>
