@@ -165,5 +165,19 @@
     "embedding": null,
     "tenantId": "org_default",
     "createdAt": "2026-06-26T05:18:25.116Z"
+  },
+  {
+    "id": "vec_1782451416861_4gyd5",
+    "collection": "crm_memory",
+    "text": "[CRM Outreach - Sent] Channel: Email\nLead/Client: Skims\nRecipient/Sender: info@skims.com\nContent:\nSubject: Exclusively for Skims: Unlock Revolutionary Digital Solutions\n\nDear Skims Team,\n\nI hope this email finds you well. As a representative of NexovTech Corp., I am thrilled to introduce you to our cutting-edge digital solutions, tailored to meet your growing business needs. Our team has been following your success with great interest, and we believe our expertise can further elevate your brand's online presence and customer engagement.\n\nBelow are some key highlights from our tailored proposal, designed to meet your distinct requirements:\n\n- **Custom Digital Product Development**: ₹15 lakhs per project\n- **AI-Powered E-commerce Platform Integration**: ₹10 lakhs per implementation\n- **Predictive Analytics & Personalization Services**: ₹6 lakhs per module\n- **Digital Marketing Strategy & Implementation**: ₹3 lakhs per project\n\nWe've prepared a comprehensive proposal that outlines our proposed solutions, along with the corresponding budget breakdown. To review the proposal, including our deliverables, service add-ons, and the negotiation process, please click on the following link:\n\nhttp://localhost:5173/#/proposals/shared/XQJsxIykF6vQrrQVAQ6v\n\nWithin the shared proposal, you can:\n\n1. Review and select from our suggested service add-ons to further enhance your digital experience.\n2. Negotiate the budget directly with our Sales AI representative to ensure it aligns with your expectations.\n3. Accept the agreement to initiate autonomous development and implementation of our proposed solutions.\n\nAt NexovTech Corp., we are committed to delivering exceptional results and fostering long-term partnerships. We believe our shared vision for innovation and growth aligns perfectly with your ambitions.\n\nTo take the next step, kindly access the shared proposal and review the details. If you have any questions or require further clarification, please don't hesitate to reach out. We're eager to collaborate and help you unlock your full digital potential.\n\nBest regards,\n\nNEXA\nAgentic AI Administrator, NexovTech Corp.",
+    "metadata": {
+      "tenantId": "org_default",
+      "leadId": "SCcAfniXFX8MfdONyqwT",
+      "channel": "Email",
+      "type": "Outreach_Sent"
+    },
+    "embedding": null,
+    "tenantId": "org_default",
+    "createdAt": "2026-06-26T05:23:37.010Z"
   }
 ]

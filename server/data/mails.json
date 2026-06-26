@@ -679,6 +679,20 @@
     }
   },
   {
+    "id": "hVgB9hjUCDWPzAjh52Qr",
+    "createdAt": "2026-06-26T05:23:38.366Z",
+    "subject": "[NEXA] Proposal Auto-Dispatched: Skims",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [Skims] with a score of 85/100 and auto-dispatched the proposal email containing the shared checkout portal link to info@skims.com.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1782451418,
+      "_nanoseconds": 366000000
+    }
+  },
+  {
     "id": "in_1781718415501",
     "createdAt": "2026-06-17T17:46:55.501Z",
     "subject": "Tips to keep your inbox secure and junk-free",

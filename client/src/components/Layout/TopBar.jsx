@@ -65,9 +65,9 @@ const TopBar = ({ onToggleSidebar }) => {
       {/* Mobile Hamburger menu */}
       <button 
         onClick={onToggleSidebar}
-        className="md:hidden w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-xl transition-all"
+        className="md:hidden w-10 h-10 flex items-center justify-center text-slate-800 dark:text-slate-200 hover:text-indigo-600 hover:bg-white/60 rounded-xl transition-all"
       >
-        <Menu size={20} />
+        <Menu size={20} className="stroke-[2.5]" />
       </button>
 
       {/* LEFT AREA - BRAND LOGO */}

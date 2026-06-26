@@ -686,6 +686,34 @@
     "status": "Outreach_Sent"
   },
   {
+    "id": "Mudts8cUBDfaJNFKU9Ao",
+    "createdAt": "2026-06-26T05:22:38.735Z",
+    "website": "poppi.com",
+    "techStack": [
+      "Shopify",
+      "Python",
+      "Django",
+      "Amazon S3"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@poppi.com"
+      ],
+      "primaryContactName": "Dave Hendren",
+      "linkedInUrls": [
+        "https://linkedin.com/company/poppi"
+      ],
+      "phones": [
+        "+1 (555) 029-4739"
+      ]
+    },
+    "companyName": "Poppi",
+    "industry": "Retail",
+    "source": "WebScrape",
+    "companySize": "11-50 | United States",
+    "status": "Archived"
+  },
+  {
     "id": "NN3MW1sTyf1xNE37II1U",
     "createdAt": "2026-06-17T04:02:32.108Z",
     "website": "ada.com",
@@ -878,6 +906,34 @@
     "status": "Archived"
   },
   {
+    "id": "SCcAfniXFX8MfdONyqwT",
+    "createdAt": "2026-06-26T05:22:33.567Z",
+    "website": "skims.com",
+    "techStack": [
+      "Shopify",
+      "BigCommerce",
+      "Python",
+      "Django"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@skims.com"
+      ],
+      "primaryContactName": "Kim Kardashian West",
+      "linkedInUrls": [
+        "https://linkedin.com/company/skims"
+      ],
+      "phones": [
+        "+1 (555) 002-2943"
+      ]
+    },
+    "companyName": "Skims",
+    "industry": "Retail",
+    "source": "WebScrape",
+    "companySize": "11-50 | United States",
+    "status": "Outreach_Sent"
+  },
+  {
     "id": "SKx8qaDBoMeqs9XHRVnS",
     "createdAt": "2026-06-17T04:00:58.939Z",
     "website": "trendzone.co",
@@ -983,6 +1039,33 @@
     "industry": "Logistics",
     "source": "WebScrape",
     "companySize": "51-200 | United States",
+    "status": "Archived"
+  },
+  {
+    "id": "TnPOPrNWroWuOBmDMB54",
+    "createdAt": "2026-06-26T05:22:43.526Z",
+    "website": "ikea.com",
+    "techStack": [
+      "React",
+      "WordPress",
+      "Google Analytics"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@ikea.com"
+      ],
+      "primaryContactName": "Peter Jipen Christensson",
+      "linkedInUrls": [
+        "https://linkedin.com/company/ikea-group"
+      ],
+      "phones": [
+        "+46 (0) 20 87 80 00"
+      ]
+    },
+    "companyName": "Ikea Group",
+    "industry": "Retail",
+    "source": "WebScrape",
+    "companySize": "51-200 | Sweden",
     "status": "Archived"
   },
   {
@@ -2197,5 +2280,86 @@
     "source": "WebScrape",
     "companySize": "11-50 | Singapore",
     "status": "Archived"
+  },
+  {
+    "companyName": "Redfin",
+    "website": "redfin.com",
+    "industry": "Real Estate",
+    "companySize": "100-500 | Global",
+    "techStack": [
+      "Angular",
+      "AWS",
+      "PostgreSQL"
+    ],
+    "source": "WebScrape",
+    "status": "Scored",
+    "contactInfo": {
+      "emails": [
+        "support@redfin.com"
+      ],
+      "phones": [
+        "+1 (866) 936-2643"
+      ],
+      "linkedInUrls": [
+        "https://linkedin.com/company/redfin"
+      ],
+      "primaryContactName": "Glenn Kelman"
+    },
+    "id": "JqNLLWQpAqfi2TfAd0ZD",
+    "createdAt": "2026-06-26T05:25:37.609Z"
+  },
+  {
+    "companyName": "PropertyGuru",
+    "website": "propertyguru.com",
+    "industry": "Real Estate",
+    "companySize": "100-500 | Singapore",
+    "techStack": [
+      "Java",
+      "React",
+      "MySQL"
+    ],
+    "source": "WebScrape",
+    "status": "Archived",
+    "contactInfo": {
+      "emails": [
+        "contactus@propertyguru.com"
+      ],
+      "phones": [
+        "+65 6755 4373"
+      ],
+      "linkedInUrls": [
+        "https://linkedin.com/company/propertyguru"
+      ],
+      "primaryContactName": "Nicky Tan"
+    },
+    "id": "SSMr517R0Opg7Bn6g40T",
+    "createdAt": "2026-06-26T05:25:42.457Z"
+  },
+  {
+    "companyName": "RE/MAX",
+    "website": "remax.com",
+    "industry": "Real Estate",
+    "companySize": "100-500 | Global",
+    "techStack": [
+      "Netcore",
+      "Java Script",
+      "Salesforce"
+    ],
+    "source": "WebScrape",
+    "status": "Scored",
+    "contactInfo": {
+      "emails": [
+        "info@remax.com"
+      ],
+      "phones": [
+        "+1 (720) 410 4500"
+      ],
+      "linkedInUrls": [
+        "https://linkedin.com/company/remax"
+      ],
+      "primaryContactName": "Dave Liniger"
+    },
+    "id": "ROFGzxMCgmh5eZ4GfLNZ",
+    "createdAt": "2026-06-26T05:25:47.364Z"
   }
 ]

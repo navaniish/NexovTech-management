@@ -10,7 +10,7 @@ import { useAuth } from '../../context/AuthContext';
 import API_URL from '../../config';
 
 const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
-  const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 768);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [counts, setCounts] = useState({ employees: 0, mail: 0 });
@@ -114,7 +114,7 @@ const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
       {/* Collapse Toggle Button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-10 w-6 h-6 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors z-50 shadow-md"
+        className="absolute -right-3 top-10 w-6 h-6 rounded-full bg-slate-800 border border-white/10 hidden md:flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors z-50 shadow-md"
       >
         {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
       </button>

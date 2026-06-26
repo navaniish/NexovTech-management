@@ -22,5 +22,77 @@
     "evaluationLog": "DigiInTe is a global e-commerce company with a well-established online presence (digiinte.com). With a moderate tech stack (WordPress, Google Analytics, JavaScript), we expect the project to be moderately complex. The company's readiness is high, and the high urgency score suggests a potential sales opportunity. Budget score is moderate due to an average company size.",
     "id": "7KHZxc3LsPYOaVYSiuFF",
     "createdAt": "2026-06-26T05:20:46.733Z"
+  },
+  {
+    "leadId": "SCcAfniXFX8MfdONyqwT",
+    "budgetScore": 80,
+    "complexityScore": 60,
+    "readinessScore": 85,
+    "urgencyScore": 70,
+    "overallOpportunityScore": 85,
+    "aiRecommendation": "🔥 High Priority",
+    "evaluationLog": "Skims, a well-established retail company with a strong online presence, is likely to have a sizable budget for technology projects. With a moderate level of tech stack complexity, the project should be manageable. The company's size and industry indicate a higher level of readiness and urgency, especially considering the e-commerce-focused tech stack of Shopify, BigCommerce, Python, and Django. This combination suggests a high-priority opportunity for digital transformation and growth.",
+    "id": "HRK4DrqoIKlIlrsPsB25",
+    "createdAt": "2026-06-26T05:22:56.330Z"
+  },
+  {
+    "leadId": "Mudts8cUBDfaJNFKU9Ao",
+    "budgetScore": 74,
+    "complexityScore": 62,
+    "readinessScore": 58,
+    "urgencyScore": 22,
+    "overallOpportunityScore": 64,
+    "aiRecommendation": "Medium Priority",
+    "evaluationLog": "Poppi, an 11-50 employee US retail company, utilizing a robust Shopify setup with custom Python and Django development, and scalable Amazon S3 storage, suggests a solid foundation for tech infrastructure. However, the low urgency score indicates a less time-sensitive opportunity, and the lower overall opportunity score may be due to the company's size and industry being fairly competitive.",
+    "id": "QLZh8segwi0LCp0E4fko",
+    "createdAt": "2026-06-26T05:22:56.476Z"
+  },
+  {
+    "leadId": "TnPOPrNWroWuOBmDMB54",
+    "budgetScore": 45,
+    "complexityScore": 70,
+    "readinessScore": 60,
+    "urgencyScore": 20,
+    "overallOpportunityScore": 52,
+    "aiRecommendation": "Medium Priority",
+    "evaluationLog": "Ikea Group appears to have a well-established e-commerce platform leveraging React and WordPress. However, their tech stack may be a mix of traditional and modern tools which could affect project complexity. The company's medium size and Swedish location indicate a moderate level of budget availability. Readiness and urgency scores are average, indicating some level of awareness and preparedness for potential digital projects, but no pressing need for immediate action.",
+    "id": "Cts3tXms5EeyDULbdEk9",
+    "createdAt": "2026-06-26T05:22:56.596Z"
+  },
+  {
+    "leadId": "SSMr517R0Opg7Bn6g40T",
+    "budgetScore": 70,
+    "complexityScore": 60,
+    "readinessScore": 80,
+    "urgencyScore": 40,
+    "overallOpportunityScore": 65,
+    "aiRecommendation": "Medium Priority",
+    "evaluationLog": "A mid-sized company in the Real Estate industry with an established online presence. The tech stack, although not cutting-edge, is solid and widely adopted. However, the moderate complexity and relatively lower urgency scores indicate a need for a strategic approach to address specific pain points.",
+    "id": "SaUXW78veGqBdMAS54Ul",
+    "createdAt": "2026-06-26T05:25:56.702Z"
+  },
+  {
+    "leadId": "JqNLLWQpAqfi2TfAd0ZD",
+    "budgetScore": 80,
+    "complexityScore": 85,
+    "readinessScore": 70,
+    "urgencyScore": 65,
+    "overallOpportunityScore": 75,
+    "aiRecommendation": "Medium Priority",
+    "evaluationLog": "Redfin, a large global real estate company, has a strong tech presence with Angular, AWS, and PostgreSQL. The company has a solid budget (80/100), but the project complexity (85/100) might be a challenge. Business readiness (70/100) is relatively high, but urgency (65/100) could be addressed with proper planning.",
+    "id": "JLbwp3TnFfa5s8bPTQAN",
+    "createdAt": "2026-06-26T05:25:57.018Z"
+  },
+  {
+    "leadId": "ROFGzxMCgmh5eZ4GfLNZ",
+    "budgetScore": 80,
+    "complexityScore": 70,
+    "readinessScore": 85,
+    "urgencyScore": 60,
+    "overallOpportunityScore": 77,
+    "aiRecommendation": "Medium Priority",
+    "evaluationLog": "Based on the large global size and established industry presence, RE/MAX is likely to have a substantial budget allocated for technological advancements. However, the moderately complex tech stack and partially obsolete Netcore technology suggest a need for strategic modernization and integration efforts, indicating a medium priority opportunity for NEXA to support RE/MAX in optimizing its tech infrastructure.",
+    "id": "ikY5OQS6ebTggr5pHqna",
+    "createdAt": "2026-06-26T05:25:57.748Z"
   }
 ]
