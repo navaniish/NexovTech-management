@@ -245,7 +245,7 @@ const AIAssistant = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 md:bottom-8 md:right-8 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-2xl flex items-center justify-center z-[100] border-2 group overflow-hidden transition-colors ${
+        className={`fixed bottom-6 right-6 md:bottom-8 md:right-8 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-2xl hidden md:flex items-center justify-center z-[100] border-2 group overflow-hidden transition-colors ${
           authState !== 'NORMAL' ? 'border-yellow-500/50 bg-black' : 'border-brand-500/50 bg-[#020617]'
         }`}
       >

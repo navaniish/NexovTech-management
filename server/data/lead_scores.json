@@ -10,5 +10,41 @@
     "aiRecommendation": "Medium Priority",
     "complexityScore": 60,
     "leadId": "L0ujGQOIuSFag8EQdLnu"
+  },
+  {
+    "leadId": "NhaA4WrK6b1qAClb1iNE",
+    "budgetScore": 40,
+    "complexityScore": 60,
+    "readinessScore": 55,
+    "urgencyScore": 30,
+    "overallOpportunityScore": 52,
+    "aiRecommendation": "Medium Priority",
+    "evaluationLog": "Logistics companies often have a moderate budget, and their technical complexity can vary greatly. Given the size and location, Kudo may have established processes but room for digital innovation. The tech stack is a mix of modern and established technologies, indicating a potential for customization and expansion.",
+    "id": "TzdeXdfCXaAPoxw7tUDP",
+    "createdAt": "2026-06-26T05:10:16.968Z"
+  },
+  {
+    "leadId": "SzpjLB48h19IWh0WEXV2",
+    "budgetScore": 72,
+    "complexityScore": 80,
+    "readinessScore": 65,
+    "urgencyScore": 75,
+    "overallOpportunityScore": 71,
+    "aiRecommendation": "Medium Priority",
+    "evaluationLog": "The logistics industry requires complex IT solutions. Shipwell's technology stack suggests a strong focus on scalability and reliability. However, the company size suggests a moderate budget, and the website design appears to be modern and well-maintained. Nevertheless, the industry's high competition demands ongoing optimization and adaptation, hence the medium priority recommendation.",
+    "id": "PBqETOmXoFgR2QFJfbfP",
+    "createdAt": "2026-06-26T05:10:17.327Z"
+  },
+  {
+    "leadId": "vsejUrlR4WdRils6MAiP",
+    "budgetScore": 85,
+    "complexityScore": 70,
+    "readinessScore": 65,
+    "urgencyScore": 80,
+    "overallOpportunityScore": 80,
+    "aiRecommendation": "Medium Priority",
+    "evaluationLog": "AnyLogistix operates within the logistics industry, leveraging a mid-sized tech stack of Angular and AWS. Their Canadian location indicates a potential presence in a large market with limited competition. The website anylogistix.com appears well-maintained and provides essential information about their services. While their tech stack is well-established, it may lack the cutting-edge innovations seen in more tech-forward industries.",
+    "id": "aXZ584HlLcLmbJX5IyyV",
+    "createdAt": "2026-06-26T05:10:18.635Z"
   }
 ]

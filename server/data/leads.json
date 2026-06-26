@@ -713,6 +713,33 @@
     "status": "Archived"
   },
   {
+    "id": "NhaA4WrK6b1qAClb1iNE",
+    "createdAt": "2026-06-26T05:09:56.441Z",
+    "website": "kudu.com",
+    "techStack": [
+      "Python",
+      "Django",
+      "Redis"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@kudu.com"
+      ],
+      "primaryContactName": "John Fryer",
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/kudu"
+      ],
+      "phones": [
+        "+1 (925) 625-1240"
+      ]
+    },
+    "companyName": "Kudo",
+    "industry": "Logistics",
+    "source": "WebScrape",
+    "companySize": "11-50 | United States",
+    "status": "Archived"
+  },
+  {
     "id": "QLELEr44KXGEwGLk4I9J",
     "createdAt": "2026-06-10T17:47:36.124Z",
     "website": "medvantagelabs.com",
@@ -902,6 +929,33 @@
     "industry": "Retail",
     "source": "WebScrape",
     "companySize": "1-10 | India",
+    "status": "Archived"
+  },
+  {
+    "id": "SzpjLB48h19IWh0WEXV2",
+    "createdAt": "2026-06-26T05:09:51.687Z",
+    "website": "shipwell.com",
+    "techStack": [
+      "React",
+      "Node.js",
+      "PostgreSQL"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@shipwell.com"
+      ],
+      "primaryContactName": "Ryan Keough",
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/shipwell"
+      ],
+      "phones": [
+        "+1 (855) 745-1931"
+      ]
+    },
+    "companyName": "Shipwell",
+    "industry": "Logistics",
+    "source": "WebScrape",
+    "companySize": "51-200 | United States",
     "status": "Archived"
   },
   {
@@ -1954,6 +2008,33 @@
     "companySize": "1000-2000 | Germany",
     "projectId": "3Hp2LGqjsXIFCPPzdugu",
     "status": "Converted"
+  },
+  {
+    "id": "vsejUrlR4WdRils6MAiP",
+    "createdAt": "2026-06-26T05:10:01.287Z",
+    "website": "anylogistix.com",
+    "techStack": [
+      "JavaScript",
+      "Angular",
+      "AWS"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@anylogistix.com"
+      ],
+      "primaryContactName": "Marcel Lapierre",
+      "linkedInUrls": [
+        "https://www.linkedin.com/company/anylogistix"
+      ],
+      "phones": [
+        "+1 (905) 271-8248"
+      ]
+    },
+    "companyName": "AnyLogistix",
+    "industry": "Logistics",
+    "source": "WebScrape",
+    "companySize": "51-200 | Canada",
+    "status": "Outreach_Sent"
   },
   {
     "id": "xCfEIbi3mYev4vnmocmw",

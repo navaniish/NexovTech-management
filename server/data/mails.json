@@ -1083,5 +1083,16 @@
       "_seconds": 1782274422,
       "_nanoseconds": 736000000
     }
+  },
+  {
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "subject": "[NEXA] Proposal Auto-Dispatched: AnyLogistix",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [AnyLogistix] with a score of 80/100 and auto-dispatched the proposal email containing the shared checkout portal link to info@anylogistix.com.\n\nBest regards,\nNEXA Agentic AI",
+    "timestamp": "2026-06-26T05:11:23.099Z",
+    "status": "Unread",
+    "priority": "High",
+    "id": "3DAoU0Id669uYfaMSVQN",
+    "createdAt": "2026-06-26T05:11:23.099Z"
   }
 ]
