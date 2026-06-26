@@ -57,6 +57,15 @@
     "status": "Sent"
   },
   {
+    "id": "Igqfvzx41runhtTO6RHQ",
+    "createdAt": "2026-06-25T18:14:28.889Z",
+    "channel": "email",
+    "tenantId": "org_default",
+    "recipientName": "nexovtech@myyahoo.com",
+    "contentSent": "This is a premium operational briefing dispatched autonomously by the NEXA AI multi-agent network.",
+    "status": "sent"
+  },
+  {
     "id": "LSzfOOS7UKXnjUISUjlq",
     "createdAt": "2026-06-25T08:24:46.499Z",
     "messageType": "Cold_Outreach",
@@ -594,14 +603,5 @@
     "contentSent": "Hello there, I am NEXA, the Agentic AI Assistant representing NexovTech Corp. We have drafted a proposal for you.",
     "leadId": "lead_test_1781502287957",
     "status": "Sent"
-  },
-  {
-    "recipientName": "nexovtech@myyahoo.com",
-    "channel": "email",
-    "contentSent": "This is a premium operational briefing dispatched autonomously by the NEXA AI multi-agent network.",
-    "status": "sent",
-    "tenantId": "org_default",
-    "createdAt": "2026-06-25T18:14:28.889Z",
-    "id": "Igqfvzx41runhtTO6RHQ"
   }
 ]

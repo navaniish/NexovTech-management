@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import EmployeeSidebar from './EmployeeSidebar';
 import TopBar from './TopBar';
+import MobileNav from './MobileNav';
 
 const EmployeeLayout = () => {
   useEffect(() => {
@@ -42,7 +43,7 @@ const EmployeeLayout = () => {
 
         {/* 4. SCROLLABLE CONTENT AREA */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-transparent scroll-smooth">
-          <main className="min-h-full flex flex-col px-6 py-6 md:px-8">
+          <main className="min-h-full flex flex-col px-6 pt-6 pb-24 md:pb-6 md:px-8">
 
             {/* CONTENT WRAPPER */}
             <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-700">
@@ -52,6 +53,7 @@ const EmployeeLayout = () => {
           </main>
         </div>
       </div>
+      <MobileNav />
     </div>
   );
 };

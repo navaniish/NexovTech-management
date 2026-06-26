@@ -96,7 +96,7 @@ const Sidebar = () => {
 
   return (
     <div 
-      className={`h-full bg-slate-900 border-r border-white/10 flex flex-col py-6 shrink-0 transition-all duration-300 relative z-40 ${
+      className={`h-full bg-slate-900 border-r border-white/10 hidden md:flex flex-col py-6 shrink-0 transition-all duration-300 relative z-40 ${
         isCollapsed ? 'w-[72px]' : 'w-[260px]'
       }`}
     >
