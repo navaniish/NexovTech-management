@@ -1,50 +1,26 @@
 [
   {
-    "id": "u0aDo437Cc9eDP0iXiKP",
-    "urgencyScore": 40,
-    "createdAt": "2026-06-17T04:02:54.863Z",
-    "budgetScore": 50,
-    "evaluationLog": "Company size and budget suggest a medium-scale project, with a moderate complexity due to a mix of technologies, and a relatively low urgency due to industry stability. Biofourmis' website and online presence indicate a mature company, contributing to the relatively high readiness score.",
-    "overallOpportunityScore": 60,
-    "readinessScore": 70,
+    "id": "N6XiJrhlyuchAQCqKPdk",
+    "urgencyScore": 70,
+    "createdAt": "2026-06-25T08:22:57.685Z",
+    "budgetScore": 80,
+    "evaluationLog": "Zepto's e-commerce platform, leveraging Flutter, Firebase, and Stripe, suggests a well-established tech foundation. However, the relatively small company size and India-based market may indicate a need for scale and regional optimization, impacting readiness and urgency scores.",
+    "overallOpportunityScore": 65,
+    "readinessScore": 40,
     "aiRecommendation": "Medium Priority",
     "complexityScore": 60,
-    "leadId": "L0ujGQOIuSFag8EQdLnu"
+    "leadId": "VRv5M6wpQIrsdO3lmOU2"
   },
   {
-    "leadId": "NhaA4WrK6b1qAClb1iNE",
-    "budgetScore": 40,
-    "complexityScore": 60,
-    "readinessScore": 55,
-    "urgencyScore": 30,
-    "overallOpportunityScore": 52,
-    "aiRecommendation": "Medium Priority",
-    "evaluationLog": "Logistics companies often have a moderate budget, and their technical complexity can vary greatly. Given the size and location, Kudo may have established processes but room for digital innovation. The tech stack is a mix of modern and established technologies, indicating a potential for customization and expansion.",
-    "id": "TzdeXdfCXaAPoxw7tUDP",
-    "createdAt": "2026-06-26T05:10:16.968Z"
-  },
-  {
-    "leadId": "SzpjLB48h19IWh0WEXV2",
-    "budgetScore": 72,
-    "complexityScore": 80,
-    "readinessScore": 65,
-    "urgencyScore": 75,
-    "overallOpportunityScore": 71,
-    "aiRecommendation": "Medium Priority",
-    "evaluationLog": "The logistics industry requires complex IT solutions. Shipwell's technology stack suggests a strong focus on scalability and reliability. However, the company size suggests a moderate budget, and the website design appears to be modern and well-maintained. Nevertheless, the industry's high competition demands ongoing optimization and adaptation, hence the medium priority recommendation.",
-    "id": "PBqETOmXoFgR2QFJfbfP",
-    "createdAt": "2026-06-26T05:10:17.327Z"
-  },
-  {
-    "leadId": "vsejUrlR4WdRils6MAiP",
-    "budgetScore": 85,
-    "complexityScore": 70,
-    "readinessScore": 65,
-    "urgencyScore": 80,
-    "overallOpportunityScore": 80,
-    "aiRecommendation": "Medium Priority",
-    "evaluationLog": "AnyLogistix operates within the logistics industry, leveraging a mid-sized tech stack of Angular and AWS. Their Canadian location indicates a potential presence in a large market with limited competition. The website anylogistix.com appears well-maintained and provides essential information about their services. While their tech stack is well-established, it may lack the cutting-edge innovations seen in more tech-forward industries.",
-    "id": "aXZ584HlLcLmbJX5IyyV",
-    "createdAt": "2026-06-26T05:10:18.635Z"
+    "leadId": "XnUe7Q9Eg6SSfqcVIZvJ",
+    "budgetScore": 60,
+    "complexityScore": 40,
+    "readinessScore": 80,
+    "urgencyScore": 85,
+    "overallOpportunityScore": 70,
+    "aiRecommendation": "High Priority",
+    "evaluationLog": "DigiInTe is a global e-commerce company with a well-established online presence (digiinte.com). With a moderate tech stack (WordPress, Google Analytics, JavaScript), we expect the project to be moderately complex. The company's readiness is high, and the high urgency score suggests a potential sales opportunity. Budget score is moderate due to an average company size.",
+    "id": "7KHZxc3LsPYOaVYSiuFF",
+    "createdAt": "2026-06-26T05:20:46.733Z"
   }
 ]

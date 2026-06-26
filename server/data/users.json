@@ -62,7 +62,10 @@
     },
     "telegramId": "6033359609",
     "name": "NEXOVTECH ADMINISTRATION",
-    "lastActive": "2026-06-26T05:13:16.206Z"
+    "lastActive": {
+      "_seconds": 1782451038,
+      "_nanoseconds": 395000000
+    }
   },
   {
     "id": "Ykdj0ytfNXgRJozFnn9N",
@@ -74,7 +77,6 @@
       "_seconds": 1781809320,
       "_nanoseconds": 961000000
     },
-    "firebaseUid": null,
     "password": null,
     "performance": {
       "tasksCompleted": 0,
@@ -99,9 +101,10 @@
     },
     "companyEmail": "daggupatinavaneeswar.nexovtech@gmail.com",
     "email": "daggupatinavaneeswar.nexovtech@gmail.com",
+    "firebaseUid": "1TDeGQ7qN2ZJsN5nd8SUuSZRQ373",
     "lastActive": {
-      "_seconds": 1782273424,
-      "_nanoseconds": 70000000
+      "_seconds": 1782450228,
+      "_nanoseconds": 72000000
     }
   },
   {

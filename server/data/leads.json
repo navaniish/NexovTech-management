@@ -851,6 +851,33 @@
     "status": "Archived"
   },
   {
+    "id": "S8pR6FqlQIkQ6TmVX7L2",
+    "createdAt": "2026-06-26T05:16:40.176Z",
+    "website": "doctoranywhere.com",
+    "techStack": [
+      "Angular",
+      "MongoDB",
+      "Google Cloud Platform"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@doctoranywhere.com"
+      ],
+      "primaryContactName": "Lim Shu Juin",
+      "linkedInUrls": [
+        "https://linkedin.com/company/doctoranywhere"
+      ],
+      "phones": [
+        "+65 3155 8955"
+      ]
+    },
+    "companyName": "doctor Anywhere",
+    "industry": "Healthcare",
+    "source": "WebScrape",
+    "companySize": "51-200 | Singapore",
+    "status": "Archived"
+  },
+  {
     "id": "SKx8qaDBoMeqs9XHRVnS",
     "createdAt": "2026-06-17T04:00:58.939Z",
     "website": "trendzone.co",
@@ -1149,6 +1176,33 @@
     "source": "WebScrape",
     "companySize": "51-100 | United States",
     "projectId": "VV7zopyxTpFRpbD4pKrU",
+    "status": "Outreach_Sent"
+  },
+  {
+    "id": "XnUe7Q9Eg6SSfqcVIZvJ",
+    "createdAt": "2026-06-26T05:19:50.148Z",
+    "website": "digiinte.com",
+    "techStack": [
+      "WordPress",
+      "Google Analytics",
+      "JavaScript"
+    ],
+    "contactInfo": {
+      "emails": [
+        "info@digiinte.com"
+      ],
+      "primaryContactName": "info@digiinte.com",
+      "linkedInUrls": [
+        "https://linkedin.com/company/digiin-te"
+      ],
+      "phones": [
+        "(+1) 555-019-2834"
+      ]
+    },
+    "companyName": "DigiInTe",
+    "industry": "E-commerce",
+    "source": "WebScrape",
+    "companySize": "11-50 | Global",
     "status": "Archived"
   },
   {

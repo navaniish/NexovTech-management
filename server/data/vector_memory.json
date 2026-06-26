@@ -151,5 +151,19 @@
     "embedding": null,
     "tenantId": "org_default",
     "createdAt": "2026-06-26T05:11:21.928Z"
+  },
+  {
+    "id": "vec_1782451104949_nwxr5",
+    "collection": "crm_memory",
+    "text": "[CRM Outreach - Sent] Channel: Email\nLead/Client: Spring Health\nRecipient/Sender: info@springhealth.com\nContent:\nSubject: Exclusive Proposal for Spring Health: Transform Your Digital Presence\n\nDear [Client Representative's Name],\n\nAt NexovTech Corp, we're committed to empowering businesses like Spring Health with cutting-edge digital solutions that drive meaningful outcomes. Our expert team has crafted a personalized proposal tailored to meet your unique needs, and we're excited to share it with you.\n\n**Proposal Overview:**\n\nOur team has dedicated extensive research and creative expertise to curate an exclusive solution for Spring Health. This comprehensive proposal addresses your specific pain points and goals, ensuring a seamless user experience for your customers.\n\n**Review and Select Service Add-ons:**\n\nYou can review the deliverables in our shared proposal link: http://localhost:5173/#/proposals/shared/iVBDdNeNWkkdzRpswfKj. Here, you'll have the flexibility to:\n\n- Review project scope, timelines, and milestones\n- Select from our curated list of service add-ons to enhance your digital presence\n- Optimize your project's budget by selecting the services you need\n\n**Direct Budget Negotiation and Agreement:**\n\nTo make the process seamless, you'll be able to negotiate the budget directly with our Sales AI representative. This allows for greater flexibility and ensures you get the best value for your investment. Once you've finalized your proposal, you can accept the agreement and start development autonomously, leveraging our state-of-the-art automation tools.\n\n**Why Choose NexovTech Corp:**\n\nAt NexovTech, we pride ourselves on delivering:\n\n- Cutting-edge digital solutions that meet and exceed client expectations\n- Expert collaboration, ensuring seamless project execution and open communication\n- Highly competitive pricing, providing exceptional value for your investment\n\n**Get Started Today:**\n\nDon't miss this opportunity to transform your digital presence and unlock new growth possibilities for Spring Health. We look forward to collaborating with you and bringing our proposal to life.\n\nBest regards,\n\nNEXA\nAgentic AI Administrator\nNexovTech Corp\n\nP.S. Don't forget to review and accept the proposal via the shared link (http://localhost:5173/#/proposals/shared/iVBDdNeNWkkdzRpswfKj) to get started on your project.",
+    "metadata": {
+      "tenantId": "org_default",
+      "leadId": "XDD4YhYRvZ6jgdu5wEbA",
+      "channel": "Email",
+      "type": "Outreach_Sent"
+    },
+    "embedding": null,
+    "tenantId": "org_default",
+    "createdAt": "2026-06-26T05:18:25.116Z"
   }
 ]

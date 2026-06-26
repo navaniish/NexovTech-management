@@ -371,6 +371,20 @@
     "timestamp": "2026-06-24T17:23:17.930Z"
   },
   {
+    "id": "3DAoU0Id669uYfaMSVQN",
+    "createdAt": "2026-06-26T05:11:23.099Z",
+    "subject": "[NEXA] Proposal Auto-Dispatched: AnyLogistix",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [AnyLogistix] with a score of 80/100 and auto-dispatched the proposal email containing the shared checkout portal link to info@anylogistix.com.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1782450683,
+      "_nanoseconds": 99000000
+    }
+  },
+  {
     "id": "3Ivee4B9yvEXh1Q6VAHG",
     "createdAt": "2026-06-25T17:41:38.079Z",
     "subject": "[NEXA] Proposal Auto-Dispatched: Stripe",
@@ -564,6 +578,20 @@
     "timestamp": {
       "_seconds": 1781456129,
       "_nanoseconds": 98000000
+    }
+  },
+  {
+    "id": "JESdIOe5BPx5tQIqO0AC",
+    "createdAt": "2026-06-26T05:18:26.304Z",
+    "subject": "[NEXA] Proposal Auto-Dispatched: Spring Health",
+    "from": "nexa@nexovtech.ai",
+    "to": "nexovtech@myyahoo.com",
+    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [Spring Health] with a score of 75/100 and auto-dispatched the proposal email containing the shared checkout portal link to info@springhealth.com.\n\nBest regards,\nNEXA Agentic AI",
+    "priority": "High",
+    "status": "Unread",
+    "timestamp": {
+      "_seconds": 1782451106,
+      "_nanoseconds": 304000000
     }
   },
   {
@@ -1083,16 +1111,5 @@
       "_seconds": 1782274422,
       "_nanoseconds": 736000000
     }
-  },
-  {
-    "from": "nexa@nexovtech.ai",
-    "to": "nexovtech@myyahoo.com",
-    "subject": "[NEXA] Proposal Auto-Dispatched: AnyLogistix",
-    "body": "Hello Admin,\n\nNEXA has autonomously qualified a new lead [AnyLogistix] with a score of 80/100 and auto-dispatched the proposal email containing the shared checkout portal link to info@anylogistix.com.\n\nBest regards,\nNEXA Agentic AI",
-    "timestamp": "2026-06-26T05:11:23.099Z",
-    "status": "Unread",
-    "priority": "High",
-    "id": "3DAoU0Id669uYfaMSVQN",
-    "createdAt": "2026-06-26T05:11:23.099Z"
   }
 ]

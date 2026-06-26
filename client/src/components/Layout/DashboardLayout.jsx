@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
-import MobileNav from './MobileNav';
 
 const DashboardLayout = () => {
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
   useEffect(() => {
     // Lock body scrolling while dashboard is active to prevent scroll gaps
     document.body.style.overflow = 'hidden';
@@ -34,16 +35,16 @@ const DashboardLayout = () => {
 
       {/* 2. TOPBAR - IN FLOW */}
       <div className="relative z-[60] shrink-0">
-        <TopBar />
+        <TopBar onToggleSidebar={() => setIsMobileOpen(!isMobileOpen)} />
       </div>
 
       <div className="flex flex-1 overflow-hidden relative z-50 w-full">
         {/* 3. SIDEBAR */}
-        <Sidebar />
+        <Sidebar isMobileOpen={isMobileOpen} onCloseMobile={() => setIsMobileOpen(false)} />
 
         {/* 4. SCROLLABLE CONTENT AREA */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-transparent scroll-smooth">
-          <main className="min-h-full flex flex-col px-6 pt-6 pb-24 md:pb-6 md:px-8">
+          <main className="min-h-full flex flex-col px-6 py-6 md:px-8">
 
             {/* CONTENT WRAPPER */}
             <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-700">
@@ -53,7 +54,6 @@ const DashboardLayout = () => {
           </main>
         </div>
       </div>
-      <MobileNav />
     </div>
   );
 };

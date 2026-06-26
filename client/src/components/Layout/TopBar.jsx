@@ -6,7 +6,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const TopBar = () => {
+const TopBar = ({ onToggleSidebar }) => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -62,8 +62,16 @@ const TopBar = () => {
   return (
     <header className="h-[64px] sticky top-0 w-full glass-panel border-b border-white/20 px-4 flex items-center justify-between z-[60] shrink-0 backdrop-blur-xl">
 
+      {/* Mobile Hamburger menu */}
+      <button 
+        onClick={onToggleSidebar}
+        className="md:hidden w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-xl transition-all"
+      >
+        <Menu size={20} />
+      </button>
+
       {/* LEFT AREA - BRAND LOGO */}
-      <div className="flex items-center gap-3">
+      <div className="hidden md:flex items-center gap-3">
         <div className="flex items-center group cursor-pointer" onClick={() => navigate('/')}>
           <div className="h-[36px] bg-white rounded-lg p-1 px-2 flex items-center justify-center transition-all duration-300 group-hover:scale-105 shadow-sm">
             <img src="/assets/company-logo.jpeg" alt="Logo" className="h-full w-auto object-contain" />

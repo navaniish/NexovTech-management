@@ -48,8 +48,8 @@ const baseSections = [
   }
 ];
 
-const EmployeeSidebar = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+const EmployeeSidebar = ({ isMobileOpen, onCloseMobile }) => {
+  const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 768);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -74,11 +74,22 @@ const EmployeeSidebar = () => {
     : baseSections;
 
   return (
-    <div 
-      className={`h-full bg-slate-900 border-r border-white/10 hidden md:flex flex-col py-6 shrink-0 transition-all duration-300 relative z-40 ${
-        isCollapsed ? 'w-[72px]' : 'w-[260px]'
-      }`}
-    >
+    <>
+      {/* Mobile Backdrop */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+          onClick={onCloseMobile}
+        />
+      )}
+
+      <div 
+        className={`h-full bg-slate-900 border-r border-white/10 flex flex-col py-6 shrink-0 transition-all duration-300 z-50
+          fixed inset-y-0 left-0 md:relative md:inset-auto md:translate-x-0
+          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
+          ${isCollapsed ? 'w-[260px] md:w-[72px]' : 'w-[260px]'}
+        `}
+      >
       {/* Collapse Toggle Button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
@@ -100,6 +111,7 @@ const EmployeeSidebar = () => {
               <NavLink
                 key={item.path}
                 to={item.path}
+                onClick={onCloseMobile}
                 className={({ isActive }) => `
                   relative flex items-center h-12 rounded-xl transition-all group px-3.5 gap-3.5
                   ${isActive
@@ -130,7 +142,7 @@ const EmployeeSidebar = () => {
         <div className="flex items-center gap-3">
           <div 
             className="w-10 h-10 rounded-xl overflow-hidden bg-indigo-600 shadow-xl relative group shrink-0 cursor-pointer"
-            onClick={() => navigate('/employee/settings')}
+            onClick={() => { navigate('/employee/settings'); onCloseMobile(); }}
           >
             <img
               src={user?.avatar ? (user.avatar.startsWith('http') || user.avatar.startsWith('data:') ? user.avatar : `${API_URL.replace('/api', '')}${user.avatar}`) :
@@ -158,7 +170,8 @@ const EmployeeSidebar = () => {
           )}
         </button>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
