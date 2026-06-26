@@ -1342,6 +1342,18 @@ Please activate the multi-agent network to analyze this deployment failure, reco
 
       const launchBotWithRetry = async (retries = 5) => {
         try {
+          const info = await bot.telegram.getWebhookInfo();
+          const isLocalWebhook = info.url && (
+            info.url.includes('localhost') ||
+            info.url.includes('127.0.0.1') ||
+            info.url.includes('ngrok') ||
+            info.url.includes('serveo') ||
+            info.url.includes('localtunnel')
+          );
+          if (info.url && !isLocalWebhook) {
+            console.log(`🤖 TELEGRAM_BOT: Active production webhook detected (${info.url}). Local polling skipped to avoid breaking production.`);
+            return;
+          }
           console.log('🤖 TELEGRAM_BOT: Clearing any existing webhook before polling...');
           await bot.telegram.deleteWebhook({ drop_pending_updates: true });
           const cleared = await waitForWebhookClear(10000);
