@@ -103,7 +103,7 @@ const TopBar = ({ onToggleSidebar }) => {
         <button onClick={toggleTheme} className="hidden sm:flex w-10 h-10 items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-xl transition-all" title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}>
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
-        <div className="relative">
+        <div className="static md:relative">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
             className="relative w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white/60 rounded-xl transition-all"
@@ -124,7 +124,7 @@ const TopBar = ({ onToggleSidebar }) => {
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 mt-4 w-[280px] sm:w-[340px] bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-[100] backdrop-blur-xl"
+                  className="absolute top-full left-4 right-4 md:left-auto md:right-0 mt-2 md:w-[340px] w-auto bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-[100] backdrop-blur-xl"
                 >
                   <div className="p-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
                     <div>

@@ -99,16 +99,16 @@ const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
       {/* Mobile Backdrop */}
       {isMobileOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] md:hidden"
           onClick={onCloseMobile}
         />
       )}
 
       <div 
-        className={`h-full bg-slate-900 border-r border-white/10 flex flex-col py-6 shrink-0 transition-all duration-300 z-50
+        className={`h-full bg-slate-900 border-r border-white/10 flex flex-col pt-20 pb-6 md:py-6 shrink-0 transition-all duration-300 z-[80]
           fixed inset-y-0 left-0 md:relative md:inset-auto md:translate-x-0
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
-          ${isCollapsed ? 'w-[260px] md:w-[72px]' : 'w-[260px]'}
+          ${isCollapsed ? 'w-[220px] md:w-[72px]' : 'w-[220px] md:w-[260px]'}
         `}
       >
       {/* Collapse Toggle Button */}
@@ -120,7 +120,7 @@ const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
       </button>
 
       {/* Navigation Icons & Labels */}
-      <div className="flex-1 w-full overflow-y-auto no-scrollbar px-3 space-y-6">
+      <div className="flex-1 w-full overflow-y-auto no-scrollbar px-3 space-y-3.5 md:space-y-6">
         {menuSections.map((section) => (
           <div key={section.title} className="flex flex-col gap-1.5">
             {!isCollapsed && (
@@ -134,7 +134,7 @@ const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
                 to={item.path}
                 onClick={onCloseMobile}
                 className={({ isActive }) => `
-                  relative flex items-center h-12 rounded-xl transition-all group px-3.5 gap-3.5
+                  relative flex items-center h-11 md:h-12 rounded-xl transition-all group px-3.5 gap-3.5
                   ${isActive
                     ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/25'
                     : 'text-slate-400 hover:bg-white/5 hover:text-white active:bg-white/10'}
